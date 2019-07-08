@@ -37,18 +37,18 @@
 random_areas <- function(nsites, chr_file,name_file){
 nSites <- nsites
 # read the bed file
-bed <- read.table(file=chr_file, header=T, sep='\t')
+bed <- read.table(file = chr_file, header = T, sep = '\t')
 # convert it to a data.table
-bed2 <- data.table::as.data.table(bed, keep.colnames=TRUE)
+bed2 <- data.table::as.data.table(bed, keep.colnames = TRUE)
 
 # calculate size of range
-bed2[, size := 1 + end-start]
+bed2[, size := 1 + end - start]
 
 # Randomly sample bed file rows, proportional to the length of each range
-simulated.sites <- bed2[sample(.N, size=nSites, replace=TRUE, prob=bed2$size)]
+simulated.sites <- bed2[sample(.N, size = nSites, replace = TRUE, prob = bed2$size)]
 
 # Randomly sample uniformly within each chosen range
-simulated.sites[, position := sample(start:end, size=1), by=1:dim(simulated.sites)[1]]
+simulated.sites[, position := sample(start:end, size = 1), by = 1:dim(simulated.sites)[1]]
 
 # Remove extra columns and format as needed
 simulated.sites[, start  := position]

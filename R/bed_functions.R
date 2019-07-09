@@ -1,73 +1,113 @@
-# Implementation BEDtools in R
+#' Generates random baits
+#'
+#' Function inspired by this comment in StackOverflow: https://stackoverflow.com/questions/49149839/simulate-random-positions-from-a-list-of-intervals
+#'
+#' @param n number of baits to generate
+#' @param lengths A file containing the chromosomes' length
+#' @param exclusions A file containing regions to exclude
+#' @param regions A file containing regions to target
+#' @param targets A file containing points to target
+#' @param seed A number to fix the randomization process, for reproducibility
+#' 
+#' @output A dataframe of baits
+#' 
+#' @export
+#' 
+main_function <- function(n, lengths, exclusions = NULL, regions = NULL, targets = NULL, seed = NULL){
+	# Initial checks
+	if(!is.numeric(n))
+		stop("'n' must be numeric.\n")
+	if(length(n) != 1)
+		stop("Length of 'n' must be 1.\n")
 
-# bedTools.random<-function(functionstring="random",l,n,seed,g,out,opt.string="")
-# {
-#   #create temp files
-#   n = tempfile()
-#   l = tempfile()
-#   seed = tempfile()
-#   g = tempfile()
-#   out = tempfile()
-#   options(scipen =99) # not to use scientific notation when writing out
-#
-#   #write bed formatted dataframes to tempfile
-#   write.table(g,file=g,quote=F,sep="\t",col.names=F,row.names=F)
-#
-#   # create the command string and call the command using system()
-#   command=paste(functionstring,"-n",n,"-l",l,"-seed", seed,
-#                 "-g", g, ">", out, sep=" ")
-#   cat(command,"\n")
-#   try(system(command))
-#
-#   res=read.table(out,header=F)
-#   unlink(l);unlink(n);unlink(seed);unlink(g);unlink(out)
-#   return(res)
-# }
+	# Import data
+	lengths <- load_lengths(file = lengths)
+	if(!is.null(exclusions))
+		exclusions <- load_exclusions(file = exclusions)
+	if(!is.null(regions))
+		regions <- load_regions(file = regions)
+	if(!is.null(targets))
+		targets <- load_targets(file = targets)
 
-#### FUNCTION 1 ####
-# Function that generates random sequences in chromosome positions
-# Input:
-# - nsites: number of sites to generate
-# - chr_file: file provided by the user with three columns: chromosome name, start (bp), end (bp)
-# - name of the output file
-# Function inspired by this comment in StackOverflow: https://stackoverflow.com/questions/49149839/simulate-random-positions-from-a-list-of-intervals
+	# Compatibility checks
+	check_chr_names(exclusions = exclusions, regions = regions, targets = targets, lengths = lengths)
+	check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, lengths = lengths)
+	# MISSING: check if n fits within all chromosome limits
+	# These two may make more sense on a chromosome to chromosome level:
+	# MISSING: check if n fits within all non-excluded regions, if there are any
+	# MISSING: check if n fits within targets, if there are any?
 
+	recipient <- list()
+	for (i in 1:ncol(lengths)) {
+		if (!is.null(exclusions)) 
+			trimmed_exclusions <- subsample(input = exclusions, link = lengths[i, 1])
+		if (!is.null(regions)) 
+			trimmed_regions <- subsample(input = regions, link = lengths[i, 1])
+		if (!is.null(targets)) 
+			trimmed_targets <- subsample(input = targets, link = lengths[i, 1])
 
-# Function
-random_areas <- function(nsites, chr_file,name_file){
-nSites <- nsites
-# read the bed file
-bed <- read.table(file = chr_file, header = T, sep = '\t')
-# convert it to a data.table
-bed2 <- data.table::as.data.table(bed, keep.colnames = TRUE)
+		if(is.null(c(trimmed_exclusions, trimmed_regions, trimmed_targets))))
+			recipient[[i]] <- all_random(lengths = lengths[i, ], n = n, seed = seed)
 
-# calculate size of range
-bed2[, size := 1 + end - start]
+		if(!is.null(c(trimmed_regions, trimmed_targets)) & is.null(trimmed.exclusions))
+			recipient[[i]] <- all_targetted(lengths = lengths[i, ], n = n, seed = seed, regions = trimmed_regions, targets = trimmed_targets)
 
-# Randomly sample bed file rows, proportional to the length of each range
-simulated.sites <- bed2[sample(.N, size = nSites, replace = TRUE, prob = bed2$size)]
+		if(is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed_exclusions))
+			recipient[[i]] <- trimmed_random(lengths = lengths[i, ], n = n, seed = seed, exclusions = trimmed_exclusions)
 
-# Randomly sample uniformly within each chosen range
-simulated.sites[, position := sample(start:end, size = 1), by = 1:dim(simulated.sites)[1]]
+		if(!is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed.exclusions))
+			recipient[[i]] <- trimmed_targetted(lengths = lengths[i, ], n = n, seed = seed, regions = trimmed_regions, targets = trimmed_targets, exclusions = trimmed_exclusions)
 
-# Remove extra columns and format as needed
-simulated.sites[, start  := position]
-simulated.sites[, end := position]
-simulated.sites[, c("size", "position") := NULL]
-out_table <- simulated.sites
-write.table(out_table, name_file)
-return(out_table)
+		names(recipient)[length(recipient)] <- lengths[i, 1]
+	}
+
+	# Randomly sample bed file rows, proportional to the length of each range
+	# simulated.sites <- bed2[sample(.N, size = n, replace = TRUE, prob = bed2$size)]
+
+	# Randomly sample uniformly within each chosen range
+	# simulated.sites[, position := sample(start:end, size = 1), by = 1:dim(simulated.sites)[1]]
+
+	# Remove extra columns and format as needed
+	# simulated.sites[, start  := position]
+	# simulated.sites[, end := position]
+	# simulated.sites[, c("size", "position") := NULL]
+	# out_table <- simulated.sites
+	# write.table(out_table, name_file)
+	# return(out_table)
+	return(recipient)
 }
 
+#' Extract the values of input that match the linking element
+#' 
+#' @param input A dataframe whose first column will be matched to link
+#' @param link a keyword to be searched for
+#' 
+#' @return A subset of input
+#' 
+#' @keywords internal
+#' 
+subsample <- function(input, link) {
+	link <- grepl(link, input[, 1])
+	if (any(link))
+		output <- input[link, ]
+	else
+		output <- NULL
+	return(output)
+}
 
-#### FUNCTION 2 ####
-# bedtools_intersect("random_areas", out1=TRUE, bedtools=12)
-#
-#
-# bedTools.random("random",100,10,3569,"chrSize_example.txt","test")
-#
-# install.packages("HelloRanges")
-# library(HelloRanges)
-# library(HelloRangesData)
-# code <- bedtools_intersect("-a cpg.bed -b exons.bed")
-# code{genome <- Seqinfo(genome = NA_character_)gr_a <- import("cpg.bed", genome = genome)gr_b <- import("exons.bed", genome = genome)pairs <- findOverlapPairs(gr_a, gr_b, ignore.strand = TRUE)ans <- pintersect(pairs, ignore.strand = TRUE)ans}
+# Extract n number of baits from the whole chromosome length
+all_random <- function(lengths, n, size, seed = NULL) {
+	
+}
+
+all_targetted <- function(lengths, n, , size, seed = NULL, regions = NULL, targets = NULL)) {
+	
+}
+
+trimmed_random <- function(lengths, n, size, seed = NULL, exclusions) {
+	
+}
+
+trimmed_targetted <- function(lengths, n, size, seed = NULL, regions = NULL, targets = NULL, exclusions) {
+
+}

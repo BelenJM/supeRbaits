@@ -22,6 +22,9 @@ main_function(n, size, lengths, exclusions = NULL, regions = NULL,
 
 \item{seed}{A number to fix the randomization process, for reproducibility}
 }
+\value{
+A dataframe of baits
+}
 \description{
 Function inspired by this comment in StackOverflow: https://stackoverflow.com/questions/49149839/simulate-random-positions-from-a-list-of-intervals
 }

@@ -10,7 +10,7 @@
 #' @param targets A file containing points to target
 #' @param seed A number to fix the randomization process, for reproducibility
 #' 
-#' @output A dataframe of baits
+#' @return A dataframe of baits
 #' 
 #' @export
 #' 

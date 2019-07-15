@@ -40,35 +40,41 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 	# Compatibility checks
 	check_chr_names(exclusions = exclusions, regions = regions, targets = targets, lengths = lengths)
 	check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, lengths = lengths)
-	# MISSING: check if n fits within all chromosome limits
+	# MISSING: check if size fits within all chromosome limits
 	# These two may make more sense on a chromosome to chromosome level:
-	# MISSING: check if n fits within all non-excluded regions, if there are any
-	# MISSING: check if n fits within targets, if there are any?
+	# MISSING: check if size fits within all non-excluded regions, if there are any
+	# MISSING: check if size fits within targets, if there are any?
 
 	recipient <- list()
 	for (i in 1:ncol(lengths)) {
 		if (!is.null(exclusions)) 
 			trimmed_exclusions <- subsample(input = exclusions, link = lengths[i, 1])
+		else 
+			trimmed_exclusions <- NULL
 		if (!is.null(regions)) 
 			trimmed_regions <- subsample(input = regions, link = lengths[i, 1])
+		else
+			trimmed_regions <- NULL
 		if (!is.null(targets)) 
 			trimmed_targets <- subsample(input = targets, link = lengths[i, 1])
+		else
+			trimmed_targets <- NULL
 
 		if(is.null(c(trimmed_exclusions, trimmed_regions, trimmed_targets)))
-			recipient[[i]] <- all_random(length = lengths[i, ], n = n, size = size, seed = seed)
+			recipient[[i]] <- all_random(length = lengths[i, 2], n = n, size = size, seed = seed)
 
-		if(!is.null(c(trimmed_regions, trimmed_targets)) & is.null(trimmed.exclusions)) {
-			recipient[[i]] <- all_targetted(length = lengths[i, ], n = n, size = size, seed = seed, 
+		if(!is.null(c(trimmed_regions, trimmed_targets)) & is.null(trimmed_exclusions)) {
+			recipient[[i]] <- all_targetted(length = lengths[i, 2], n = n, size = size, seed = seed, 
 				regions = trimmed_regions, targets = trimmed_targets)
 		}
 
 		if(is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed_exclusions)) {
-			recipient[[i]] <- trimmed_random(length = lengths[i, ], n = n, size = size, 
+			recipient[[i]] <- trimmed_random(length = lengths[i, 2], n = n, size = size, 
 				seed = seed, exclusions = trimmed_exclusions)
 		}
 
-		if(!is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed.exclusions)) {
-			recipient[[i]] <- trimmed_targetted(length = lengths[i, ], n = n, size = size, seed = seed,
+		if(!is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed_exclusions)) {
+			recipient[[i]] <- trimmed_targetted(length = lengths[i, 2], n = n, size = size, seed = seed,
 			  regions = trimmed_regions, targets = trimmed_targets, exclusions = trimmed_exclusions)
 		}
 

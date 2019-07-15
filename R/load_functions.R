@@ -7,7 +7,7 @@
 #' @return The exclusions dataframe
 #' 
 load_exclusions <- function(file){
-	output <- read.csv(file)
+	output <- read.table(file, sep = "\t")
 	if (!is.integer(output[, 2]))
 		stop("The second column in the exclusions file does not appear to contain only numeric data.\n")
 	if (!is.integer(output[, 3]))
@@ -32,7 +32,7 @@ load_exclusions <- function(file){
 #' @return The regions dataframe
 #' 
 load_regions <- function(file){
-	output <- read.csv(file)
+	output <- read.table(file, sep = "\t")
 	if (!is.integer(output[, 2]))
 		stop("The second column in the regions of interest file does not appear to contain only numeric data.\n")
 	if (!is.integer(output[, 3]))
@@ -57,7 +57,7 @@ load_regions <- function(file){
 #' @return The targets dataframe
 #' 
 load_targets <- function(file){
-	output <- read.csv(file)
+	output <- read.table(file, sep = "\t")
 	if (!is.integer(output[, 2]))
 		stop("The second column in the targets file does not appear to contain only numeric data.\n")
 	if (any(is.na(output)))
@@ -76,7 +76,7 @@ load_targets <- function(file){
 #' @return The lengths dataframe
 #' 
 load_lengths <- function(file){
-	output <- read.csv(file)
+	output <- read.table(file, sep = "\t")
 	if (!is.integer(output[, 2]))
 		stop("The second column in the chromosomes' length file does not appear to contain only numeric data.\n")
 	if (any(is.na(output)))

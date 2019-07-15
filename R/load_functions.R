@@ -85,7 +85,7 @@ load_lengths <- function(file){
 		stop("Some data in the chromosomes' length file appears to be negative.\n")
 	if (any(output[, 2] == 0))
 		stop("Some chromosomes' length is 0.\n")
-	if (any(length(unique(output[, 1])) > 1))
+	if (any(table(output[, 1]) > 1))
 		stop("There are repeated chromosome names in the chromosomes' length file.\n")
 	return(output)
 }
@@ -128,21 +128,21 @@ check_chr_boundaries <- function(exclusions = NULL, regions = NULL, targets = NU
 	if (!is.null(exclusions)) {
 		for(i in unique(exclusions[, 1])) {
 			link <- match(i, lengths[, 1])
-			if (any(exclusions[exclusions[ ,1] == i, ] > lengths[link, 2]))
+			if (any(exclusions[exclusions[ ,1] == i, 2:3] > lengths[link, 2]))
 				stop("Some data in the exclusions is off-boundaries.\n")
 		}
 	}
 	if (!is.null(regions)) {
 		for(i in unique(regions[, 1])) {
 			link <- match(i, lengths[, 1])
-			if (any(regions[regions[ ,1] == i, ] > lengths[link, 2]))
+			if (any(regions[regions[ ,1] == i, 2:3] > lengths[link, 2]))
 				stop("Some data in the regions if interest is off-boundaries.\n")
 		}
 	}
 	if (!is.null(targets)) {
 		for(i in unique(targets[, 1])) {
 			link <- match(i, lengths[, 1])
-			if (any(targets[targets[ ,1] == i, ] > lengths[link, 2]))
+			if (any(targets[targets[ ,1] == i, 2] > lengths[link, 2]))
 				stop("Some data in the targets is off-boundaries.\n")
 		}
 	}

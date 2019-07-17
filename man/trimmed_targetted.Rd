@@ -20,7 +20,7 @@ trimmed_targetted(length, n, size, seed = NULL, regions = NULL,
 
 \item{targets}{A subset of the targets dataframe for the target chromosome}
 
-\item{exclusions}{A subset of the exclusions dataframe for the target chromosome}
+\item{exclusions}{A subset of the exclusions dataframe for the target chromosome.}
 }
 \value{
 a dataframe with starting and ending positions

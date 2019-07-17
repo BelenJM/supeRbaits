@@ -44,7 +44,8 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 		stop("'size' is larger than at least one of the chromosome lengths.\n")
 
 	recipient <- list()
-	for (i in 1:ncol(lengths)) {
+	for (i in 1:nrow(lengths)) {
+		cat(paste0("debug: examining chromosome ", i,".\n")); flush.console()
 		if (!is.null(exclusions)) 
 			trimmed_exclusions <- subsample(input = exclusions, link = lengths[i, 1])
 		else 
@@ -68,16 +69,15 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 
 		if(is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed_exclusions)) {
 			recipient[[i]] <- trimmed_random(length = lengths[i, 2], n = n, size = size, 
-				seed = seed, exclusions = trimmed_exclusions)
+				seed = seed, exclusions = trimmed_exclusions, chr = lengths[i, 1])
 		}
 
 		if(!is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed_exclusions)) {
 			recipient[[i]] <- trimmed_targetted(length = lengths[i, 2], n = n, size = size, seed = seed,
 			  regions = trimmed_regions, targets = trimmed_targets, exclusions = trimmed_exclusions)
 		}
-
-		names(recipient)[length(recipient)] <- lengths[i, 1]
 	}
+	names(recipient) <- as.character(lengths[, 1])
 
 	# Randomly sample bed file rows, proportional to the length of each range
 	# simulated.sites <- bed2[sample(.N, size = n, replace = TRUE, prob = bed2$size)]
@@ -119,16 +119,18 @@ subsample <- function(input, link) {
 		if (ncol(output) == 3) {
 			if(any(table(output[, 3]) > 1))
 				stop("There are duplicated ending points for one of the trimming elements for chromosome ", chr, ".")
-			trigger <- NULL
-			for (i in 2:nrow(output))
-				trigger[i - 1] <- output[i, 2] <= output[i - 1, 3]
-			if (any(trigger))
-				stop("The regions to include or exclude overlap for chromosome ", chr,".")
-			trigger <- NULL
-			for (i in 2:nrow(output))
-				trigger[i - 1] <- output[i, 2] == output[i - 1, 3] + 1
-			if (any(trigger))
-				stop("There are contiguous regions to include or exclude for chromosome ", chr,". Please list these as a single region.")
+			if (nrow(output) > 1) {
+				trigger <- NULL
+				for (i in 2:nrow(output))
+					trigger[i - 1] <- output[i, 2] <= output[i - 1, 3]
+				if (any(trigger))
+					stop("The regions to include or exclude overlap for chromosome ", chr,".")
+				trigger <- NULL
+				for (i in 2:nrow(output))
+					trigger[i - 1] <- output[i, 2] == output[i - 1, 3] + 1
+				if (any(trigger))
+					stop("There are contiguous regions to include or exclude for chromosome ", chr,". Please list these as a single region.")
+			}
 		}
 	}
 	return(output)
@@ -167,31 +169,45 @@ all_random <- function(length, n, size, seed = NULL) {
 #' 
 all_targetted <- function(length, n, size, seed = NULL, regions = NULL, targets = NULL) {
 	stop("Triggered all_targetted\n")
+	# MISSING: check if size fits within regions of interest, if there are any?
 }
 
 #' Extract n number of baits randomly from parts of the chromosome length
 #' 
 #' @inheritParams all_random
-#' @param exclusions A subset of the exclusions dataframe for the target chromosome
+#' @param exclusions A subset of the exclusions dataframe for the target chromosome.
+#' @param chr The chromosome name, to display in messages and warnings, if needed.
 #' 
 #' @return a dataframe with starting and ending positions
 #' 
 #' @keywords internal
 #' 
-trimmed_random <- function(length, n, size, seed = NULL, exclusions) {
-	stop("trimmed_random is still under construction.\n")	
-	temp_ranges <- data.frame(
-		start = c(1, rep(NA, nrow(exclusions))),
-		stop = c(rep(NA, nrow(exclusions)), )
-		)
-	for(i in nrow(exclusions)) {}
-	# MISSING: check if size fits within all non-excluded regions, if there are any
-	# MISSING: check if size fits within targets, if there are any?
-
+trimmed_random <- function(length, n, size, seed = NULL, exclusions, chr) {
+	# Check if the start is excluded
+	if (exclusions[1, 2] == 1) {
+		starting.point <- exclusions[1, 3] + 1
+		exclusions <- exclusions[-1, ]
+	} else {
+		starting.point <- 1
+	}
+	# If there are more exclusions, check if length is excluded
+	if (nrow(exclusions) > 0 && exclusions[nrow(exclusions), 3] == length) {
+		length <- exclusions[nrow(exclusions), 2] - 1
+		exclusions <- exclusions[-nrow(exclusions), ] 
+	}
+	# Find valid ranges
+	if (nrow(exclusions) > 1) {
+		temp_ranges <- find_ranges(starting.point = starting.point, length = length, exclusions = exclusions)
+		temp_ranges <- check_ranges(ranges = temp_ranges, size = size, chr = chr)
+		valid_ranges <- expand_ranges(ranges = temp_ranges, size = size)
+	} else {
+		valid_ranges <- seq(from = starting.point, to = length, by = 1)
+	}
+	# get the bait positions
 	if (!is.null(seed))
 		set.seed(seed)
 	recipient <- matrix(ncol = 2, nrow = n)
-	recipient[, 1] <- sample(seq_len(length - size), size = n, replace = TRUE)
+	recipient[, 1] <- sample(valid_ranges, size = n, replace = TRUE)
 	recipient[, 2] <- recipient[, 1] + size
 	colnames(recipient) <- c("Start", "Stop")
 	return(as.data.frame(recipient))
@@ -209,4 +225,65 @@ trimmed_random <- function(length, n, size, seed = NULL, exclusions) {
 #' 
 trimmed_targetted <- function(length, n, size, seed = NULL, regions = NULL, targets = NULL, exclusions) {
 	stop("Triggered trimmed_targetted\n")
+}
+
+#' Make a table of valid ranges within the chromosome
+#' 
+#' @param starting.point the first valid point in the chromosome
+#' @param length the last valid point in the chromosome
+#' @inheritParams trimmed_random
+#' 
+#' @return A table with valid ranges
+#' 
+#' @keywords internal
+#' 
+find_ranges <- function (starting.point, length, exclusions) {
+	temp_ranges <- data.frame(
+		start = c(starting.point, rep(NA, nrow(exclusions))),
+		stop = c(rep(NA, nrow(exclusions)), length)
+		)
+	for(i in 1:nrow(exclusions)) {
+		temp_ranges[i, 2] <- exclusions[i, 2] - 1
+		temp_ranges[i + 1, 1] <- exclusions[i, 3] + 1
+	}
+	return(temp_ranges)
+}
+
+#' Compare ranges' size with intended bait size
+#' 
+#' @inheritParams all_random
+#' @inheritParams trimmed_random
+#' @param ranges A table of valid ranges
+#' 
+#' @return A table with valid ranges
+#' 
+#' @keywords internal
+#' 
+check_ranges <- function(ranges, size, chr) {
+	ranges$range <- (ranges$stop - ranges$start) + 1
+	if (any(to.exclude <- ranges$range < size + 1)) {
+		# appendTo("Screen", ...)
+		cat(paste0("TEMP: ", sum(to.exclude), " sub-ranges on chromosome ", chr," are too small to fit the bait size and will be excluded.\n")); flush.console()
+		if (all(to.exclude))
+			stop("All ranges in chromosome ", chr," are too small to fit the desired bait size. Aborting.")
+		ranges <- ranges[!to.exclude, ]
+	}
+	return(ranges[, 1:2])
+}
+
+#' Transform the ranges dataframe into a sequence of numbers from which to sample
+#' 
+#' @inheritParams all_random
+#' @inheritParams check_ranges
+#' 
+#' @return A vector of chromosome positions
+#' 
+#' @keywords internal
+#' 
+expand_ranges <- function(ranges, size) {
+	output <- c()
+	for (i in 1:nrow(ranges)) {
+		output <- c(output, seq(from = ranges[i, 1], to = ranges[i, 2] - size, by = 1))
+	}
+	return(output)
 }

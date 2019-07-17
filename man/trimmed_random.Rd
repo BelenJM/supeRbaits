@@ -4,7 +4,7 @@
 \alias{trimmed_random}
 \title{Extract n number of baits randomly from parts of the chromosome length}
 \usage{
-trimmed_random(length, n, size, seed = NULL, exclusions)
+trimmed_random(length, n, size, seed = NULL, exclusions, chr)
 }
 \arguments{
 \item{length}{The length of the chromosome being analysed}
@@ -15,7 +15,9 @@ trimmed_random(length, n, size, seed = NULL, exclusions)
 
 \item{seed}{A number to fix the randomization process, for reproducibility}
 
-\item{exclusions}{A subset of the exclusions dataframe for the target chromosome}
+\item{exclusions}{A subset of the exclusions dataframe for the target chromosome.}
+
+\item{chr}{The chromosome name, to display in messages and warnings, if needed.}
 }
 \value{
 a dataframe with starting and ending positions

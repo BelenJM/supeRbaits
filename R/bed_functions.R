@@ -40,10 +40,8 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 	# Compatibility checks
 	check_chr_names(exclusions = exclusions, regions = regions, targets = targets, lengths = lengths)
 	check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, lengths = lengths)
-	# MISSING: check if size fits within all chromosome limits
-	# These two may make more sense on a chromosome to chromosome level:
-	# MISSING: check if size fits within all non-excluded regions, if there are any
-	# MISSING: check if size fits within targets, if there are any?
+	if (any(size > lengths[, 2]))
+		stop("'size' is larger than at least one of the chromosome lengths.\n")
 
 	recipient <- list()
 	for (i in 1:ncol(lengths)) {
@@ -107,11 +105,32 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 #' @keywords internal
 #' 
 subsample <- function(input, link) {
+	chr <- link
 	link <- grepl(link, input[, 1])
-	if (any(link))
+	if (any(link)) {
 		output <- input[link, ]
-	else
+		output <- output[order(output[, 2]), ]
+	}	else {
 		output <- NULL
+	}
+	if (!is.null(output)) {
+		if (any(table(output[, 2]) > 1))
+			stop("There are duplicated starting points/targets for one of the trimming elements of chromosome ", chr, ".")
+		if (ncol(output) == 3) {
+			if(any(table(output[, 3]) > 1))
+				stop("There are duplicated ending points for one of the trimming elements for chromosome ", chr, ".")
+			trigger <- NULL
+			for (i in 2:nrow(output))
+				trigger[i - 1] <- output[i, 2] <= output[i - 1, 3]
+			if (any(trigger))
+				stop("The regions to include or exclude overlap for chromosome ", chr,".")
+			trigger <- NULL
+			for (i in 2:nrow(output))
+				trigger[i - 1] <- output[i, 2] == output[i - 1, 3] + 1
+			if (any(trigger))
+				stop("There are contiguous regions to include or exclude for chromosome ", chr,". Please list these as a single region.")
+		}
+	}
 	return(output)
 }
 
@@ -160,7 +179,22 @@ all_targetted <- function(length, n, size, seed = NULL, regions = NULL, targets 
 #' @keywords internal
 #' 
 trimmed_random <- function(length, n, size, seed = NULL, exclusions) {
-	stop("Triggered trimmed_random\n")	
+	stop("trimmed_random is still under construction.\n")	
+	temp_ranges <- data.frame(
+		start = c(1, rep(NA, nrow(exclusions))),
+		stop = c(rep(NA, nrow(exclusions)), )
+		)
+	for(i in nrow(exclusions)) {}
+	# MISSING: check if size fits within all non-excluded regions, if there are any
+	# MISSING: check if size fits within targets, if there are any?
+
+	if (!is.null(seed))
+		set.seed(seed)
+	recipient <- matrix(ncol = 2, nrow = n)
+	recipient[, 1] <- sample(seq_len(length - size), size = n, replace = TRUE)
+	recipient[, 2] <- recipient[, 1] + size
+	colnames(recipient) <- c("Start", "Stop")
+	return(as.data.frame(recipient))
 }
 
 #' Extract n number of baits from parts of the chromosome length, targeting specific areas

@@ -4,6 +4,7 @@
 #'
 #' @param n number of baits to generate
 #' @param size The size of each bait
+#' @param database A database of chromosomes
 #' @param lengths A file containing the chromosomes' length
 #' @param exclusions A file containing regions to exclude
 #' @param regions A file containing regions to target
@@ -14,7 +15,8 @@
 #' 
 #' @export
 #' 
-main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, targets = NULL, seed = NULL){
+main_function <- function(n, size, database, lengths, exclusions = NULL, 
+	regions = NULL, targets = NULL, seed = NULL){
 	# Initial checks
 	if(!is.numeric(n))
 		stop("'n' must be numeric.\n")
@@ -43,7 +45,7 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 	if (any(size > lengths[, 2]))
 		stop("'size' is larger than at least one of the chromosome lengths.\n")
 
-	recipient <- list()
+	bait.points <- list()
 	for (i in 1:nrow(lengths)) {
 		cat(paste0("debug: examining chromosome ", i,".\n")); flush.console()
 		if (!is.null(exclusions)) 
@@ -60,24 +62,37 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 			trimmed_targets <- NULL
 
 		if(is.null(c(trimmed_exclusions, trimmed_regions, trimmed_targets)))
-			recipient[[i]] <- all_random(length = lengths[i, 2], n = n, size = size, seed = seed)
+			bait.points[[i]] <- all_random(length = lengths[i, 2], n = n, size = size, seed = seed)
 
 		if(!is.null(c(trimmed_regions, trimmed_targets)) & is.null(trimmed_exclusions)) {
-			recipient[[i]] <- all_targetted(length = lengths[i, 2], n = n, size = size, seed = seed, 
+			bait.points[[i]] <- all_targetted(length = lengths[i, 2], n = n, size = size, seed = seed, 
 				regions = trimmed_regions, targets = trimmed_targets)
 		}
 
 		if(is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed_exclusions)) {
-			recipient[[i]] <- trimmed_random(length = lengths[i, 2], n = n, size = size, 
+			bait.points[[i]] <- trimmed_random(length = lengths[i, 2], n = n, size = size, 
 				seed = seed, exclusions = trimmed_exclusions, chr = lengths[i, 1])
 		}
 
 		if(!is.null(c(trimmed_regions, trimmed_targets)) & !is.null(trimmed_exclusions)) {
-			recipient[[i]] <- trimmed_targetted(length = lengths[i, 2], n = n, size = size, seed = seed,
+			bait.points[[i]] <- trimmed_targetted(length = lengths[i, 2], n = n, size = size, seed = seed,
 			  regions = trimmed_regions, targets = trimmed_targets, exclusions = trimmed_exclusions)
 		}
 	}
-	names(recipient) <- as.character(lengths[, 1])
+	names(bait.points) <- as.character(lengths[, 1])
+
+	# fetch the baits' sequences
+	baits <- good_baits <- list()
+	for (i in 1:nrow(bait.points)) {
+		recipient <- retrieve_baits(chr = names(bait.points)[i], positions = bait.points[[i]], database = database)
+		recipient$pGC <- recipient$GC/size
+		baits[[i]] <- recipient
+		good_baits[[i]] <- recipient[recipient$pGC > 0.3 & recipient$pGC < 0.5, ]
+		if (nrow(good_baits[[i]]) != nrow(baits)[[i]]) {
+			cat(paste0((nrow(baits[[i]]) - nrow(good_baits[[i]])), " baits were excluded from chr ", names(bait.points)[i], " due to their GC percentage.\n"))
+		}
+	}
+	names(baits) <- names(good_baits) <- names(bait.points)
 
 	# Randomly sample bed file rows, proportional to the length of each range
 	# simulated.sites <- bed2[sample(.N, size = n, replace = TRUE, prob = bed2$size)]
@@ -92,7 +107,7 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 	# out_table <- simulated.sites
 	# write.table(out_table, name_file)
 	# return(out_table)
-	return(recipient)
+	return(baits)
 }
 
 #' Extract the values of input that match the linking element

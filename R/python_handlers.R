@@ -13,22 +13,22 @@ check_python <- function () {
   }
 }
 
-
 #' Return bps
+#' 
+#' @param chr the chromosome name
+#' @param positions the start and stop positions of the baits to be retrieved
+#' @inheritParams main_function
 #' 
 #' @return logical
 #' 
 #' @export
 #' 
-retrieve_bps <- function(chr, positions) {
+retrieve_baits <- function(chr, positions, database) {
 	path <- paste(system.file(package = "baits4pop"), "parse.py", sep="/")
-	  
 	command <- paste("python", path, chr, positions, sep = " ")
-	try(suppressWarnings(response <- system(command, 
-	                                        intern = T,
-	                                        ignore.stderr = TRUE)), silent = T)
+	try(suppressWarnings(response <- system(command, intern = T, ignore.stderr = TRUE)), silent = T)
 	if(!is.null(attr(response,"status")))
-		stop("Failed to retrieve bps.")
+		stop("Failed to retrieve bps from chromosome ", chr, ".")
 	else 
 		return(response)
 }

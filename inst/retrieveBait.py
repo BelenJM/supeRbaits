@@ -5,13 +5,14 @@
 
 
 import sys
+#import Bio
 from Bio import SeqIO
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 
-#input_file1 = sys.argv[1]
-#input_file2 = sys.argv[2]
+input_file1 = sys.argv[1]
+input_file2 = sys.argv[2]
 #output_file1 = sys.argv[2]
 # output_file2 = sys.argv[4]
 
@@ -25,7 +26,7 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 #print(chromosome_name2)
 
-def processing_baitfile(input_file1, input_file2): 
+def processing_baitfile(file1, file2): 
 	with open(input_file1) as genomeFile, open ("output.txt", "w") as output:
 		with open(input_file2)	as bait_coord:
 		
@@ -69,6 +70,10 @@ def processing_baitfile(input_file1, input_file2):
 					seq_bait = seq[start_bp:end_bp]
 					length_bait = end_bp - start_bp +1
 					output.write("%s\t%s\t%s\t%s\t%s\t%s\n" % (i, chromosome, start_bp, end_bp, seq_bait, length_bait))
+			return(start_bp)
+
+
+processing_baitfile(input_file1, input_file2)
 # def getGC(seq):
 #     return(str(int(round((sum([1.0 for nucl in seq if nucl in ['G', 'C']]) / len(seq)) * 100))))
 

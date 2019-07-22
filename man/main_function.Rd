@@ -4,13 +4,15 @@
 \alias{main_function}
 \title{Generates random baits}
 \usage{
-main_function(n, size, lengths, exclusions = NULL, regions = NULL,
-  targets = NULL, seed = NULL)
+main_function(n, size, database, lengths, exclusions = NULL,
+  regions = NULL, targets = NULL, seed = NULL)
 }
 \arguments{
 \item{n}{number of baits to generate}
 
 \item{size}{The size of each bait}
+
+\item{database}{A database of chromosomes}
 
 \item{lengths}{A file containing the chromosomes' length}
 

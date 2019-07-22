@@ -24,9 +24,9 @@ check_python <- function () {
 #' @export
 #' 
 retrieve_baits <- function(chr, positions, database) {
-	path <- paste(system.file(package = "baits4pop"), "parse.py", sep="/")
+	path <- paste(system.file(package = "baits4pop"), "retrieveBait.py", sep="/")
 	command <- paste("python", path, chr, positions, sep = " ")
-	try(suppressWarnings(response <- system(command, intern = T, ignore.stderr = TRUE)), silent = T)
+	try(suppressWarnings(response <- system2("python", args = c(path, chr, positions), stdout = TRUE)), silent = T)
 	if(!is.null(attr(response,"status")))
 		stop("Failed to retrieve bps from chromosome ", chr, ".")
 	else 

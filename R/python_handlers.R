@@ -12,3 +12,23 @@ check_python <- function () {
  	  return(TRUE)
   }
 }
+
+
+#' Return bps
+#' 
+#' @return logical
+#' 
+#' @export
+#' 
+retrieve_bps <- function(chr, positions) {
+	path <- paste(system.file(package = "baits4pop"), "parse.py", sep="/")
+	  
+	command <- paste("python", path, chr, positions, sep = " ")
+	try(suppressWarnings(response <- system(command, 
+	                                        intern = T,
+	                                        ignore.stderr = TRUE)), silent = T)
+	if(!is.null(attr(response,"status")))
+		stop("Failed to retrieve bps.")
+	else 
+		return(response)
+}

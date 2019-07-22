@@ -79,9 +79,6 @@ main_function <- function(n, size, lengths, exclusions = NULL, regions = NULL, t
 	}
 	names(recipient) <- as.character(lengths[, 1])
 
-	if (check_python())
-		processing_baitfile(input_file1 = "chrom_salmon_chunk.fasta.txt", input_file2 = "bed.CM003279.txt")
-	
 	# Randomly sample bed file rows, proportional to the length of each range
 	# simulated.sites <- bed2[sample(.N, size = n, replace = TRUE, prob = bed2$size)]
 

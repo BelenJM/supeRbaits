@@ -1,6 +1,4 @@
-setwd("C:\\Users\\hdmfla\\Documents\\GitHub\\baits4pop")
-devtools::load_all()
-setwd("C:\\Users\\hdmfla\\Documents\\GitHub\\baits4pop_tester")
+# devtools::load_all()
 library(baits4pop)
 # all_random test
 main_function(n = 10, size = 20, lengths = "chrSize_example.txt")

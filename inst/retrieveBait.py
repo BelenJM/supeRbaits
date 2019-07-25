@@ -11,7 +11,6 @@ from Bio import SeqIO
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-
 # Input from the console
 input_file1 = sys.argv[1] # genome file
 input_file2 = sys.argv[2] # bait BED file
@@ -39,8 +38,8 @@ def counting_nt(sequence, a_count, t_count, g_count, c_count, at_count, gc_count
 	# count the number of GC
 	gc_count = g_count + c_count
 
-	return(a_count, t_count, g_count, c_count, at_count, gc_count, unknown)
-    	
+	return a_count, t_count, g_count, c_count, at_count, gc_count, unknown
+
 
 def processing_baitfile(file1, file2): 
 
@@ -114,7 +113,7 @@ def processing_baitfile(file1, file2):
 					output.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (i, chromosome, start_bp, end_bp, seq_bait, length_bait, a, t, g, c, unk, at, gc))
 					df.loc[i] = (i, chromosome, start_bp, end_bp, seq_bait, length_bait, a, t, g, c, unk, at, gc)
 
-			return(df)
+			return df
 
 
-processing_baitfile(input_file1, input_file2)
+print(processing_baitfile(input_file1, input_file2))

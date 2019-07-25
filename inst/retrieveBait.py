@@ -32,7 +32,7 @@ def counting_nt(sequence, a_count, t_count, g_count, c_count, at_count, gc_count
 			a_count += 1
 		elif n == 'T' or n == 't':
 			t_count += 1
-        else:
+		else:
         	unknown += 1  # usually represented by an 'N' in the fasta file.
     	# count the number of AT
     	at_count = a_count + t_count
@@ -117,4 +117,4 @@ def processing_baitfile(file1, file2):
 			return(df)
 
 
-print(processing_baitfile(input_file1, input_file2))
+processing_baitfile(input_file1, input_file2)

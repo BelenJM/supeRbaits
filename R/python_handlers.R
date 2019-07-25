@@ -49,3 +49,13 @@ retrieve_baits_new <- function(chr, positions, database) {
 	return(processing_baitfile(database, positions))
 }
 
+#' Return bps new
+#'
+#' @return logical
+#' 
+#' @export
+#' 
+py_test <- function(x) {
+  reticulate::source_python(paste0(system.file(package = "baits4pop"), "/my_function.py"))
+	return(my_function(x))
+}

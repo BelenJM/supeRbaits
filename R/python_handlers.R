@@ -46,7 +46,7 @@ retrieve_baits <- function(chr, positions, database) {
 #' 
 retrieve_baits_new <- function(chr, positions, database) {
   reticulate::source_python(paste0(system.file(package = "baits4pop"), "/retrieveBait.py"))
-	return(processing_baitfile(database, positions))
+	return(processing_baitfile(chr, positions))
 }
 
 #' Return bps new

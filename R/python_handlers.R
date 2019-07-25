@@ -5,8 +5,9 @@
 #' @return logical
 #' 
 check_python <- function () {
-  if (Sys.which("python") == "") {
-  	cat("Error: Python modules could not be loaded. Please install python before using baits4pop.\n")
+ trigger <- try(reticulate::py_config(), silent = TRUE)
+  if (inherits(trigger, "try-error")) {
+   	cat("Error: Python modules could not be loaded. Please install python before using baits4pop.\n")
   	return(FALSE)
   } else {
  	  return(TRUE)

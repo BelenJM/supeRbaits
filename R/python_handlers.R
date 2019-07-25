@@ -33,3 +33,19 @@ retrieve_baits <- function(chr, positions, database) {
 	else 
 		return(response)
 }
+
+#' Return bps new
+#' 
+#' @param chr the chromosome name
+#' @param positions the start and stop positions of the baits to be retrieved
+#' @inheritParams main_function
+#' 
+#' @return logical
+#' 
+#' @export
+#' 
+retrieve_baits_new <- function(chr, positions, database) {
+  reticulate::source_python(paste0(system.file(package = "baits4pop"), "/retrieveBait.py"))
+	return(processing_baitfile(database, positions))
+}
+

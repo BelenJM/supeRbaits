@@ -34,12 +34,12 @@ def counting_nt(sequence, a_count, t_count, g_count, c_count, at_count, gc_count
 			t_count += 1
 		else:
 			unknown += 1  # usually represented by an 'N' in the fasta file.
-    # count the number of AT
-    at_count = a_count + t_count
-    # count the number of GC
-    gc_count = g_count + c_count
+	# count the number of AT
+	at_count = a_count + t_count
+	# count the number of GC
+	gc_count = g_count + c_count
 
-    return(a_count, t_count, g_count, c_count, at_count, gc_count, unknown)
+	return(a_count, t_count, g_count, c_count, at_count, gc_count, unknown)
     	
 
 def processing_baitfile(file1, file2): 

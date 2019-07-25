@@ -15,7 +15,6 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 input_file1 = sys.argv[1] # genome file
 input_file2 = sys.argv[2] # bait BED file
 
-
 def counting_nt(sequence, a_count, t_count, g_count, c_count, at_count, gc_count, unknown):
 	'''
 	Function to count the number of nucleotides (A, T, G, C, GC, AT, UNK)
@@ -38,7 +37,7 @@ def counting_nt(sequence, a_count, t_count, g_count, c_count, at_count, gc_count
 	# count the number of GC
 	gc_count = g_count + c_count
 
-	return a_count, t_count, g_count, c_count, at_count, gc_count, unknown
+	return a_count, t_count, g_count, c_count, unknown, at_count, gc_count
 
 
 def processing_baitfile(file1, file2): 
@@ -51,18 +50,18 @@ def processing_baitfile(file1, file2):
 	'''
 
 	# initializing the dataframe to return to R
-	df = pd.DataFrame(columns=['Bait_no', 'ChromName','Start_bp', 'End_bp', 'Sequence_bait', 'Size_bait', 'Number_A', 'Number_T', 'Number_G', 'Number_C', 'Number_UNK', 'Number_AT', 'Number_GC'])
+	df = pd.DataFrame(columns=['Bait_no', 'ChromName','Start_bp', 'End_bp', 'Sequence_bait', 'Size_bait', 'Number_A', 'Number_T', 'Number_G', 'Number_C', 'Number_UNK','Number_AT', 'Number_GC'])
 	
 	with open(input_file1) as genomeFile, open ("output.txt", "w") as output:
 		# prepare the output file with header
-		output.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % ("Bait_no", "Chrom", "Start_bp","End_bp","Sequence_bait", "Length_bait", "No_A", "No_T", "No_G", "No_C", "No_Unk", "No_AT", "No_GC"))
+		output.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % ("Bait_no", "Chrom", "Start_bp","End_bp","Sequence_bait", "Length_bait", "No_A", "No_T", "No_G", "No_C",  "No_Unk", "No_AT", "No_GC"))
 
 		with open(input_file2)	as bait_coord:
 		
 			# we find the chromosome of the input file
 			# if name is "bed_CHROMOSOMENAME", remove "bed_"
 			chromosome_name = str(input_file2.split('_')[1])
-			#print(chromosome_name)
+			print(chromosome_name)
 			# remove the extension (e.g. ".txt")
 			chromosome_name2 = str(chromosome_name.split('.')[0])
 			#print chromosome_name2

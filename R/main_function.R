@@ -83,21 +83,23 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	bait.points <- list()
 	for (i in 1:nrow(lengths)) {
-		cat(paste0("debug: examining chromosome ", i,".\n")); flush.console()
+		cat(paste0("debug: examining chromosome ", lengths[i, 1], ".\n")); flush.console()
 		# extract relevant parameters
-		params <- trim_parameters(chr = i, exclusions = exclusions, regions = regions, targets = targets)
+		params <- trim_parameters(chr = lengths[i, 1], exclusions = exclusions, regions = regions, targets = targets)
 		# regional baits
 		if(!is.null(regions.prop)) {
 			n.regions = n / regions.prop
 			if (!is.null(params$regions)) {
 				temp.regions <- region_baits(length = lengths[i, 2], n = n.regions, size = size, seed = seed,
-				regions = params$regions, exclusions = params$exclusions)
-				n.regions = temp.regions$n.regions
+				regions = params$regions, exclusions = params$exclusions, chr = lengths[i, 1])
+				n.regions = nrow(temp.regions)
 			} else {
-				cat("No regions found for chromosome...")
+				cat("No regions found for chromosome", lengths[i, 1], ".\n"); flush.console()
+				temp.regions <- NULL
 				n.regions = 0
 			}
 		} else {
+			temp.regions <- NULL
 			n.regions = 0
 		}
 		# targetted baits
@@ -105,13 +107,15 @@ main_function <- function(n, size, database, exclusions = NULL,
 			n.targets = n / targets.prop
 			if (!is.null(params$targets)) {
 				temp.targets <- target_baits(length = lengths[i, 2], n = n.regions, size = size, seed = seed,
-				targets = params$targets, exclusions = params$exclusions)
-				n.targets = temp.targets$n.targets
+				targets = params$targets, exclusions = params$exclusions, chr = lengths[i, 1])
+				n.targets = nrow(temp.targets)
 			} else {
-				cat("No targets found for chromosome ...")
+				cat("No targets found for chromosome", lengths[i, 1], ".\n"); flush.console()
+				temp.targets <- NULL
 				n.targets = 0
 			}
 		} else {
+			temp.targets <- NULL
 			n.targets = 0
 		}
 		# random baits
@@ -119,7 +123,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		temp.random <- random_baits(length = lengths[i, 2], n = n, size = size, 
 				seed = seed, exclusions = params$exclusions, chr = lengths[i, 1])
 		# bring together the different parts
-		bait.points[[i]] <- combineBaitTables(target = temp.targets$table, region = temp.regions$table, random = temp.random)
+		bait.points[[i]] <- rbind(temp.regions, temp.targets, temp.random) # not sure if this works with nulls
 	}
 	names(bait.points) <- as.character(lengths[, 1])
 

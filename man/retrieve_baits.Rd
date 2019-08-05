@@ -4,12 +4,10 @@
 \alias{retrieve_baits}
 \title{Return bps}
 \usage{
-retrieve_baits(chr, positions, database)
+retrieve_baits(chr, database)
 }
 \arguments{
-\item{chr}{the chromosome name}
-
-\item{positions}{the start and stop positions of the baits to be retrieved}
+\item{chr}{The chromosome name.}
 
 \item{database}{A database of chromosomes}
 }

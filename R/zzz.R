@@ -6,7 +6,7 @@
  # 	  packageStartupMessage("Python modules successfully loaded!")
  # 	  cat("test")
  #  }
-  packageStartupMessage("Welcome to baits4pop!")
+  packageStartupMessage("Welcome to supeRbaits!")
 
 }
 

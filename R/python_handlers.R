@@ -6,30 +6,46 @@
 #' 
 check_python <- function () {
  trigger <- try(reticulate::py_config(), silent = TRUE)
-  if (inherits(trigger, "try-error")) {
-   	cat("Error: Python modules could not be loaded. Please install python before using baits4pop.\n")
-  	return(FALSE)
-  } else {
- 	  return(TRUE)
-  }
+  if (inherits(trigger, "try-error"))
+   	stop("Python modules could not be loaded. Please install python before using supeRbaits.\n")
+}
+
+#' Python handler for lengthChrom
+#' 
+#' Finds the length of each chromosome
+#' 
+#' @inheritParams main_function
+#' 
+#' @return a data frame with the chromosome names and their lengths
+#' 
+#' @keywords internal
+#' 
+get_lengths <- function(database, restrict = NULL) {
+	path <- paste(system.file(package = "baits4pop"), "lengthChrom.py", sep="/")
+	if (is.null(restrict))
+		try(suppressWarnings(response <- system2("python", args = c(path, database), stdout = TRUE)), silent = T)
+	else 
+		try(suppressWarnings(response <- system2("python", args = c(path, database, restrict), stdout = TRUE)), silent = T)
+	if(!is.null(attr(response,"status")))
+		stop("Python failed to retrieve the chromosome lengths.")
+	else 
+		return(response)	
 }
 
 #' Return bps
 #' 
-#' @param chr the chromosome name
-#' @param positions the start and stop positions of the baits to be retrieved
 #' @inheritParams main_function
+#' @inheritParams region_baits
 #' 
 #' @return logical
 #' 
 #' @export
 #' 
-retrieve_baits <- function(chr, positions, database) {
+retrieve_baits <- function(chr, database) {
 	path <- paste(system.file(package = "baits4pop"), "retrieveBait.py", sep="/")
-	command <- paste("python", path, chr, positions, sep = " ")
-	try(suppressWarnings(response <- system2("python", args = c(path, chr, positions), stdout = TRUE)), silent = T)
+	try(suppressWarnings(response <- system2("python", args = c(path, chr, database), stdout = TRUE)), silent = T)
 	if(!is.null(attr(response,"status")))
-		stop("Failed to retrieve bps from chromosome ", chr, ".")
+		stop("Python failed to retrieve bps from chromosome ", chr, ".")
 	else 
 		return(response)
 }

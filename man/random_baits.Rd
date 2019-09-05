@@ -4,7 +4,7 @@
 \alias{random_baits}
 \title{Extract n number of baits randomly from parts of the chromosome length}
 \usage{
-random_baits(length, n, size, seed = NULL, exclusions = NULL, chr)
+random_baits(length, n, size, exclusions = NULL, chr)
 }
 \arguments{
 \item{length}{The length of the chromosome being analysed}
@@ -13,11 +13,9 @@ random_baits(length, n, size, seed = NULL, exclusions = NULL, chr)
 
 \item{size}{The size of each bait}
 
-\item{seed}{A number to fix the randomization process, for reproducibility}
-
 \item{exclusions}{A subset of the exclusions dataframe for the target chromosome.}
 
-\item{chr}{The chromosome name.}
+\item{chr}{The chromosome name, used in error messages.}
 }
 \value{
 a dataframe with starting and ending positions

@@ -4,16 +4,14 @@
 \alias{get_bait_positions}
 \title{Extract the bait start and ending points from the valid ranges}
 \usage{
-get_bait_positions(valid_ranges, seed = NULL, size, n)
+get_bait_positions(ranges, size, n)
 }
 \arguments{
-\item{valid_ranges}{a sequence of valid starting points}
-
-\item{seed}{A number to fix the randomization process, for reproducibility}
+\item{ranges}{a dataframe with starting and ending positions}
 
 \item{size}{The size of each bait}
 
-\item{n}{number of baits to generate}
+\item{n}{a vector with the same length as the number of rows in ranges, containing the number of baits to extract from each range.}
 }
 \value{
 a dataframe with starting and ending positions

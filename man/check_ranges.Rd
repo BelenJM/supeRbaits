@@ -4,14 +4,18 @@
 \alias{check_ranges}
 \title{Compare ranges' size with intended bait size}
 \usage{
-check_ranges(ranges, size, chr)
+check_ranges(ranges, n, size, chr, tiling = 1)
 }
 \arguments{
 \item{ranges}{a dataframe with starting and ending positions}
 
+\item{n}{number of baits to generate}
+
 \item{size}{The size of each bait}
 
-\item{chr}{The chromosome name.}
+\item{chr}{The chromosome name, used in error messages.}
+
+\item{tiling}{The minimum number of baits desired per range.}
 }
 \value{
 A table with valid ranges

@@ -4,8 +4,8 @@
 \alias{region_baits}
 \title{Find valid ranges within the regions}
 \usage{
-region_baits(length, n, size, seed = NULL, regions, exclusions = NULL,
-  chr)
+region_baits(length, n, size, tiling = NULL, regions,
+  exclusions = NULL, chr = NULL)
 }
 \arguments{
 \item{length}{The length of the chromosome being analysed}
@@ -14,13 +14,13 @@ region_baits(length, n, size, seed = NULL, regions, exclusions = NULL,
 
 \item{size}{The size of each bait}
 
-\item{seed}{A number to fix the randomization process, for reproducibility}
+\item{tiling}{The minimum number of baits desired per range.}
 
 \item{regions}{A subset of the regions dataframe for the target chromosome}
 
 \item{exclusions}{A subset of the exclusions dataframe for the target chromosome.}
 
-\item{chr}{The chromosome name.}
+\item{chr}{The chromosome name, used in error messages.}
 }
 \value{
 a dataframe with starting and ending positions

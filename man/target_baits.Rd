@@ -4,8 +4,8 @@
 \alias{target_baits}
 \title{Find valid ranges within the targets}
 \usage{
-target_baits(length, n, size, seed = NULL, targets, exclusions = NULL,
-  chr)
+target_baits(length, n, size, tiling = NULL, targets,
+  exclusions = NULL, chr)
 }
 \arguments{
 \item{length}{The length of the chromosome being analysed}
@@ -14,13 +14,13 @@ target_baits(length, n, size, seed = NULL, targets, exclusions = NULL,
 
 \item{size}{The size of each bait}
 
-\item{seed}{A number to fix the randomization process, for reproducibility}
+\item{tiling}{The minimum number of baits desired per range.}
 
 \item{targets}{A subset of the targets dataframe for the target chromosome}
 
 \item{exclusions}{A subset of the exclusions dataframe for the target chromosome.}
 
-\item{chr}{The chromosome name.}
+\item{chr}{The chromosome name, used in error messages.}
 }
 \value{
 a dataframe with starting and ending positions

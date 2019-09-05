@@ -7,7 +7,7 @@
 retrieve_baits(chr, database)
 }
 \arguments{
-\item{chr}{The chromosome name.}
+\item{chr}{The chromosome name, used in error messages.}
 
 \item{database}{A database of chromosomes}
 }

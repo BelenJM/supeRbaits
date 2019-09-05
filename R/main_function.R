@@ -23,8 +23,12 @@ main_function <- function(n, size, database, exclusions = NULL,
 	regions = NULL, regions.prop = NULL, regions.tiling = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
 	seed = NULL, restrict = NULL){
+
 	on.exit(unlink("temp_folder_for_supeRbaits", recursive = TRUE), add = TRUE)
 	
+	if(!is.null(seed))
+		set.seed(seed)
+
 	# Initial checks
 	check_python()
 	

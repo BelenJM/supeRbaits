@@ -3,28 +3,24 @@
 #' @param length The length of the chromosome being analysed
 #' @param n number of baits to generate
 #' @param size The size of each bait
-#' @param seed A number to fix the randomization process, for reproducibility
+#' @param tiling The minimum number of baits desired per range.
 #' @param regions A subset of the regions dataframe for the target chromosome
 #' @param exclusions A subset of the exclusions dataframe for the target chromosome.
-#' @param chr The chromosome name.
+#' @param chr The chromosome name, used in error messages.
 #' 
 #' @return a dataframe with starting and ending positions
 #' 
 #' @keywords internal
 #' 
-region_baits <- function(length, n, size, seed = NULL, regions, exclusions = NULL, chr) {
+region_baits <- function(length, n, size, tiling = NULL, regions, exclusions = NULL, chr = NULL) {
 	temp_ranges <- regions
-	if(temp_ranges$stop[nrow(temp_ranges)] > length)
+	if (temp_ranges$stop[nrow(temp_ranges)] > length)
 		temp_ranges$stop[nrow(temp_ranges)] <- length
-	if(!is.null(exclusions))
+	if (!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
-	temp_ranges <- check_ranges(ranges = temp_ranges, size = size, chr = chr)
-	valid_ranges <- expand_ranges(ranges = temp_ranges, size = size)
-	if (length(valid_ranges) > n) {
-		cat("Warning: The maximum possible number of individual targetted baits for chromosome", chr, "is lower than the desired n.\n")
-		n <- length(valid.ranges)
-	}
-	return(get_bait_positions(valid_ranges = valid_ranges, seed = seed, size = size, n = n))
+	valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = tiling, chr = chr)
+	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
+	return(get_bait_positions(valid_ranges = valid_ranges, size = size, n = n.per.range))
 }
 
 #' Find valid ranges within the targets
@@ -36,18 +32,13 @@ region_baits <- function(length, n, size, seed = NULL, regions, exclusions = NUL
 #' 
 #' @keywords internal
 #' 
-target_baits <- function(length, n, size, seed = NULL, targets, exclusions = NULL, chr) {
+target_baits <- function(length, n, size, tiling = NULL, targets, exclusions = NULL, chr) {
 	temp_ranges <- find_target_ranges(targets = targets, size = size, length = length)
 	if(!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
-	temp_ranges <- check_ranges(ranges = temp_ranges, size = size, chr = chr)
-	valid_ranges <- expand_ranges(ranges = temp_ranges, size = size)
-	if (length(valid_ranges) > n) {
-		cat("Warning: The maximum possible number of individual targetted baits for chromosome", chr, "is lower than the desired n.\n")
-		n <- length(valid.ranges)
-	}
-	recipient <- get_bait_positions(valid_ranges = valid_ranges, seed = seed, size = size, n = n)
-	return(list(table = as.data.frame(recipient), n = n))
+	temp_ranges <- check_ranges(ranges = temp_ranges, size = size, tiling = tiling, chr = chr)
+	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
+	return(get_bait_positions(valid_ranges = valid_ranges, size = size, n = n.per.range))
 }
 
 #' Extract n number of baits randomly from parts of the chromosome length
@@ -58,7 +49,7 @@ target_baits <- function(length, n, size, seed = NULL, targets, exclusions = NUL
 #' 
 #' @keywords internal
 #' 
-random_baits <- function(length, n, size, seed = NULL, exclusions = NULL, chr) {
+random_baits <- function(length, n, size, exclusions = NULL, chr) {
 	if(!is.null(exclusions)) {
 		# Check if the start is excluded
 		if (exclusions[1, 2] == 1) {
@@ -72,22 +63,21 @@ random_baits <- function(length, n, size, seed = NULL, exclusions = NULL, chr) {
 			length <- exclusions[nrow(exclusions), 2] - 1
 			exclusions <- exclusions[-nrow(exclusions), ] 
 		}
-		# Find valid ranges
-		if (nrow(exclusions) > 1) {
+		# If there are more exclusions, break the main range appart
+		if (nrow(exclusions) > 1)
 			temp_ranges <- find_random_ranges(starting.point = starting.point, length = length, exclusions = exclusions)
-			temp_ranges <- check_ranges(ranges = temp_ranges, size = size, chr = chr)
-			valid_ranges <- expand_ranges(ranges = temp_ranges, size = size)
-		} else {
-			valid_ranges <- seq(from = starting.point, to = length, by = 1)
-		}
+		else
+			temp_ranges <- data.frame(Start = starting.point, Stop = length)
+		valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = 1, chr = chr)
+		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
 	} else {
 		valid_ranges <- seq_len(length - size)
 	}
 	if (length(valid_ranges) > n) {
-		cat("Warning: The maximum possible number of random baits for chromosome", chr, "is lower than the desired n.\n")
+		cat(paste0("Warning: The maximum possible number of random baits for chromosome ", chr, " is lower than the desired n.\n"))
 		n <- length(valid_ranges)
 	}
-	return(getBaitPositions(valid_ranges = valid_ranges, seed = seed, size = size, n = n))
+	return(getBaitPositions(valid_ranges = valid_ranges, size = size, n = n))
 }
 
 #' Make a table of valid ranges within the chromosome
@@ -129,26 +119,6 @@ find_target_ranges <- function(targets, size, length) {
 	if(x$stop[nrow(x)] > length)
 		x$stop[nrow(x)] <- length
 	return(x)
-}
-
-#' Extract the bait start and ending points from the valid ranges
-#' 
-#' @inheritParams region_baits
-#' @param valid_ranges a sequence of valid starting points
-#' 
-#' @return a dataframe with starting and ending positions
-#' 
-#' @keywords internal
-#' 
-get_bait_positions <- function(valid_ranges, seed = NULL, size, n) {
-	# get the bait positions
-	if (!is.null(seed))
-		set.seed(seed)
-	recipient <- matrix(ncol = 2, nrow = n)
-	recipient[, 1] <- sample(valid_ranges, size = n, replace = FALSE)
-	recipient[, 2] <- recipient[, 1] + size
-	colnames(recipient) <- c("Start", "Stop")
-	return(recipient)
 }
 
 #' Check if any range starts/ends within an exclusion zone
@@ -199,16 +169,54 @@ trim_ranges <- function(ranges, exclusions) {
 #' 
 #' @keywords internal
 #' 
-check_ranges <- function(ranges, size, chr) {
+check_ranges <- function(ranges, n, size, chr, tiling = 1) {
+	# Range size
 	ranges$range <- (ranges$stop - ranges$start) + 1
-	if (any(to.exclude <- ranges$range < size + 1)) {
+	ranges$max.baits <- ranges$range - size
+	if (any(to.exclude <- ranges$max.baits < tiling)) {
 		# appendTo("Screen", ...)
-		cat(paste0("TEMP: ", sum(to.exclude), " sub-ranges on chromosome ", chr," are too small to fit the bait size and will be excluded.\n")); flush.console()
+		cat(paste0("TEMP: ", sum(to.exclude), " sub-ranges on chromosome ", chr," are too small to fit the desired number of baits and will be excluded.\n")); flush.console()
 		if (all(to.exclude))
-			stop("All ranges in chromosome ", chr," are too small to fit the desired bait size. Aborting.")
+			stop("All ranges in chromosome ", chr," are too small to fit the desired number of baits. Aborting.")
 		ranges <- ranges[!to.exclude, ]
 	}
-	return(ranges[, 1:2])
+	# More ranges than n/tiling
+	if (n / tiling < nrow(ranges)) {
+		cat(paste0("Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in chromosome ", chr, ". Choosing a random subset of ranges.\n"))
+		max.ranges <- roundDown(n / tiling, to = 1)
+		ranges <- ranges[sample(1:nrow(ranges), size = max.ranges, replace = FALSE), ]
+	}	
+	return(ranges[, c(1:2, 4)])
+}
+
+check_n <- function(ranges, n, size, tiling = 1) {
+	if (sum(ranges$max.baits) < n) {
+		cat(paste0("Warning: The maximum possible number of individual targetted baits for chromosome", chr, "is lower than the desired n.\n"))
+		n <- sum(ranges$max.baits)
+	}
+	n.per.range <- rep(roundDown(n / nrow(ranges), to = 1), nrow(ranges))
+	# ensure you get the real n back by adding some here and there if needed
+	while (sum(n.per.range) < n) {
+		missing.n <- n - sum(n.per.range)
+		expandable <- which(ranges$max.baits > n.per.range)
+		max.extra.n <- min(ranges$max.baits[expandable] - n.per.range[expandable])
+		# If the number of mising baits is smaller than the available ranges
+		if (missing.n < length(expandable)) {
+			add.here <- sample(expandable, size = missing.n, replace = FALSE)
+			n.per.range[add.here] <- n.per.range[add.here] + 1
+		} else {
+			# If the number of maximum baits that can be allocated to the available ranges is bigger than needed
+			if (length(expandable) * max.extra.n > missing.n) {
+				# This will lead to a new iteration where the first IF will be triggered
+				to.add <- roundDown(missing.n / length(expandable), to = 1)
+				n.per.range[expandable] <- n.per.range[expandable] + to.add
+			# If the number of maximum baits that can be allocated is SMALLER than the missing bait number
+			} else {
+				n.per.range[expandable] <- n.per.range[expandable] + max.extra.n
+			}
+		}
+	}
+	return(n.per.range)
 }
 
 #' Transform the ranges dataframe into a sequence of numbers from which to sample
@@ -227,3 +235,31 @@ expand_ranges <- function(ranges, size) {
 	}
 	return(output)
 }
+
+#' Extract the bait start and ending points from the valid ranges
+#' 
+#' @inheritParams region_baits
+#' @inheritParams trim_ranges
+#' @param n a vector with the same length as the number of rows in ranges, containing the number of baits to extract from each range.
+#' 
+#' @return a dataframe with starting and ending positions
+#' 
+#' @keywords internal
+#' 
+get_bait_positions <- function(ranges, size, n) {
+	# get the bait positions
+	recipient <- data.frame(
+		Start = integer(),
+		Stop = integer()
+		)
+	for (i in 1:nrow(ranges)) {
+		aux.start <- sample(ranges[i, 1]:(ranges[i, 2] - size), size = n[i], replace = FALSE)
+		aux.df <- data.frame(
+			Start = aux.start,
+			Stop = aux.start + size
+			)
+		recipient <- rbind(recipient, aux.df)
+	}
+	return(recipient)
+}
+

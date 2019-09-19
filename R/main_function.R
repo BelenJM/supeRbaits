@@ -92,9 +92,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 		params <- trim_parameters(chr = lengths[i, 1], exclusions = exclusions, regions = regions, targets = targets)
 		# regional baits
 		if(!is.null(regions.prop)) {
-			n.regions = n / regions.prop
+			n.regions = n * regions.prop
 			if (!is.null(params$regions)) {
-				temp.regions <- region_baits(length = lengths[i, 2], n = n.regions, size = size, seed = seed,
+				temp.regions <- region_baits(length = lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
 				regions = params$regions, exclusions = params$exclusions, chr = lengths[i, 1])
 				n.regions = nrow(temp.regions)
 			} else {
@@ -108,9 +108,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 		}
 		# targetted baits
 		if(!is.null(targets.prop)) {
-			n.targets = n / targets.prop
+			n.targets = n * targets.prop
 			if (!is.null(params$targets)) {
-				temp.targets <- target_baits(length = lengths[i, 2], n = n.regions, size = size, seed = seed,
+				temp.targets <- target_baits(length = lengths[i, 2], n = n.regions, size = size, tiling = targets.tiling,
 				targets = params$targets, exclusions = params$exclusions, chr = lengths[i, 1])
 				n.targets = nrow(temp.targets)
 			} else {
@@ -125,7 +125,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		# random baits
 		n.random <- n - (n.regions + n.targets)
 		temp.random <- random_baits(length = lengths[i, 2], n = n, size = size, 
-				seed = seed, exclusions = params$exclusions, chr = lengths[i, 1])
+				exclusions = params$exclusions, chr = lengths[i, 1])
 		# bring together the different parts
 		bait.points[[i]] <- rbind(temp.regions, temp.targets, temp.random) # not sure if this works with nulls
 	}
@@ -133,17 +133,18 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	# fetch the baits' sequences (Python stuff)
 	
-	baits <- good_baits <- list()
-	for (i in 1:nrow(bait.points)) {
-		recipient <- retrieve_baits(chr = names(bait.points)[i], positions = bait.points[[i]], database = database)
-		recipient$pGC <- recipient$GC/size
-		baits[[i]] <- recipient
-		good_baits[[i]] <- recipient[recipient$pGC > 0.3 & recipient$pGC < 0.5, ]
-		if (nrow(good_baits[[i]]) != nrow(baits)[[i]]) {
-			cat(paste0((nrow(baits[[i]]) - nrow(good_baits[[i]])), " baits were excluded from chr ", names(bait.points)[i], " due to their GC percentage.\n"))
-		}
-	}
-	names(baits) <- names(good_baits) <- names(bait.points)
+	# Check GC content
+	# baits <- good_baits <- list()
+	# for (i in 1:nrow(bait.points)) {
+	# 	recipient <- retrieve_baits(chr = names(bait.points)[i], positions = bait.points[[i]], database = database)
+	# 	recipient$pGC <- recipient$GC/size
+	# 	baits[[i]] <- recipient
+	# 	good_baits[[i]] <- recipient[recipient$pGC > 0.3 & recipient$pGC < 0.5, ]
+	# 	if (nrow(good_baits[[i]]) != nrow(baits)[[i]]) {
+	# 		cat(paste0((nrow(baits[[i]]) - nrow(good_baits[[i]])), " baits were excluded from chr ", names(bait.points)[i], " due to their GC percentage.\n"))
+	# 	}
+	# }
+	# names(baits) <- names(good_baits) <- names(bait.points)
 
 	# Run python retrieveBaits script
 
@@ -151,7 +152,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	# ...
 
-	return(baits)
+	return(bait.points)
 }
 
 #' extract exclusions, regions, and targets relevant for the chromosome being analysed

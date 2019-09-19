@@ -20,7 +20,7 @@ region_baits <- function(length, n, size, tiling = NULL, regions, exclusions = N
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
 	valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = tiling, chr = chr)
 	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
-	return(get_bait_positions(valid_ranges = valid_ranges, size = size, n = n.per.range))
+	return(get_bait_positions(ranges = valid_ranges, size = size, n = n.per.range))
 }
 
 #' Find valid ranges within the targets
@@ -38,7 +38,7 @@ target_baits <- function(length, n, size, tiling = NULL, targets, exclusions = N
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
 	temp_ranges <- check_ranges(ranges = temp_ranges, size = size, tiling = tiling, chr = chr)
 	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
-	return(get_bait_positions(valid_ranges = valid_ranges, size = size, n = n.per.range))
+	return(get_bait_positions(ranges = valid_ranges, size = size, n = n.per.range))
 }
 
 #' Extract n number of baits randomly from parts of the chromosome length
@@ -64,20 +64,20 @@ random_baits <- function(length, n, size, exclusions = NULL, chr) {
 			exclusions <- exclusions[-nrow(exclusions), ] 
 		}
 		# If there are more exclusions, break the main range appart
-		if (nrow(exclusions) > 1)
+		if (nrow(exclusions) > 0)
 			temp_ranges <- find_random_ranges(starting.point = starting.point, length = length, exclusions = exclusions)
 		else
 			temp_ranges <- data.frame(Start = starting.point, Stop = length)
 		valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = 1, chr = chr)
 		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
 	} else {
-		valid_ranges <- seq_len(length - size)
+		valid_ranges <- data.frame(Start = 1, Stop = length)
 	}
 	if (length(valid_ranges) > n) {
 		cat(paste0("Warning: The maximum possible number of random baits for chromosome ", chr, " is lower than the desired n.\n"))
 		n <- length(valid_ranges)
 	}
-	return(getBaitPositions(valid_ranges = valid_ranges, size = size, n = n))
+	return(get_bait_positions(ranges = valid_ranges, size = size, n = n))
 }
 
 #' Make a table of valid ranges within the chromosome

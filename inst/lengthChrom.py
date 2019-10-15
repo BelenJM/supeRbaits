@@ -26,7 +26,7 @@ input_file1 = sys.argv[1]
 
 # main function
 def length_genome(file1): 
-	with open(input_file1) as genomeFile, open ("genome_size.txt", "w") as output:
+	with open(input_file1) as genomeFile, open ("temp_folder_for_supeRbaits/genome_size.txt", "w") as output:
 		# initializing dataframe
 		df = pd.DataFrame(columns=['ChromName','Length'])
 		# initializing index

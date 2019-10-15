@@ -21,15 +21,17 @@ check_python <- function () {
 #' @keywords internal
 #' 
 get_lengths <- function(database, restrict = NULL) {
+	if (file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
+		file.remove("temp_folder_for_supeRbaits/genome_size.txt")
 	path <- paste(system.file(package = "baits4pop"), "lengthChrom.py", sep="/")
 	if (is.null(restrict))
-		try(suppressWarnings(response <- system2("python", args = c(path, database), stdout = TRUE)), silent = T)
+		try(suppressWarnings(response <- system2("python", args = c(path, database), stdout = TRUE)), silent = TRUE)
 	else 
-		try(suppressWarnings(response <- system2("python", args = c(path, database, restrict), stdout = TRUE)), silent = T)
-	if(!is.null(attr(response,"status")))
+		try(suppressWarnings(response <- system2("python", args = c(path, database, restrict), stdout = TRUE)), silent = TRUE)
+	if (file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
+		return(read.table("temp_folder_for_supeRbaits/genome_size.txt"))
+	else
 		stop("Python failed to retrieve the chromosome lengths.")
-	else 
-		return(response)	
 }
 
 #' Return bps

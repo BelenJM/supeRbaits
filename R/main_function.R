@@ -22,8 +22,9 @@
 main_function <- function(n, size, database, exclusions = NULL, 
 	regions = NULL, regions.prop = NULL, regions.tiling = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
-	seed = NULL, restrict = NULL){
+	seed = NULL, restrict = NULL, debug = FALSE){
 
+	if (!debug)
 	on.exit(unlink("temp_folder_for_supeRbaits", recursive = TRUE), add = TRUE)
 	
 	if(!is.null(seed))
@@ -63,8 +64,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 	size <- size - 1
 
 	# create temp folder to dump stuff in
-	dir.create("temp_folder_for_supeRbaits")
-
+	if (!dir.exists("temp_folder_for_supeRbaits"))
+		dir.create("temp_folder_for_supeRbaits")
+		
 	# extract lengths with python
 	setwd("temp_folder_for_supeRbaits")
 	get_lengths(database = database, restrict = restrict)

@@ -23,7 +23,7 @@ check_python <- function () {
 get_lengths <- function(database, restrict = NULL) {
 	if (file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
 		file.remove("temp_folder_for_supeRbaits/genome_size.txt")
-	path <- paste(system.file(package = "baits4pop"), "lengthChrom.py", sep="/")
+	path <- paste(system.file(package = "supeRbaits"), "lengthChrom.py", sep="/")
 	if (is.null(restrict))
 		try(suppressWarnings(response <- system2("python", args = c(path, database), stdout = TRUE)), silent = TRUE)
 	else 
@@ -44,7 +44,7 @@ get_lengths <- function(database, restrict = NULL) {
 #' @export
 #' 
 retrieve_baits <- function(chr, database) {
-	path <- paste(system.file(package = "baits4pop"), "retrieveBait.py", sep="/")
+	path <- paste(system.file(package = "supeRbaits"), "retrieveBait.py", sep="/")
 	try(suppressWarnings(response <- system2("python", args = c(path, chr, database), stdout = TRUE)), silent = T)
 	if(!is.null(attr(response,"status")))
 		stop("Python failed to retrieve bps from chromosome ", chr, ".")
@@ -63,7 +63,7 @@ retrieve_baits <- function(chr, database) {
 #' @export
 #' 
 retrieve_baits_new <- function(chr, positions, database) {
-  reticulate::source_python(paste0(system.file(package = "baits4pop"), "/retrieveBait.py"))
+  reticulate::source_python(paste0(system.file(package = "supeRbaits"), "/retrieveBait.py"))
 	return(processing_baitfile(chr, positions))
 }
 
@@ -74,6 +74,6 @@ retrieve_baits_new <- function(chr, positions, database) {
 #' @export
 #' 
 py_test <- function(x) {
-  reticulate::source_python(paste0(system.file(package = "baits4pop"), "/my_function.py"))
+  reticulate::source_python(paste0(system.file(package = "supeRbaits"), "/my_function.py"))
 	return(my_function(x))
 }

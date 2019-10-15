@@ -68,9 +68,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 		dir.create("temp_folder_for_supeRbaits")
 		
 	# extract lengths with python
-	setwd("temp_folder_for_supeRbaits")
+	#setwd("temp_folder_for_supeRbaits")
 	get_lengths(database = database, restrict = restrict)
-	setwd("..")
+	#setwd("..")
 
 	# Import data
 	lengths <- load_lengths(file = "temp_folder_for_supeRbaits/genome_size.txt")

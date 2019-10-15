@@ -28,9 +28,9 @@ get_lengths <- function(database, restrict = NULL) {
 		try(suppressWarnings(response <- system2("python", args = c(path, database), stdout = TRUE)), silent = TRUE)
 	else 
 		try(suppressWarnings(response <- system2("python", args = c(path, database, restrict), stdout = TRUE)), silent = TRUE)
-	if (file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
-		return(read.table("temp_folder_for_supeRbaits/genome_size.txt"))
-	else
+	if (!file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
+	#	return(read.table("temp_folder_for_supeRbaits/genome_size.txt"))
+	#else
 		stop("Python failed to retrieve the chromosome lengths.")
 }
 

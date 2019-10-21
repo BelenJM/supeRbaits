@@ -74,13 +74,11 @@ random_baits <- function(chr.length, n, size, exclusions = NULL, chr) {
 		valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = 1, chr = chr)
 		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = 1, chr = chr)
 	} else {
-		valid_ranges <- data.frame(Start = 1, Stop = length)
+		temp_ranges <- data.frame(start = 1, stop = chr.length)
+		valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = 1, chr = chr)
+		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = 1, chr = chr)
 	}
-	if (length(valid_ranges) > n) {
-		cat(paste0("Warning: The maximum possible number of random baits for chromosome ", chr, " is lower than the desired n.\n"))
-		n <- length(valid_ranges)
-	}
-	return(get_bait_positions(ranges = valid_ranges, size = size, n = n))
+	return(get_bait_positions(ranges = valid_ranges, size = size, n = n.per.range))
 }
 
 #' Make a table of valid ranges within the chromosome

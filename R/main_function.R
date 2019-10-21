@@ -169,15 +169,15 @@ main_function <- function(n, size, database, exclusions = NULL,
 #' @keywords internal
 #' 
 trim_parameters <- function(chr, exclusions = NULL, regions = NULL, targets = NULL) {
-	output <- list(NA, NA, NA)
 	cat("debug: trim_parameters\n"); flush.console()
+	output <- list(exclusions  = NULL, regions = NULL, targets = NULL)
 	if (!is.null(exclusions)) 
 		output[[1]] <- subsample(input = exclusions, link = chr)
 	if (!is.null(regions)) 
 		output[[2]] <- subsample(input = regions, link = chr)
 	if (!is.null(targets)) 
 		output[[3]] <- subsample(input = targets, link = chr)
-	names(output) <- c("exclusions", "regions", "targets")
+	# names(output) <- c("exclusions", "regions", "targets")
 	return(output)
 }
 

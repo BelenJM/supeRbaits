@@ -33,7 +33,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		set.seed(seed)
 
 	# Initial checks
-	check_python()
+	# check_python()
 	
 	if (!is.numeric(n))
 		stop("'n' must be numeric.\n")

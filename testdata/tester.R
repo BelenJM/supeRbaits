@@ -1,8 +1,13 @@
-setwd("C:\\Users\\hdmfla\\Documents\\GitHub\\baits4pop\\testdata")
-# devtools::load_all()
+setwd("C:\\Users\\hdmfla\\Documents\\GitHub\\baits4pop")
+devtools::load_all()
+setwd("C:\\Users\\hdmfla\\Documents\\GitHub\\baits4pop/testdata")
 library(supeRbaits)
 # all_random test
+database = "chrom_salmon_chunk.fasta.txt"
+n = 10
+size = 20
 main_function(n = 10, size = 20, database = "chrom_salmon_chunk.fasta.txt")
+
 # all_targetted test
 main_function(n = 10, size = 20, lengths = "chrSize_example.txt", 
 	regions = "repeatMasker_example.txt")

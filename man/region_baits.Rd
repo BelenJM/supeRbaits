@@ -4,11 +4,11 @@
 \alias{region_baits}
 \title{Find valid ranges within the regions}
 \usage{
-region_baits(length, n, size, tiling = NULL, regions,
+region_baits(chr.length, n, size, tiling = NULL, regions,
   exclusions = NULL, chr = NULL)
 }
 \arguments{
-\item{length}{The length of the chromosome being analysed}
+\item{chr.length}{The length of the chromosome being analysed}
 
 \item{n}{number of baits to generate}
 

@@ -4,14 +4,14 @@
 \alias{find_target_ranges}
 \title{Make a table of valid ranges within the chromosome}
 \usage{
-find_target_ranges(targets, size, length)
+find_target_ranges(targets, size, chr.length)
 }
 \arguments{
 \item{targets}{A subset of the targets dataframe for the target chromosome}
 
 \item{size}{The size of each bait}
 
-\item{length}{The length of the chromosome being analysed}
+\item{chr.length}{The length of the chromosome being analysed}
 }
 \value{
 A table with valid ranges

@@ -7,7 +7,7 @@
 main_function(n, size, database, exclusions = NULL, regions = NULL,
   regions.prop = NULL, regions.tiling = NULL, targets = NULL,
   targets.prop = NULL, targets.tiling = NULL, seed = NULL,
-  restrict = NULL)
+  restrict = NULL, debug = FALSE)
 }
 \arguments{
 \item{n}{number of baits to generate}

@@ -4,10 +4,10 @@
 \alias{random_baits}
 \title{Extract n number of baits randomly from parts of the chromosome length}
 \usage{
-random_baits(length, n, size, exclusions = NULL, chr)
+random_baits(chr.length, n, size, exclusions = NULL, chr)
 }
 \arguments{
-\item{length}{The length of the chromosome being analysed}
+\item{chr.length}{The length of the chromosome being analysed}
 
 \item{n}{number of baits to generate}
 

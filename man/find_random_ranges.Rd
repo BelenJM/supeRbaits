@@ -4,12 +4,12 @@
 \alias{find_random_ranges}
 \title{Make a table of valid ranges within the chromosome}
 \usage{
-find_random_ranges(starting.point, length, exclusions)
+find_random_ranges(starting.point, chr.length, exclusions)
 }
 \arguments{
 \item{starting.point}{the first valid point in the chromosome}
 
-\item{length}{the last valid point in the chromosome}
+\item{chr.length}{the last valid point in the chromosome}
 
 \item{exclusions}{A subset of the exclusions dataframe for the target chromosome.}
 }

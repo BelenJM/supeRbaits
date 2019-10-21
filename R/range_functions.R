@@ -20,7 +20,7 @@ region_baits <- function(chr.length, n, size, tiling = NULL, regions, exclusions
 	if (!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
 	valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = tiling, chr = chr)
-	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
+	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling, chr = chr)
 	return(get_bait_positions(ranges = valid_ranges, size = size, n = n.per.range))
 }
 
@@ -39,7 +39,7 @@ target_baits <- function(chr.length, n, size, tiling = NULL, targets, exclusions
 	if(!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
 	temp_ranges <- check_ranges(ranges = temp_ranges, size = size, tiling = tiling, chr = chr)
-	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
+	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling, chr = chr)
 	return(get_bait_positions(ranges = valid_ranges, size = size, n = n.per.range))
 }
 
@@ -72,7 +72,7 @@ random_baits <- function(chr.length, n, size, exclusions = NULL, chr) {
 		else
 			temp_ranges <- data.frame(Start = starting.point, Stop = chr.length)
 		valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = 1, chr = chr)
-		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
+		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = 1, chr = chr)
 	} else {
 		valid_ranges <- data.frame(Start = 1, Stop = length)
 	}
@@ -196,9 +196,10 @@ check_ranges <- function(ranges, n, size, chr, tiling = 1) {
 	return(ranges[, c(1:2, 4)])
 }
 
-check_n <- function(ranges, n, size, tiling = 1) {
+check_n <- function(ranges, n, size, tiling = 1, chr) {
+	cat("debug: check_n\n"); flush.console()
 	if (sum(ranges$max.baits) < n) {
-		cat(paste0("Warning: The maximum possible number of individual targetted baits for chromosome", chr, "is lower than the desired n.\n"))
+		cat(paste0("Warning: The maximum possible number of individual targetted baits for chromosome ", chr, " is lower than the desired n.\n"))
 		n <- sum(ranges$max.baits)
 	}
 	n.per.range <- rep(roundDown(n / nrow(ranges), to = 1), nrow(ranges))

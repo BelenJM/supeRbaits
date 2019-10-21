@@ -98,7 +98,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		if(!is.null(regions.prop)) {
 			n.regions = n * regions.prop
 			if (!is.null(params$regions)) {
-				temp.regions <- region_baits(length = lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
+				temp.regions <- region_baits(chr.length = lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
 				regions = params$regions, exclusions = params$exclusions, chr = lengths[i, 1])
 				n.regions = nrow(temp.regions)
 			} else {
@@ -114,7 +114,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		if(!is.null(targets.prop)) {
 			n.targets = n * targets.prop
 			if (!is.null(params$targets)) {
-				temp.targets <- target_baits(length = lengths[i, 2], n = n.regions, size = size, tiling = targets.tiling,
+				temp.targets <- target_baits(chr.length = lengths[i, 2], n = n.regions, size = size, tiling = targets.tiling,
 				targets = params$targets, exclusions = params$exclusions, chr = lengths[i, 1])
 				n.targets = nrow(temp.targets)
 			} else {
@@ -128,7 +128,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		}
 		# random baits
 		n.random <- n - (n.regions + n.targets)
-		temp.random <- random_baits(length = lengths[i, 2], n = n, size = size, 
+		temp.random <- random_baits(chr.length = lengths[i, 2], n = n, size = size, 
 				exclusions = params$exclusions, chr = lengths[i, 1])
 		# bring together the different parts
 		bait.points[[i]] <- rbind(temp.regions, temp.targets, temp.random) # not sure if this works with nulls

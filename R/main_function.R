@@ -24,6 +24,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
 	seed = NULL, restrict = NULL, debug = FALSE){
 
+  on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
+
 	if (!debug)
 	on.exit(unlink("temp_folder_for_supeRbaits", recursive = TRUE), add = TRUE)
 	
@@ -168,6 +170,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 #' 
 trim_parameters <- function(chr, exclusions = NULL, regions = NULL, targets = NULL) {
 	output <- list(NA, NA, NA)
+	cat("debug: trim_parameters\n"); flush.console()
 	if (!is.null(exclusions)) 
 		output[[1]] <- subsample(input = exclusions, link = chr)
 	if (!is.null(regions)) 
@@ -188,6 +191,7 @@ trim_parameters <- function(chr, exclusions = NULL, regions = NULL, targets = NU
 #' @keywords internal
 #' 
 subsample <- function(input, link) {
+	cat("debug: subsample\n"); flush.console()
 	chr <- link
 	link <- grepl(link, input[, 1])
 	if (any(link)) {

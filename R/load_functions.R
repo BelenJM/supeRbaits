@@ -7,6 +7,7 @@
 #' @return The exclusions dataframe
 #' 
 load_exclusions <- function(file){
+	cat("debug: load_exclusions\n"); flush.console()
 	output <- read.table(file, sep = "\t")
 	if (!is.integer(output[, 2]))
 		stop("The second column in the exclusions file does not appear to contain only numeric data.\n")
@@ -32,6 +33,7 @@ load_exclusions <- function(file){
 #' @return The regions dataframe
 #' 
 load_regions <- function(file){
+	cat("debug: load_regions\n"); flush.console()
 	output <- read.table(file, sep = "\t")
 	if (!is.integer(output[, 2]))
 		stop("The second column in the regions of interest file does not appear to contain only numeric data.\n")
@@ -57,6 +59,7 @@ load_regions <- function(file){
 #' @return The targets dataframe
 #' 
 load_targets <- function(file){
+	cat("debug: load_targets\n"); flush.console()
 	output <- read.table(file, sep = "\t")
 	if (!is.integer(output[, 2]))
 		stop("The second column in the targets file does not appear to contain only numeric data.\n")
@@ -76,6 +79,7 @@ load_targets <- function(file){
 #' @return The lengths dataframe
 #' 
 load_lengths <- function(file){
+	cat("debug: load_lengths\n"); flush.console()
 	output <- read.table(file, sep = "\t")
 	if (!is.integer(output[, 2]))
 		stop("The second column in the chromosomes' length file does not appear to contain only numeric data.\n")
@@ -102,6 +106,7 @@ load_lengths <- function(file){
 #' @return The lengths dataframe
 #' 
 check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, lengths) {
+	cat("debug: check_chr_names\n"); flush.console()
 	if (!is.null(exclusions)) {
 		if (any(is.na(match(exclusions[, 1], lengths[, 1]))))
 			stop("Not all chromosomes' names in the exclusions match the names of the listed chromosomes.\n")
@@ -125,6 +130,7 @@ check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, l
 #' @return The lengths dataframe
 #' 
 check_chr_boundaries <- function(exclusions = NULL, regions = NULL, targets = NULL, lengths) {
+	cat("debug: check_chr_boundaries\n"); flush.console()
 	if (!is.null(exclusions)) {
 		for(i in unique(exclusions[, 1])) {
 			link <- match(i, lengths[, 1])

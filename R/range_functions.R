@@ -13,6 +13,7 @@
 #' @keywords internal
 #' 
 region_baits <- function(chr.length, n, size, tiling = NULL, regions, exclusions = NULL, chr) {
+	cat("debug: region_baits\n"); flush.console()
 	temp_ranges <- regions
 	if (temp_ranges$stop[nrow(temp_ranges)] > chr.length)
 		temp_ranges$stop[nrow(temp_ranges)] <- chr.length
@@ -33,6 +34,7 @@ region_baits <- function(chr.length, n, size, tiling = NULL, regions, exclusions
 #' @keywords internal
 #' 
 target_baits <- function(chr.length, n, size, tiling = NULL, targets, exclusions = NULL, chr) {
+	cat("debug: target_baits\n"); flush.console()
 	temp_ranges <- find_target_ranges(targets = targets, size = size, chr.length = chr.length)
 	if(!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
@@ -50,6 +52,7 @@ target_baits <- function(chr.length, n, size, tiling = NULL, targets, exclusions
 #' @keywords internal
 #' 
 random_baits <- function(chr.length, n, size, exclusions = NULL, chr) {
+	cat("debug: random_baits\n"); flush.console()
 	if(!is.null(exclusions)) {
 		# Check if the start is excluded
 		if (exclusions[1, 2] == 1) {
@@ -91,6 +94,7 @@ random_baits <- function(chr.length, n, size, exclusions = NULL, chr) {
 #' @keywords internal
 #' 
 find_random_ranges <- function (starting.point, chr.length, exclusions) {
+	cat("debug: find_random_ranges\n"); flush.console()
 	temp_ranges <- data.frame(
 		start = c(starting.point, rep(NA, nrow(exclusions))),
 		stop = c(rep(NA, nrow(exclusions)), chr.length)
@@ -112,6 +116,7 @@ find_random_ranges <- function (starting.point, chr.length, exclusions) {
 #' @keywords internal
 #' 
 find_target_ranges <- function(targets, size, chr.length) {
+	cat("debug: find_target_ranges\n"); flush.console()
 	x <- data.frame(
 		start = c(targets[, 2] - size),
 		stop = c(targets[, 2])
@@ -131,6 +136,7 @@ find_target_ranges <- function(targets, size, chr.length) {
 #' @keywords internal
 #' 
 trim_ranges <- function(ranges, exclusions) {
+	cat("debug: trim_ranges\n"); flush.console()
 	exclude.range <- NULL
 	# for each range, check if ..
 	for (i in 1:nrow(ranges)) {
@@ -170,6 +176,7 @@ trim_ranges <- function(ranges, exclusions) {
 #' @keywords internal
 #' 
 check_ranges <- function(ranges, n, size, chr, tiling = 1) {
+	cat("debug: check_ranges\n"); flush.console()
 	# Range size
 	ranges$range <- (ranges$stop - ranges$start) + 1
 	ranges$max.baits <- ranges$range - size
@@ -229,6 +236,7 @@ check_n <- function(ranges, n, size, tiling = 1) {
 #' @keywords internal
 #' 
 expand_ranges <- function(ranges, size) {
+	cat("debug: expand_ranges\n"); flush.console()
 	output <- c()
 	for (i in 1:nrow(ranges)) {
 		output <- c(output, seq(from = ranges[i, 1], to = ranges[i, 2] - size, by = 1))
@@ -247,6 +255,7 @@ expand_ranges <- function(ranges, size) {
 #' @keywords internal
 #' 
 get_bait_positions <- function(ranges, size, n) {
+	cat("debug: get_bait_positions\n"); flush.console()
 	# get the bait positions
 	recipient <- data.frame(
 		Start = integer(),

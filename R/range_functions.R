@@ -1,6 +1,6 @@
 #' Find valid ranges within the regions
 #' 
-#' @param length The length of the chromosome being analysed
+#' @param chr.length The length of the chromosome being analysed
 #' @param n number of baits to generate
 #' @param size The size of each bait
 #' @param tiling The minimum number of baits desired per range.
@@ -12,10 +12,10 @@
 #' 
 #' @keywords internal
 #' 
-region_baits <- function(length, n, size, tiling = NULL, regions, exclusions = NULL, chr = NULL) {
+region_baits <- function(chr.length, n, size, tiling = NULL, regions, exclusions = NULL, chr) {
 	temp_ranges <- regions
-	if (temp_ranges$stop[nrow(temp_ranges)] > length)
-		temp_ranges$stop[nrow(temp_ranges)] <- length
+	if (temp_ranges$stop[nrow(temp_ranges)] > chr.length)
+		temp_ranges$stop[nrow(temp_ranges)] <- chr.length
 	if (!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
 	valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = tiling, chr = chr)
@@ -32,8 +32,8 @@ region_baits <- function(length, n, size, tiling = NULL, regions, exclusions = N
 #' 
 #' @keywords internal
 #' 
-target_baits <- function(length, n, size, tiling = NULL, targets, exclusions = NULL, chr) {
-	temp_ranges <- find_target_ranges(targets = targets, size = size, length = length)
+target_baits <- function(chr.length, n, size, tiling = NULL, targets, exclusions = NULL, chr) {
+	temp_ranges <- find_target_ranges(targets = targets, size = size, chr.length = chr.length)
 	if(!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
 	temp_ranges <- check_ranges(ranges = temp_ranges, size = size, tiling = tiling, chr = chr)
@@ -49,7 +49,7 @@ target_baits <- function(length, n, size, tiling = NULL, targets, exclusions = N
 #' 
 #' @keywords internal
 #' 
-random_baits <- function(length, n, size, exclusions = NULL, chr) {
+random_baits <- function(chr.length, n, size, exclusions = NULL, chr) {
 	if(!is.null(exclusions)) {
 		# Check if the start is excluded
 		if (exclusions[1, 2] == 1) {
@@ -59,15 +59,15 @@ random_baits <- function(length, n, size, exclusions = NULL, chr) {
 			starting.point <- 1
 		}
 		# If there are more exclusions, check if length is excluded
-		if (nrow(exclusions) > 0 && exclusions[nrow(exclusions), 3] == length) {
-			length <- exclusions[nrow(exclusions), 2] - 1
+		if (nrow(exclusions) > 0 && exclusions[nrow(exclusions), 3] == chr.length) {
+			chr.length <- exclusions[nrow(exclusions), 2] - 1
 			exclusions <- exclusions[-nrow(exclusions), ] 
 		}
 		# If there are more exclusions, break the main range appart
 		if (nrow(exclusions) > 0)
-			temp_ranges <- find_random_ranges(starting.point = starting.point, length = length, exclusions = exclusions)
+			temp_ranges <- find_random_ranges(starting.point = starting.point, chr.length = chr.length, exclusions = exclusions)
 		else
-			temp_ranges <- data.frame(Start = starting.point, Stop = length)
+			temp_ranges <- data.frame(Start = starting.point, Stop = chr.length)
 		valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = 1, chr = chr)
 		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling)
 	} else {
@@ -83,17 +83,17 @@ random_baits <- function(length, n, size, exclusions = NULL, chr) {
 #' Make a table of valid ranges within the chromosome
 #' 
 #' @param starting.point the first valid point in the chromosome
-#' @param length the last valid point in the chromosome
+#' @param chr.length the last valid point in the chromosome
 #' @inheritParams region_baits
 #' 
 #' @return A table with valid ranges
 #' 
 #' @keywords internal
 #' 
-find_random_ranges <- function (starting.point, length, exclusions) {
+find_random_ranges <- function (starting.point, chr.length, exclusions) {
 	temp_ranges <- data.frame(
 		start = c(starting.point, rep(NA, nrow(exclusions))),
-		stop = c(rep(NA, nrow(exclusions)), length)
+		stop = c(rep(NA, nrow(exclusions)), chr.length)
 		)
 	for(i in 1:nrow(exclusions)) {
 		temp_ranges[i, 2] <- exclusions[i, 2] - 1
@@ -111,13 +111,13 @@ find_random_ranges <- function (starting.point, length, exclusions) {
 #' 
 #' @keywords internal
 #' 
-find_target_ranges <- function(targets, size, length) {
+find_target_ranges <- function(targets, size, chr.length) {
 	x <- data.frame(
 		start = c(targets[, 2] - size),
 		stop = c(targets[, 2])
 		)
-	if(x$stop[nrow(x)] > length)
-		x$stop[nrow(x)] <- length
+	if(x$stop[nrow(x)] > chr.length)
+		x$stop[nrow(x)] <- chr.length
 	return(x)
 }
 

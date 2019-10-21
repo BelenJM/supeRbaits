@@ -26,12 +26,10 @@ get_lengths <- function(database, restrict = NULL) {
 		file.remove("temp_folder_for_supeRbaits/genome_size.txt")
 	path <- paste(system.file(package = "supeRbaits"), "lengthChrom.py", sep="/")
 	if (is.null(restrict))
-		try(suppressWarnings(response <- system2("python", args = c(path, database), stdout = TRUE)), silent = TRUE)
+		try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(database)))), silent = TRUE)
 	else 
-		try(suppressWarnings(response <- system2("python", args = c(path, database, restrict), stdout = TRUE)), silent = TRUE)
+		try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(database)), shQquote(restrict))), silent = TRUE)
 	if (!file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
-	#	return(read.table("temp_folder_for_supeRbaits/genome_size.txt"))
-	#else
 		stop("Python failed to retrieve the chromosome lengths.")
 }
 

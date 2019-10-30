@@ -60,7 +60,7 @@ def get_chrom_seq(chrom_name, genome_file_path):
             if get_chrom_name(name) == chrom_name:
                 return seq
             
-    raise RuntimeError(f"{bait_chrom_name} was not found in {genome_file_path}")
+    raise RuntimeError(f"{chrom_name} was not found in {genome_file_path}")
 
 def bait_parser(bait_file_handler, header=False):
     """Parse a bait file.

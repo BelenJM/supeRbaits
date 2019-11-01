@@ -47,7 +47,7 @@ def get_lengths(genome_file_path, df_header, df_row_builder, output_file_path = 
 def main():
     parser = ArgumentParser(description="Extract chromosome lengths from genome in FASTA format")
     parser.add_argument("fasta_file_path", type=str, help="Path to the FASTA file")
-    parser.add_argument("output_file_path", type=str, nargs="?", help="Path to the output file (including file name).", default="output.txt")
+    parser.add_argument("output_file_path", type=str, nargs="?", help="Path to the output file (including file name).", default="temp_folder_for_supeRbaits/genome_size.txt")
     args = parser.parse_args()
 
     get_lengths(args.fasta_file_path, header, row_builder, args.output_file_path)

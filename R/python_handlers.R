@@ -5,9 +5,11 @@
 #' @return logical
 #' 
 check_python <- function () {
- trigger <- try(reticulate::py_config(), silent = TRUE)
+ trigger <- suppressWarnings(try(reticulate::py_config(), silent = TRUE))
   if (inherits(trigger, "try-error"))
-   	stop("Python modules could not be loaded. Please install python before using supeRbaits.\n")
+   	stop("Python modules could not be loaded. Please install python before using supeRbaits.\n", call. = FALSE)
+  if (substr(trigger$version, 1, 1) == 2)
+  	stop("supeRbaits requires python3, but R is currently using python2.\n", call. = FALSE)
 }
 
 #' Python handler for lengthChrom

@@ -26,7 +26,7 @@ get_lengths <- function(database, restrict = NULL) {
 	cat("debug: get_lengths\n"); flush.console()
 	if (file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
 		file.remove("temp_folder_for_supeRbaits/genome_size.txt")
-	path <- paste(system.file(package = "supeRbaits"), "lengthChrom.py", sep="/")
+	path <- paste(system.file(package = "supeRbaits"), "new_lengthChrom.py", sep="/")
 	if (is.null(restrict))
 		try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(database)))), silent = TRUE)
 	else 

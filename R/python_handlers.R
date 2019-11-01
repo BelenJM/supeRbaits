@@ -46,8 +46,8 @@ get_lengths <- function(database, restrict = NULL) {
 #' 
 retrieve_baits <- function(chr, database) {
 	cat("debug: retrieve_baits\n"); flush.console()
-	path <- paste(system.file(package = "supeRbaits"), "retrieveBait.py", sep="/")
-	try(suppressWarnings(response <- system2("python", args = c(path, chr, database), stdout = TRUE)), silent = T)
+	path <- paste(system.file(package = "supeRbaits"), "new_retrieveBait.py", sep="/")
+	try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(chr), shQuote(database))), silent = TRUE)
 	if(!is.null(attr(response,"status")))
 		stop("Python failed to retrieve bps from chromosome ", chr, ".")
 	else 

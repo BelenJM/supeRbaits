@@ -28,9 +28,9 @@ get_lengths <- function(database, restrict = NULL) {
 		file.remove("temp_folder_for_supeRbaits/genome_size.txt")
 	path <- paste(system.file(package = "supeRbaits"), "new_lengthChrom.py", sep="/")
 	if (is.null(restrict))
-		try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(database)))), silent = TRUE)
+		try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(database), shQuote("temp_folder_for_supeRbaits/genome_size.txt")))), silent = TRUE)
 	else 
-		try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(database)), shQquote(restrict))), silent = TRUE)
+		try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(database), shQuote("temp_folder_for_supeRbaits/genome_size.txt"), shQquote(restrict)))), silent = TRUE)
 	if (!file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
 		stop("Python failed to retrieve the chromosome lengths.")
 }
@@ -47,8 +47,10 @@ get_lengths <- function(database, restrict = NULL) {
 retrieve_baits <- function(chr, database) {
 	cat("debug: retrieve_baits\n"); flush.console()
 	path <- paste(system.file(package = "supeRbaits"), "new_retrieveBait.py", sep="/")
-	try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(chr), shQuote(database))), silent = TRUE)
-	if(!is.null(attr(response,"status")))
+	bait.file <- paste0("temp_folder_for_supeRbaits/", chr, ".txt")
+	output.file <- paste0("temp_folder_for_supeRbaits/", chr, "_py.txt")
+	try(suppressWarnings(response <- system2("python", args = c(shQuote(path), shQuote(database), shQuote(bait.file), shQuote(output.file)))), silent = TRUE)
+	if(!is.null(attr(response, "status")))
 		stop("Python failed to retrieve bps from chromosome ", chr, ".")
 	else 
 		return(response)

@@ -95,7 +95,7 @@ def row_builder(index, bait_chrom_name, seq, seq_start, seq_end):
     seq_start       -- the start of the bait sequence
     seq_end         -- the end of the bait sequence
     """
-    bait_seq = seq[seq_start:seq_end]
+    bait_seq = seq[(seq_start - 1):seq_end]
     nuc_count = get_nuc_count(bait_seq)
         
     return [
@@ -104,7 +104,7 @@ def row_builder(index, bait_chrom_name, seq, seq_start, seq_end):
         seq_start,
         seq_end,
         bait_seq,
-        seq_end - seq_start + 1,
+        len(bait_seq),
         nuc_count["A"],
         nuc_count["T"],
         nuc_count["G"],

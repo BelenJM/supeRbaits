@@ -141,7 +141,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		write.table(bait.points[i], file = paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], ".txt"), row.names = FALSE)
 		retrieve_baits(chr = names(bait.points)[i], database = database)
 		output <- data.table::fread(paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], "_py.txt"))
-		output$pGC <- output$Number_GC/size
+		output$pGC <- output$Number_GC / (size + 1)
 		return(output)
 	})
 	names(baits) <- names(bait.points)

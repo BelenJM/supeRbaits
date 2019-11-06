@@ -137,26 +137,28 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	# fetch the baits' sequences (Python stuff)
 	
-	# Check GC content
-	# baits <- good_baits <- list()
-	# for (i in 1:nrow(bait.points)) {
-	# 	recipient <- retrieve_baits(chr = names(bait.points)[i], positions = bait.points[[i]], database = database)
-	# 	recipient$pGC <- recipient$GC/size
-	# 	baits[[i]] <- recipient
-	# 	good_baits[[i]] <- recipient[recipient$pGC > 0.3 & recipient$pGC < 0.5, ]
-	# 	if (nrow(good_baits[[i]]) != nrow(baits)[[i]]) {
-	# 		cat(paste0((nrow(baits[[i]]) - nrow(good_baits[[i]])), " baits were excluded from chr ", names(bait.points)[i], " due to their GC percentage.\n"))
-	# 	}
-	# }
-	# names(baits) <- names(good_baits) <- names(bait.points)
+	baits <- lapply(seq_along(bait.points), function(i) {
+		write.table(bait.points[i], file = paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], ".txt"), row.names = FALSE)
+		retrieve_baits(chr = names(bait.points)[i], database = database)
+		output <- data.table::fread(paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], "_py.txt"))
+		output$pGC <- output$Number_GC/size
+		return(output)
+	})
+	names(baits) <- names(bait.points)
 
-	# Run python retrieveBaits script
+	good.baits <- lapply(seq_along(baits), function(i) {
+		link <- baits[[i]]$pGC > 0.3 & baits[[i]]$pGC < 0.5
+		if (all(!link)) {
+			cat(paste0("M: No baits passed the GC test for chromossome ", names(baits)[i], ".\n"))
+			return(NULL)
+		}
+		if (any(!link))
+			cat(paste0("M: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage.\n"))
+		return(baits[[i]][link, ])
+	})
+	names(good.baits) <- names(baits)
 
-	# Load the output of retrieveBaits from the files
-
-	# ...
-
-	return(bait.points)
+	return(list(baits = baits, good.baits = good.baits))
 }
 
 #' extract exclusions, regions, and targets relevant for the chromosome being analysed

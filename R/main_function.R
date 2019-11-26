@@ -115,8 +115,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 			cat(paste0("debug: examining chromosome ", lengths[i, 1], ".\n"))
 		# extract relevant parameters
 		params <- trim_parameters(chr = lengths[i, 1], exclusions = exclusions, regions = regions, targets = targets)
-		# regional baits
-		if(!is.null(regions.prop)) {
+		# region baits
+		if(!is.null(regions.prop) && regions.prop > 0) {
 			n.regions = n * regions.prop
 			if (!is.null(params$regions)) {
 				temp.regions <- region_baits(chr.length = lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
@@ -132,7 +132,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 			n.regions = 0
 		}
 		# targetted baits
-		if(!is.null(targets.prop)) {
+		if(!is.null(targets.prop) && targets.prop > 0) {
 			n.targets = n * targets.prop
 			if (!is.null(params$targets)) {
 				temp.targets <- target_baits(chr.length = lengths[i, 2], n = n.regions, size = size, tiling = targets.tiling,

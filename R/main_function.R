@@ -24,11 +24,14 @@ main_function <- function(n, size, database, exclusions = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
 	seed = NULL, restrict = NULL, debug = FALSE, gc = c(0.3, 0.5)){
 
-  on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
+  
+	if (debug) {
+    message("!!!--- Debug mode has been activated ---!!!")
+		on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
+	} else {
+		on.exit(unlink("temp_folder_for_supeRbaits", recursive = TRUE), add = TRUE)
+	}
 
-	if (!debug)
-	on.exit(unlink("temp_folder_for_supeRbaits", recursive = TRUE), add = TRUE)
-	
 	if(!is.null(seed))
 		set.seed(seed)
 
@@ -99,7 +102,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	bait.points <- list()
 	for (i in 1:nrow(lengths)) {
-		cat(paste0("debug: examining chromosome ", lengths[i, 1], ".\n")); flush.console()
+		if (debug)
+			cat(paste0("debug: examining chromosome ", lengths[i, 1], ".\n"))
 		# extract relevant parameters
 		params <- trim_parameters(chr = lengths[i, 1], exclusions = exclusions, regions = regions, targets = targets)
 		# regional baits
@@ -110,7 +114,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 				regions = params$regions, exclusions = params$exclusions, chr = lengths[i, 1])
 				n.regions = nrow(temp.regions)
 			} else {
-				cat("No regions found for chromosome", lengths[i, 1], ".\n"); flush.console()
+				message("Message: No regions found for chromosome ", lengths[i, 1], ".")
 				temp.regions <- NULL
 				n.regions = 0
 			}
@@ -126,7 +130,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 				targets = params$targets, exclusions = params$exclusions, chr = lengths[i, 1])
 				n.targets = nrow(temp.targets)
 			} else {
-				cat("No targets found for chromosome", lengths[i, 1], ".\n"); flush.console()
+				message("Message: No targets found for chromosome ", lengths[i, 1], ".")
 				temp.targets <- NULL
 				n.targets = 0
 			}
@@ -157,11 +161,11 @@ main_function <- function(n, size, database, exclusions = NULL,
 	good.baits <- lapply(seq_along(baits), function(i) {
 		link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
 		if (all(!link)) {
-			cat(paste0("M: No baits passed the GC test for chromossome ", names(baits)[i], ".\n"))
+			message(paste0("Message: No baits passed the GC percentage test for chromosome ", names(baits)[i], "."))
 			return(NULL)
 		}
 		if (any(!link))
-			cat(paste0("M: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage.\n"))
+			message(paste0("Message: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage."))
 		return(baits[[i]][link, ])
 	})
 	names(good.baits) <- names(baits)

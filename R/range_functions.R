@@ -179,25 +179,25 @@ check_ranges <- function(ranges, n, size, chr, tiling = 1) {
 	ranges$range <- (ranges$stop - ranges$start) + 1
 	ranges$max.baits <- ranges$range - size
 	if (any(to.exclude <- ranges$max.baits < tiling)) {
-		# appendTo("Screen", ...)
-		cat(paste0("TEMP: ", sum(to.exclude), " sub-ranges on chromosome ", chr," are too small to fit the desired number of baits and will be excluded.\n")); flush.console()
+		warning(paste0(sum(to.exclude), " sub-ranges on chromosome ", chr," are too small to fit the desired number of baits and will be excluded."), call. = FALSE, immediate. = TRUE)
 		if (all(to.exclude))
 			stop("All ranges in chromosome ", chr," are too small to fit the desired number of baits. Aborting.")
 		ranges <- ranges[!to.exclude, ]
 	}
 	# More ranges than n/tiling
 	if (n / tiling < nrow(ranges)) {
-		cat(paste0("Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in chromosome ", chr, ". Choosing a random subset of ranges.\n"))
+		warning(paste0("The desired n/tiling combination is not high enough to produce baits in all valid ranges in chromosome ", chr, ". Choosing a random subset of ranges."), call. = FALSE, immediate. = TRUE)
 		max.ranges <- roundDown(n / tiling, to = 1)
 		ranges <- ranges[sample(1:nrow(ranges), size = max.ranges, replace = FALSE), ]
 	}	
 	return(ranges[, c(1:2, 4)])
 }
 
-check_n <- function(ranges, n, size, tiling = 1, chr) {
+check_n <- function(ranges, n, tiling = 1, chr, type = c("random", "target", "region")) {
 	cat("debug: check_n\n"); flush.console()
+	type <- match.arg(type)
 	if (sum(ranges$max.baits) < n) {
-		cat(paste0("Warning: The maximum possible number of individual targetted baits for chromosome ", chr, " is lower than the desired n.\n"))
+		warning(paste0("The maximum possible number of unique ", type, " baits (", sum(ranges$max.baits), ") for chromosome ", chr, " is lower than the desired n (", n, ")."), call. = FALSE, immediate. = TRUE)
 		n <- sum(ranges$max.baits)
 	}
 	n.per.range <- rep(roundDown(n / nrow(ranges), to = 1), nrow(ranges))

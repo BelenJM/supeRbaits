@@ -76,6 +76,12 @@ main_function <- function(n, size, database, exclusions = NULL,
 		stop("'gc' ranges must be between 0 and 1.\n")
 	if (gc[1] > gc[2])
 		stop("The first value of 'gc' must be smaller or equal to the second value.\n")
+
+	if (is.null(regions.tiling))
+		regions.tiling <- 1
+	if (is.null(targets.tiling))
+		targets.tiling <- 1
+
 	# Reduce size to include the first bp
 	size <- size - 1
 

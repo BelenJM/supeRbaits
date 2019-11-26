@@ -21,6 +21,7 @@ load_exclusions <- function(file){
 		if(output[i, 2] > output[i, 3])
 			stop("The starting poing in line ", i, " is greater than the ending point in the exclusions file.\n")
 	}
+	colnames(output) <- c("chr", "start", "stop")
 	return(output)
 }
 
@@ -47,6 +48,7 @@ load_regions <- function(file){
 		if(output[i, 2] > output[i, 3])
 			stop("The starting poing in line ", i, " is greater than the ending point in the regions of interest file.\n")
 	}	
+	colnames(output) <- c("chr", "start", "stop")
 	return(output)
 }
 
@@ -67,6 +69,7 @@ load_targets <- function(file){
 		stop("There appear to be NA's in the targets file.\n")
 	if (any(output[, 2] < 0))
 		stop("Some data in the targets file appears to be negative.\n")
+	colnames(output) <- c("chr", "target")
 	return(output)
 }
 
@@ -91,6 +94,7 @@ load_lengths <- function(file){
 		stop("Some chromosomes' length is 0.\n")
 	if (any(table(output[, 1]) > 1))
 		stop("There are repeated chromosome names in the chromosomes' length file.\n")
+	colnames(output) <- c("chr", "length")
 	return(output)
 }
 

@@ -22,7 +22,7 @@
 main_function <- function(n, size, database, exclusions = NULL, 
 	regions = NULL, regions.prop = NULL, regions.tiling = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
-	seed = NULL, restrict = NULL, debug = FALSE){
+	seed = NULL, restrict = NULL, debug = FALSE, gc = c(0.3, 0.5)){
 
   on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
 
@@ -62,6 +62,14 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (is.null(targets.tiling) & !is.null(targets))
 		stop("'targets.tiling' is set but no targets were included.\n")
 
+	if (length(gc) != 2)
+		stop("Please provide two values in 'gc' (minimum and maximum percentage).\n")
+	if (!is.numeric(gc))
+		stop("'gc' must be numeric and contain two values between 0 and 1.\n")
+	if (any(gc > 1) | any(gc < 0))
+		stop("'gc' ranges must be between 0 and 1.\n")
+	if (gc[1] > gc[2])
+		stop("The first value of 'gc' must be smaller or equal to the second value.\n")
 	# Reduce size to include the first bp
 	size <- size - 1
 
@@ -147,7 +155,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 	names(baits) <- names(bait.points)
 
 	good.baits <- lapply(seq_along(baits), function(i) {
-		link <- baits[[i]]$pGC > 0.3 & baits[[i]]$pGC < 0.5
+		link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
 		if (all(!link)) {
 			cat(paste0("M: No baits passed the GC test for chromossome ", names(baits)[i], ".\n"))
 			return(NULL)

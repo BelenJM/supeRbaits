@@ -120,24 +120,28 @@ main_function <- function(n, size, database, exclusions = NULL,
 			n.regions = n * regions.prop
 			if (!is.null(params$regions)) {
 				temp.regions <- region_baits(chr.length = lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
-				regions = params$regions, exclusions = params$exclusions, chr = lengths[i, 1])
+				regions = params$regions, exclusions = params$exclusions, chr = lengths[i, 1], used.baits = NULL)
 				n.regions = nrow(temp.regions)
+				used.baits <- temp.regions$Start
 			} else {
 				message("Message: No regions found for chromosome ", lengths[i, 1], ".")
 				temp.regions <- NULL
 				n.regions = 0
+				used.baits <- NULL
 			}
 		} else {
 			temp.regions <- NULL
 			n.regions = 0
+			used.baits <- NULL
 		}
 		# targetted baits
 		if(!is.null(targets.prop) && targets.prop > 0) {
 			n.targets = n * targets.prop
 			if (!is.null(params$targets)) {
-				temp.targets <- target_baits(chr.length = lengths[i, 2], n = n.regions, size = size, tiling = targets.tiling,
-				targets = params$targets, exclusions = params$exclusions, chr = lengths[i, 1])
+				temp.targets <- target_baits(chr.length = lengths[i, 2], n = n.targets, size = size, tiling = targets.tiling,
+					targets = params$targets, exclusions = params$exclusions, chr = lengths[i, 1], used.baits = used.baits)
 				n.targets = nrow(temp.targets)
+				used.baits <- c(used.baits, temp.targets$Start)
 			} else {
 				message("Message: No targets found for chromosome ", lengths[i, 1], ".")
 				temp.targets <- NULL
@@ -149,9 +153,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 		}
 		# random baits
 		n.random <- n - (n.regions + n.targets)
-		temp.random <- random_baits(chr.length = lengths[i, 2], n = n, size = size, 
-				exclusions = params$exclusions, chr = lengths[i, 1])
 		if (n.random > 0)
+			temp.random <- random_baits(chr.length = lengths[i, 2], n = n.random, size = size, 
+					exclusions = params$exclusions, chr = lengths[i, 1], used.baits = used.baits)
 		else
 			temp.random <- NULL
 		# bring together the different parts

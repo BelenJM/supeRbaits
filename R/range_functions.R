@@ -12,16 +12,16 @@
 #' 
 #' @keywords internal
 #' 
-region_baits <- function(chr.length, n, size, tiling = NULL, regions, exclusions = NULL, chr) {
+region_baits <- function(chr.length, n, size, tiling = NULL, regions, exclusions = NULL, chr, used.baits = NULL) {
 	cat("debug: region_baits\n"); flush.console()
 	temp_ranges <- regions
 	if (temp_ranges$stop[nrow(temp_ranges)] > chr.length)
 		temp_ranges$stop[nrow(temp_ranges)] <- chr.length
 	if (!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
-	valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = tiling, chr = chr)
 	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling, chr = chr)
-	return(get_bait_positions(ranges = valid_ranges, size = size, n = n.per.range))
+	valid.ranges <- check_ranges(ranges = temp.ranges, n = n, size = size, tiling = tiling, chr = chr, used.baits = used.baits)
+	return(get_bait_positions(ranges = valid.ranges, size = size, n = n.per.range, used.baits = used.baits))
 }
 
 #' Find valid ranges within the targets
@@ -33,14 +33,14 @@ region_baits <- function(chr.length, n, size, tiling = NULL, regions, exclusions
 #' 
 #' @keywords internal
 #' 
-target_baits <- function(chr.length, n, size, tiling = NULL, targets, exclusions = NULL, chr) {
+target_baits <- function(chr.length, n, size, tiling = NULL, targets, exclusions = NULL, chr, used.baits = NULL) {
 	cat("debug: target_baits\n"); flush.console()
 	temp_ranges <- find_target_ranges(targets = targets, size = size, chr.length = chr.length)
 	if(!is.null(exclusions))
 		temp_ranges <- trim_ranges(ranges = ranges, exclusions = exclusions)
-	temp_ranges <- check_ranges(ranges = temp_ranges, size = size, tiling = tiling, chr = chr)
 	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling, chr = chr)
-	return(get_bait_positions(ranges = valid_ranges, size = size, n = n.per.range))
+	valid.ranges <- check_ranges(ranges = temp.ranges, n = n, size = size, tiling = tiling, chr = chr, used.baits = used.baits)
+	return(get_bait_positions(ranges = valid.ranges, size = size, n = n.per.range, used.baits = used.baits))
 }
 
 #' Extract n number of baits randomly from parts of the chromosome length
@@ -51,7 +51,7 @@ target_baits <- function(chr.length, n, size, tiling = NULL, targets, exclusions
 #' 
 #' @keywords internal
 #' 
-random_baits <- function(chr.length, n, size, exclusions = NULL, chr) {
+random_baits <- function(chr.length, n, size, exclusions = NULL, chr, used.baits = NULL) {
 	cat("debug: random_baits\n"); flush.console()
 	if(!is.null(exclusions)) {
 		# Check if the start is excluded
@@ -78,7 +78,8 @@ random_baits <- function(chr.length, n, size, exclusions = NULL, chr) {
 		valid_ranges <- check_ranges(ranges = temp_ranges, n = n, size = size, tiling = 1, chr = chr)
 		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = 1, chr = chr)
 	}
-	return(get_bait_positions(ranges = valid_ranges, size = size, n = n.per.range))
+	valid.ranges <- check_ranges(ranges = temp.ranges, n = n, size = size, tiling = 1, chr = chr, used.baits = used.baits)
+	return(get_bait_positions(ranges = valid.ranges, size = size, n = n.per.range, used.baits = used.baits))
 }
 
 #' Make a table of valid ranges within the chromosome
@@ -173,11 +174,12 @@ trim_ranges <- function(ranges, exclusions) {
 #' 
 #' @keywords internal
 #' 
-check_ranges <- function(ranges, n, size, chr, tiling = 1) {
+check_ranges <- function(ranges, n, size, chr, tiling = 1, used.baits = NULL) {
 	cat("debug: check_ranges\n"); flush.console()
 	# Range size
-	ranges$range <- (ranges$stop - ranges$start) + 1
-	ranges$max.baits <- ranges$range - size
+	ranges$range <- (ranges$stop - ranges$start) + 1 # +1 because the first bp also counts
+	ranges$used.baits <- apply(ranges, 1, function(x) sum(used.baits >= x[1] & used.baits <= x[2]))
+	ranges$max.baits <- ranges$range - ranges$used.baits - size
 	if (any(to.exclude <- ranges$max.baits < tiling)) {
 		warning(paste0(sum(to.exclude), " sub-ranges on chromosome ", chr," are too small to fit the desired number of baits and will be excluded."), call. = FALSE, immediate. = TRUE)
 		if (all(to.exclude))
@@ -253,7 +255,7 @@ expand_ranges <- function(ranges, size) {
 #' 
 #' @keywords internal
 #' 
-get_bait_positions <- function(ranges, size, n) {
+get_bait_positions <- function(ranges, size, n, used.baits = NULL) {
 	cat("debug: get_bait_positions\n"); flush.console()
 	# get the bait positions
 	recipient <- data.frame(
@@ -261,7 +263,17 @@ get_bait_positions <- function(ranges, size, n) {
 		Stop = integer()
 		)
 	for (i in 1:nrow(ranges)) {
-		aux.start <- sample(ranges[i, 1]:(ranges[i, 2] - size), size = n[i], replace = FALSE)
+		# find and exclude already used baits
+		the.range <- ranges$start[i]:(ranges$stop[i] - size)
+		already.used <- used.baits[used.baits %in% the.range]
+		if (length(already.used) == 0) {
+			new.starts <- the.range
+		} else {
+			already.used.position <- match(already.used, the.range)
+			new.starts <- the.range[-already.used.position]
+		}
+		# sample new baits
+		aux.start <- sample(new.starts, size = n[i], replace = FALSE)
 		aux.df <- data.frame(
 			Start = aux.start,
 			Stop = aux.start + size

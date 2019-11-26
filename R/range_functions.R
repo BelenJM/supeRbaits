@@ -18,9 +18,9 @@ region_baits <- function(chr.length, n, size, tiling = NULL, regions, exclusions
 	if (temp.ranges$stop[nrow(temp.ranges)] > chr.length)
 		temp.ranges$stop[nrow(temp.ranges)] <- chr.length
 	if (!is.null(exclusions))
-	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling, chr = chr)
 		temp.ranges <- trim_ranges(ranges = temp.ranges, exclusions = exclusions)
 	valid.ranges <- check_ranges(ranges = temp.ranges, n = n, size = size, tiling = tiling, chr = chr, used.baits = used.baits)
+	n.per.range <- check_n(ranges = valid.ranges, n = n, tiling = tiling, chr = chr, type = "region")
 	return(get_bait_positions(ranges = valid.ranges, size = size, n = n.per.range, used.baits = used.baits))
 }
 
@@ -37,9 +37,9 @@ target_baits <- function(chr.length, n, size, tiling = NULL, targets, exclusions
 	cat("debug: target_baits\n"); flush.console()
 	temp.ranges <- find_target_ranges(targets = targets, size = size, chr.length = chr.length)
 	if(!is.null(exclusions))
-	n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = tiling, chr = chr)
 		temp.ranges <- trim_ranges(ranges = temp.ranges, exclusions = exclusions)
 	valid.ranges <- check_ranges(ranges = temp.ranges, n = n, size = size, tiling = tiling, chr = chr, used.baits = used.baits)
+	n.per.range <- check_n(ranges = valid.ranges, n = n, tiling = tiling, chr = chr, type = "target")
 	return(get_bait_positions(ranges = valid.ranges, size = size, n = n.per.range, used.baits = used.baits))
 }
 
@@ -70,10 +70,8 @@ random_baits <- function(chr.length, n, size, exclusions = NULL, chr, used.baits
 		if (nrow(exclusions) > 0)
 			temp.ranges <- find_random_ranges(starting.point = starting.point, chr.length = chr.length, exclusions = exclusions)
 		else
-		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = 1, chr = chr)
 			temp.ranges <- data.frame(Start = starting.point, Stop = chr.length)
 	} else {
-		n.per.range <- check_n(ranges = valid_ranges, n = n, size = size, tiling = 1, chr = chr)
 		temp.ranges <- data.frame(start = 1, stop = chr.length)
 	}
 	valid.ranges <- check_ranges(ranges = temp.ranges, n = n, size = size, tiling = 1, chr = chr, used.baits = used.baits)

@@ -159,7 +159,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		else
 			temp.random <- NULL
 		# bring together the different parts
-		bait.points[[i]] <- rbind(temp.regions, temp.targets, temp.random) # not sure if this works with nulls
+		bait.points[[i]] <- rbind(temp.regions, temp.targets, temp.random)
 	}
 	names(bait.points) <- as.character(lengths[, 1])
 

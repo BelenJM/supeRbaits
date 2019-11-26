@@ -208,7 +208,6 @@ check_n <- function(ranges, n, tiling = 1, chr, type = c("random", "target", "re
 	if (sum(ranges$max.baits) > n) {
 		# start with the minimum tiling and work from there
 		n.per.range <- rep(tiling, nrow(ranges))
-		# n.per.range <- rep(min(roundDown(n / nrow(ranges), to = 1), ranges$max.baits), nrow(ranges))
 		# start incrementing until n is fulfilled
 		while (sum(n.per.range) < n) {
 			missing.n <- n - sum(n.per.range)

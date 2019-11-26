@@ -200,25 +200,34 @@ check_n <- function(ranges, n, tiling = 1, chr, type = c("random", "target", "re
 		warning(paste0("The maximum possible number of unique ", type, " baits (", sum(ranges$max.baits), ") for chromosome ", chr, " is lower than the desired n (", n, ")."), call. = FALSE, immediate. = TRUE)
 		n <- sum(ranges$max.baits)
 	}
-	n.per.range <- rep(roundDown(n / nrow(ranges), to = 1), nrow(ranges))
-	# ensure you get the real n back by adding some here and there if needed
-	while (sum(n.per.range) < n) {
-		missing.n <- n - sum(n.per.range)
-		expandable <- which(ranges$max.baits > n.per.range)
-		max.extra.n <- min(ranges$max.baits[expandable] - n.per.range[expandable])
-		# If the number of mising baits is smaller than the available ranges
-		if (missing.n < length(expandable)) {
-			add.here <- sample(expandable, size = missing.n, replace = FALSE)
-			n.per.range[add.here] <- n.per.range[add.here] + 1
-		} else {
-			# If the number of maximum baits that can be allocated to the available ranges is bigger than needed
-			if (length(expandable) * max.extra.n > missing.n) {
-				# This will lead to a new iteration where the first IF will be triggered
-				to.add <- roundDown(missing.n / length(expandable), to = 1)
-				n.per.range[expandable] <- n.per.range[expandable] + to.add
-			# If the number of maximum baits that can be allocated is SMALLER than the missing bait number
+	# If the number of requested baits matches the available baits (most likely because the if above was triggered, finish here)
+	if (sum(ranges$max.baits) == n)
+		return(ranges$max.baits)
+	
+	# If there are too many bait spots available, distribute equally.
+	if (sum(ranges$max.baits) > n) {
+		# start with the minimum tiling and work from there
+		n.per.range <- rep(tiling, nrow(ranges))
+		# n.per.range <- rep(min(roundDown(n / nrow(ranges), to = 1), ranges$max.baits), nrow(ranges))
+		# start incrementing until n is fulfilled
+		while (sum(n.per.range) < n) {
+			missing.n <- n - sum(n.per.range)
+			expandable <- which(ranges$max.baits > n.per.range)
+			max.extra.n <- min(ranges$max.baits[expandable] - n.per.range[expandable])
+			# If the number of mising baits is smaller than the available ranges
+			if (missing.n < length(expandable)) {
+				add.here <- sample(expandable, size = missing.n, replace = FALSE)
+				n.per.range[add.here] <- n.per.range[add.here] + 1
 			} else {
-				n.per.range[expandable] <- n.per.range[expandable] + max.extra.n
+				# If the number of maximum baits that can be allocated to the available ranges is BIGGER than the missing bait number
+				if (length(expandable) * max.extra.n > missing.n) {
+					# This will lead to a new iteration where the first if will be triggered
+					to.add <- roundDown(missing.n / length(expandable), to = 1)
+					n.per.range[expandable] <- n.per.range[expandable] + to.add
+				# If the number of maximum baits that can be allocated is SMALLER OR EQUAL to the missing bait number
+				} else {
+					n.per.range[expandable] <- n.per.range[expandable] + max.extra.n
+				}
 			}
 		}
 	}

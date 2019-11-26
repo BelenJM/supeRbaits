@@ -58,11 +58,11 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	if (is.null(regions.prop) & !is.null(regions))
 		stop("Please include the desired percentage of regional baits in 'regions.prop'.\n")
-	if (is.null(regions.tiling) & !is.null(regions))
+	if (!is.null(regions.tiling) & is.null(regions))
 		stop("'regions.tiling' is set but no regions were included.\n")
 	if (is.null(targets.prop) & !is.null(targets))
 		stop("Please include the desired percentage of targetted baits in 'targets.prop'.\n")
-	if (is.null(targets.tiling) & !is.null(targets))
+	if (!is.null(targets.tiling) & is.null(targets))
 		stop("'targets.tiling' is set but no targets were included.\n")
 
 	if (length(gc) != 2)

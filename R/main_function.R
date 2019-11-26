@@ -151,6 +151,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 		n.random <- n - (n.regions + n.targets)
 		temp.random <- random_baits(chr.length = lengths[i, 2], n = n, size = size, 
 				exclusions = params$exclusions, chr = lengths[i, 1])
+		if (n.random > 0)
+		else
+			temp.random <- NULL
 		# bring together the different parts
 		bait.points[[i]] <- rbind(temp.regions, temp.targets, temp.random) # not sure if this works with nulls
 	}

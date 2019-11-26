@@ -65,6 +65,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (!is.null(targets.tiling) & is.null(targets))
 		stop("'targets.tiling' is set but no targets were included.\n")
 
+	if (sum(regions.prop, targets.prop) > 1)
+		stop("The sum of 'regions.prop' and 'targets.prop' must not be greated than one.\n")
+	
 	if (length(gc) != 2)
 		stop("Please provide two values in 'gc' (minimum and maximum percentage).\n")
 	if (!is.numeric(gc))

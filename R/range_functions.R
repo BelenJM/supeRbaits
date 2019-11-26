@@ -55,15 +55,15 @@ random_baits <- function(chr.length, n, size, exclusions = NULL, chr, used.baits
 	cat("debug: random_baits\n"); flush.console()
 	if(!is.null(exclusions)) {
 		# Check if the start is excluded
-		if (exclusions[1, 2] == 1) {
-			starting.point <- exclusions[1, 3] + 1
+		if (exclusions$start[1] == 1) {
+			starting.point <- exclusions$stop[1] + 1
 			exclusions <- exclusions[-1, ]
 		} else {
 			starting.point <- 1
 		}
 		# If there are more exclusions, check if length is excluded
-		if (nrow(exclusions) > 0 && exclusions[nrow(exclusions), 3] == chr.length) {
-			chr.length <- exclusions[nrow(exclusions), 2] - 1
+		if (nrow(exclusions) > 0 && exclusions$stop[nrow(exclusions)] == chr.length) {
+			chr.length <- exclusions$start[nrow(exclusions)] - 1
 			exclusions <- exclusions[-nrow(exclusions), ] 
 		}
 		# If there are more exclusions, break the main range appart
@@ -117,8 +117,8 @@ find_random_ranges <- function (starting.point, chr.length, exclusions) {
 find_target_ranges <- function(targets, size, chr.length) {
 	cat("debug: find_target_ranges\n"); flush.console()
 	x <- data.frame(
-		start = c(targets[, 2] - size),
-		stop = c(targets[, 2])
+		start = c(targets$target - size),
+		stop = c(targets$target + size)
 		)
 	if(x$stop[nrow(x)] > chr.length)
 		x$stop[nrow(x)] <- chr.length
@@ -142,17 +142,17 @@ trim_ranges <- function(ranges, exclusions) {
 		# for each exclusion area ...
 		for (j in 1:nrow(exclusions)) {
 			# the starting point of the range is within an exclusion
-			if (ranges[i, 1] <= exclusions[j, 2] && ranges[i, 1] >= exclusions[j, 1]) {
-				if (ranges[i, 2] > exclusions [j, 2]) {
-					ranges[i, 1] <- exclusions[j, 2] + 1
+			if (ranges$start[i] <= exclusions$stop[j] && ranges$start[i] >= exclusions$start[j]) {
+				if (ranges$stop[i] > exclusions$stop[j]) {
+					ranges$start[i] <- exclusions$stop[j] + 1
 				} else {
 					exclude.range <- c(exclude.range, i)
 				}
 			}				
 			# the ending point of the range is within an exclusion
-			if (ranges[i, 2] >= exclusions[j, 1] && ranges[i, 2] <= exclusions[j, 2]) {
-				if (ranges[i, 1] < exclusions [j, 1]) {
-					ranges[i, 2] <- exclusions[j, 1] - 1
+			if (ranges$stop[i] >= exclusions$start[j] && ranges$stop[i] <= exclusions$stop[j]) {
+				if (ranges$start[i] < exclusions$start[j]) {
+					ranges$stop[i] <- exclusions$start[j] - 1
 				} else {
 					exclude.range <- c(exclude.range, i)
 				}
@@ -192,7 +192,7 @@ check_ranges <- function(ranges, n, size, chr, tiling = 1, used.baits = NULL) {
 		max.ranges <- roundDown(n / tiling, to = 1)
 		ranges <- ranges[sample(1:nrow(ranges), size = max.ranges, replace = FALSE), ]
 	}	
-	return(ranges[, c(1:2, 4)])
+	return(ranges[, c("start", "stop", "max.baits")])
 }
 
 check_n <- function(ranges, n, tiling = 1, chr, type = c("random", "target", "region")) {
@@ -240,7 +240,7 @@ expand_ranges <- function(ranges, size) {
 	cat("debug: expand_ranges\n"); flush.console()
 	output <- c()
 	for (i in 1:nrow(ranges)) {
-		output <- c(output, seq(from = ranges[i, 1], to = ranges[i, 2] - size, by = 1))
+		output <- c(output, seq(from = ranges$start[i], to = ranges$stop[i] - size, by = 1))
 	}
 	return(output)
 }

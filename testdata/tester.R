@@ -1,5 +1,8 @@
 # Start by moving to the main repository folder (i.e. GitHub\supeRbaits)
 
+devtools::load_all()
+setwd("testdata")
+
 reload <- function(){	
 	setwd("..")
 	devtools::load_all()
@@ -9,7 +12,7 @@ reload <- function(){
 reload()
 
 # all random test
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", debug = TRUE)
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", debug = FALSE)
 
 # exclusions tests
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", exclusions = "exclusion_example-bad_name.txt")
@@ -67,7 +70,11 @@ reload()
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
 		targets = "targets_example.txt", targets.prop = 1, debug = TRUE)
 	test_targets <- read.table("targets_example.txt")
-	!all(sapply(x[[1]][[1]]$Start_bp, function(x_i) any(x_i[1] >= test_targets[, 2] - 19))) #Should return false
+	!all(sapply(x[[1]][[1]]$Start_bp, function(x_i) {
+		any(sapply(test_targets[, 2], function(t) {
+			x_i[1] >= (t - 19) & x_i[1] <= t
+		}))
+	})) # Should return false
 
 # targets + exclusions test
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 

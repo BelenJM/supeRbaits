@@ -121,6 +121,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 			if (!is.null(params$regions)) {
 				temp.regions <- region_baits(chr.length = lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
 				regions = params$regions, exclusions = params$exclusions, chr = lengths[i, 1], used.baits = NULL)
+				temp.regions$Type <- rep("region", nrow(temp.regions))
 				n.regions = nrow(temp.regions)
 				used.baits <- temp.regions$Start
 			} else {
@@ -140,6 +141,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 			if (!is.null(params$targets)) {
 				temp.targets <- target_baits(chr.length = lengths[i, 2], n = n.targets, size = size, tiling = targets.tiling,
 					targets = params$targets, exclusions = params$exclusions, chr = lengths[i, 1], used.baits = used.baits)
+				temp.targets$Type <- rep("target", nrow(temp.targets))
 				n.targets = nrow(temp.targets)
 				used.baits <- c(used.baits, temp.targets$Start)
 			} else {
@@ -153,11 +155,13 @@ main_function <- function(n, size, database, exclusions = NULL,
 		}
 		# random baits
 		n.random <- n - (n.regions + n.targets)
-		if (n.random > 0)
+		if (n.random > 0) {
 			temp.random <- random_baits(chr.length = lengths[i, 2], n = n.random, size = size, 
-					exclusions = params$exclusions, chr = lengths[i, 1], used.baits = used.baits)
-		else
+				exclusions = params$exclusions, chr = lengths[i, 1], used.baits = used.baits)
+			temp.random$Type <- rep("random", nrow(temp.random))
+		} else {
 			temp.random <- NULL
+		}
 		# bring together the different parts
 		bait.points[[i]] <- rbind(temp.regions, temp.targets, temp.random)
 	}

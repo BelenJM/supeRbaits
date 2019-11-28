@@ -11,6 +11,7 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 header = [
     "Bait_no",
     "ChromName",
+    "Type",
     "Start_bp",
     "End_bp",
     "Sequence_bait",
@@ -72,9 +73,10 @@ def bait_parser(bait_file_handler, header=False):
     for index, line in enumerate(bait_file_handler):
         if not(header) and index == 0:
             continue
-        yield map(int, line.strip().split()[0:2])
+        (start, end, bait_type) = line.strip().split()[0:3]
+        yield (int(start), int(end), str(bait_type))
 
-def row_builder(index, bait_chrom_name, seq, seq_start, seq_end):
+def row_builder(index, bait_chrom_name, seq, seq_start, seq_end, bait_type):
     """Build a row of the data frame.
 
     The row consists of the index of the chromosome, its name,
@@ -94,6 +96,7 @@ def row_builder(index, bait_chrom_name, seq, seq_start, seq_end):
     seq             -- the sequence of the chromosome
     seq_start       -- the start of the bait sequence
     seq_end         -- the end of the bait sequence
+    bait_type       -- the bait type (random, region, target)
     """
     bait_seq = seq[(seq_start - 1):seq_end]
     nuc_count = get_nuc_count(bait_seq)
@@ -101,6 +104,7 @@ def row_builder(index, bait_chrom_name, seq, seq_start, seq_end):
     return [
         index + 1,
         bait_chrom_name,
+        bait_type,
         seq_start,
         seq_end,
         bait_seq,
@@ -139,8 +143,8 @@ def process_bait_file(genome_file_path, bait_file_path, df_header, df_row_builde
     df = DataFrame(columns = df_header)
     
     with open(output_file_path, "w") as output_file_handler, open(bait_file_path, "r") as bait_file_handler:
-        for index, (seq_start, seq_end) in enumerate(bait_parser(bait_file_handler)):
-            df.loc[index] = row_builder(index, bait_chrom_name, seq, seq_start, seq_end)
+        for index, (seq_start, seq_end, bait_type) in enumerate(bait_parser(bait_file_handler)):
+            df.loc[index] = row_builder(index, bait_chrom_name, seq, seq_start, seq_end, bait_type)
 
         df.to_csv(output_file_handler, sep="\t", index=None)
                 

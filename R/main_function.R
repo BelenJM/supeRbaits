@@ -170,7 +170,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 	# fetch the baits' sequences (Python stuff)
 	
 	baits <- lapply(seq_along(bait.points), function(i) {
-		write.table(bait.points[i], file = paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], ".txt"), row.names = FALSE)
+		write.table(bait.points[[i]], file = paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], ".txt"), row.names = FALSE, quote = FALSE)
 		retrieve_baits(chr = names(bait.points)[i], database = database)
 		output <- data.table::fread(paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], "_py.txt"))
 		output$pGC <- output$Number_GC / (size + 1)

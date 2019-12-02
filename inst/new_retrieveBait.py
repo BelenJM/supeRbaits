@@ -118,47 +118,54 @@ def row_builder(index, bait_chrom_name, seq, seq_start, seq_end, bait_type):
         nuc_count["GC"]
     ]
         
-def process_bait_file(genome_file_path, bait_file_path, df_header, df_row_builder, output_file_path = "output.txt"):
+def process_bait_files(genome_file_path, bait_files_paths, df_header, df_row_builder, output_suffix):
     """Construct a data frame with columns df_header and rows according to df_row_builder.
 
     The data frame is written to output_file_path.
 
     Keyword arguments:
     genome_file_path -- the path to the genome file
-    bait_file_path   -- the path to the genome file
+    bait_files_paths -- the path to the genome file
     df_header        -- the data frame header as a list of column names
     df_row_builder   -- a function that builds a row for the data frame given
                         the index, name and sequence of a chromosome in the genome file
-    output_file_path -- the path to the output file including the file name and extension
+    output_suffix    -- suffix to append to each bait file name
     """
-    get_bait_chrom_name = lambda x: PurePath(x).stem
-    bait_chrom_name = get_bait_chrom_name(bait_file_path)
-    
-    try:
-        seq = get_chrom_seq(bait_chrom_name, genome_file_path)
-    except RuntimeError as e:
-        print(f"Failed to get chromosome sequence: {str(e)}")
-        exit()
+    get_bait_name = lambda x: PurePath(x).stem
+    get_output_file_path = lambda x: PurePath(x).parent / f"{PurePath(x).stem}{output_suffix}{PurePath(x).suffix}"
 
-    df = DataFrame(columns = df_header)
-    
-    with open(output_file_path, "w") as output_file_handler, open(bait_file_path, "r") as bait_file_handler:
-        for index, (seq_start, seq_end, bait_type) in enumerate(bait_parser(bait_file_handler)):
-            df.loc[index] = row_builder(index, bait_chrom_name, seq, seq_start, seq_end, bait_type)
+    all_dfs = []
+    for bait_file_path in bait_files_paths:
+        bait_chrom_name = get_bait_name(bait_file_path)
+        output_file_path = get_output_file_path(bait_file_path)
 
-        df.to_csv(output_file_handler, sep="\t", index=None)
-                
-    return df
+        try:
+            seq = get_chrom_seq(bait_chrom_name, genome_file_path)
+        except RuntimeError as e:
+            print(f"Failed to get chromosome sequence: {str(e)}")
+            exit()
+
+        df = DataFrame(columns = df_header)
+
+        with open(output_file_path, "w") as output_file_handler, open(bait_file_path, "r") as bait_file_handler:
+            for index, (seq_start, seq_end, bait_type) in enumerate(bait_parser(bait_file_handler)):
+                df.loc[index] = row_builder(index, bait_chrom_name, seq, seq_start, seq_end, bait_type)
+
+            df.to_csv(output_file_handler, sep="\t", index=None)
+            
+        all_dfs.append(df)
+        
+    return all_dfs
 
 def main():
     parser = ArgumentParser(description="Extract info from the genome FASTA file according to the provided chromosome bait file.")
     parser.add_argument("fasta_file_path", type=str, help="Path to the FASTA file.")
-    parser.add_argument("bait_file_path", type=str, help="Path to the bait file.")
-    parser.add_argument("output_file_path", type=str, nargs="?", help="Path to the output file (including file name).", default="output.txt")
+    parser.add_argument("output_suffix", type=str, help="The output file name for each bait file is its original name with output_suffix appended.")
+    parser.add_argument("bait_files_paths", type=str, nargs="+", help="Paths to the bait files.")
     
     args = parser.parse_args()
 
-    process_bait_file(args.fasta_file_path, args.bait_file_path, header, row_builder, args.output_file_path)
+    process_bait_files(args.fasta_file_path, args.bait_files_paths, header, row_builder, args.output_suffix)
 
 if __name__ == "__main__":
     main()

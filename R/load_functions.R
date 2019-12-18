@@ -103,24 +103,24 @@ load_lengths <- function(file){
 #' @param exclusions The exclusions dataframe
 #' @param regions The regions dataframe
 #' @param targets The targets dataframe
-#' @param lengths The lengths dataframe
+#' @param the.lengths The lengths dataframe
 #' 
 #' @keywords internal
 #' 
 #' @return The lengths dataframe
 #' 
-check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, lengths) {
-	cat("debug: check_chr_names\n"); flush.console()
+check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, the.lengths) {
+ #	cat("debug: check_chr_names\n"); flush.console()
 	if (!is.null(exclusions)) {
-		if (any(is.na(match(exclusions[, 1], lengths[, 1]))))
+		if (any(is.na(match(exclusions[, 1], the.lengths[, 1]))))
 			stop("Not all chromosomes' names in the exclusions match the names of the listed chromosomes.\n")
 	}
 	if (!is.null(regions)) {
-		if (any(is.na(match(regions[, 1], lengths[, 1]))))
+		if (any(is.na(match(regions[, 1], the.lengths[, 1]))))
 			stop("Not all chromosomes' names in the regions of interest match the names of the listed chromosomes.\n")
 	}
 	if (!is.null(targets)) {
-		if (any(is.na(match(targets[, 1], lengths[, 1]))))
+		if (any(is.na(match(targets[, 1], the.lengths[, 1]))))
 			stop("Not all chromosomes' names in the targets match the names of the listed chromosomes.\n")
 	}
 }
@@ -133,26 +133,26 @@ check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, l
 #' 
 #' @return The lengths dataframe
 #' 
-check_chr_boundaries <- function(exclusions = NULL, regions = NULL, targets = NULL, lengths) {
-	cat("debug: check_chr_boundaries\n"); flush.console()
+check_chr_boundaries <- function(exclusions = NULL, regions = NULL, targets = NULL, the.lengths) {
+ #	cat("debug: check_chr_boundaries\n"); flush.console()
 	if (!is.null(exclusions)) {
 		for(i in unique(exclusions[, 1])) {
-			link <- match(i, lengths[, 1])
-			if (any(exclusions[exclusions[ ,1] == i, 2:3] > lengths[link, 2]))
+			link <- match(i, the.lengths[, 1])
+			if (any(exclusions[exclusions[ ,1] == i, 2:3] > the.lengths[link, 2]))
 				stop("Some data in the exclusions is off-boundaries.\n")
 		}
 	}
 	if (!is.null(regions)) {
 		for(i in unique(regions[, 1])) {
-			link <- match(i, lengths[, 1])
-			if (any(regions[regions[ ,1] == i, 2:3] > lengths[link, 2]))
+			link <- match(i, the.lengths[, 1])
+			if (any(regions[regions[ ,1] == i, 2:3] > the.lengths[link, 2]))
 				stop("Some data in the regions if interest is off-boundaries.\n")
 		}
 	}
 	if (!is.null(targets)) {
 		for(i in unique(targets[, 1])) {
-			link <- match(i, lengths[, 1])
-			if (any(targets[targets[ ,1] == i, 2] > lengths[link, 2]))
+			link <- match(i, the.lengths[, 1])
+			if (any(targets[targets[ ,1] == i, 2] > the.lengths[link, 2]))
 				stop("Some data in the targets is off-boundaries.\n")
 		}
 	}

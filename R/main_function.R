@@ -95,7 +95,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 	#setwd("..")
 
 	# Import data
-	lengths <- load_lengths(file = "temp_folder_for_supeRbaits/genome_size.txt")
+	the.lengths <- load_lengths(file = database, debug = debug)
 	if(!is.null(exclusions))
 		exclusions <- load_exclusions(file = exclusions)
 	if(!is.null(regions))
@@ -104,9 +104,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 		targets <- load_targets(file = targets)
 
 	# Compatibility checks
-	check_chr_names(exclusions = exclusions, regions = regions, targets = targets, lengths = lengths)
-	check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, lengths = lengths)
-	if (any(size > lengths[, 2]))
+	check_chr_names(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
+	check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
+	if (any(size > the.lengths[, 2]))
 		stop("'size' is larger than at least one of the chromosome lengths.\n")
 
 	bait.points <- list()

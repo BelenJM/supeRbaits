@@ -22,11 +22,12 @@
 main_function <- function(n, size, database, exclusions = NULL, 
 	regions = NULL, regions.prop = NULL, regions.tiling = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
-	seed = NULL, restrict = NULL, debug = FALSE, gc = c(0.3, 0.5)){
+	seed = NULL, restrict = NULL, debug = FALSE, gc = c(0.3, 0.5),
+	verbose = FALSE){
 
   
 	if (debug) {
-    message("!!!--- Debug mode has been activated ---!!!")
+    message("!!!--- Debug mode has been activated ---!!!\n            ", Sys.time())
 		on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
 	} else {
 		on.exit(unlink("temp_folder_for_supeRbaits", recursive = TRUE), add = TRUE)
@@ -111,8 +112,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	bait.points <- list()
 	for (i in 1:nrow(lengths)) {
-		if (debug)
-			cat(paste0("debug: examining chromosome ", lengths[i, 1], ".\n"))
 		# extract relevant parameters
 		params <- trim_parameters(chr = lengths[i, 1], exclusions = exclusions, regions = regions, targets = targets)
 		# region baits
@@ -124,8 +123,11 @@ main_function <- function(n, size, database, exclusions = NULL,
 				temp.regions$Type <- rep("region", nrow(temp.regions))
 				n.regions = nrow(temp.regions)
 				used.baits <- temp.regions$Start
+	message("M: Finding bait positions for each sequence.")
+	if (!verbose)
+  	pb <- txtProgressBar(min = 0, max = nrow(the.lengths), initial = 0, style = 3, width = 60)
+
 			} else {
-				message("Message: No regions found for chromosome ", lengths[i, 1], ".")
 				temp.regions <- NULL
 				n.regions = 0
 				used.baits <- NULL
@@ -144,8 +146,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 				temp.targets$Type <- rep("target", nrow(temp.targets))
 				n.targets = nrow(temp.targets)
 				used.baits <- c(used.baits, temp.targets$Start)
+					if (verbose)
+						message("M: No targets found for chromosome ", the.lengths[i, 1], ".")
 			} else {
-				message("Message: No targets found for chromosome ", lengths[i, 1], ".")
 				temp.targets <- NULL
 				n.targets = 0
 			}
@@ -175,17 +178,36 @@ main_function <- function(n, size, database, exclusions = NULL,
 		output <- data.table::fread(paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], "_py.txt"))
 		output$pGC <- output$Number_GC / (size + 1)
 		return(output)
+	    if (!verbose)
+	    	setTxtProgressBar(pb, i) # Progress bar    			
+			return(output)
+	  if (!verbose)
+			close(pb)
 	})
 	names(baits) <- names(bait.points)
+	if (debug)
+		print(elapsed.time)
+	rm(elapsed.time)
+
+	message("M: Retrieving bait base pairs. This operation can take some time."); flush.console()
+
+
+	message("M: Verifying GC content in the baits")
 
 	good.baits <- lapply(seq_along(baits), function(i) {
 		link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
-		if (all(!link)) {
-			message(paste0("Message: No baits passed the GC percentage test for chromosome ", names(baits)[i], "."))
-			return(NULL)
+		if (verbose) {
+			if (all(!link)) {
+				message(paste0("M: No baits passed the GC percentage test for chromosome ", names(baits)[i], "."))
+				return(NULL)
+			}
+			if (any(!link)) {
+				if (sum(!link) == 1)
+					message(paste0("M: ", sum(!link), " bait was excluded from chr ", names(baits)[i], " due to its GC percentage."))
+				else
+					message(paste0("M: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage."))
+			}
 		}
-		if (any(!link))
-			message(paste0("Message: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage."))
 		return(baits[[i]][link, ])
 	})
 	names(good.baits) <- names(baits)
@@ -203,7 +225,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 #' @keywords internal
 #' 
 trim_parameters <- function(chr, exclusions = NULL, regions = NULL, targets = NULL) {
-	cat("debug: trim_parameters\n"); flush.console()
+	# cat("debug: trim_parameters\n"); flush.console()
 	output <- list(exclusions  = NULL, regions = NULL, targets = NULL)
 	if (!is.null(exclusions)) 
 		output[[1]] <- subsample(input = exclusions, link = chr)
@@ -225,7 +247,7 @@ trim_parameters <- function(chr, exclusions = NULL, regions = NULL, targets = NU
 #' @keywords internal
 #' 
 subsample <- function(input, link) {
-	cat("debug: subsample\n"); flush.console()
+ #	cat("debug: subsample\n"); flush.console()
 	chr <- link
 	link <- grepl(link, input[, 1])
 	if (any(link)) {

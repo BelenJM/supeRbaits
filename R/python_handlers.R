@@ -23,7 +23,7 @@ check_python <- function () {
 #' @keywords internal
 #' 
 get_lengths <- function(database, restrict = NULL) {
-	cat("debug: get_lengths\n"); flush.console()
+	# cat("debug: get_lengths\n"); flush.console()
 	if (file.exists("temp_folder_for_supeRbaits/genome_size.txt"))
 		file.remove("temp_folder_for_supeRbaits/genome_size.txt")
 	path <- paste(system.file(package = "supeRbaits"), "new_lengthChrom.py", sep="/")
@@ -45,7 +45,7 @@ get_lengths <- function(database, restrict = NULL) {
 #' @export
 #' 
 retrieve_baits <- function(chr, database) {
-	cat("debug: retrieve_baits\n"); flush.console()
+	# cat("debug: retrieve_baits\n"); flush.console()
 	path <- paste(system.file(package = "supeRbaits"), "new_retrieveBait.py", sep="/")
 	bait.file <- paste0("temp_folder_for_supeRbaits/", chr, ".txt")
 	output.file <- paste0("temp_folder_for_supeRbaits/", chr, "_py.txt")

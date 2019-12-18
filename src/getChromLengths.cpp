@@ -1,3 +1,4 @@
+// [[Rcpp::plugins("cpp11")]]
 #include <Rcpp.h>
 #include <vector>
 #include <fstream>
@@ -7,8 +8,8 @@ using namespace Rcpp;
 using namespace std;
 
 // [[Rcpp::export]]
-DataFrame getChromLengths(string path) {
-  ifstream input(path);
+DataFrame getChromLengths(std::string path) {
+  ifstream input(path.c_str());
   
   if(!input.good()) {
     stop("Error opening file '%s'. Exiting...", path);
@@ -27,7 +28,7 @@ DataFrame getChromLengths(string path) {
 	name.clear();
       }
       if(!line.empty()) {
-	for (int i=1; line[i] != ' ' && i < line.length(); i++) {
+	for (unsigned int i=1; line[i] != ' ' && i < line.length(); i++) {
 	  name += line[i];
 	}
       }

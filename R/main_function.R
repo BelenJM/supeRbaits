@@ -158,31 +158,44 @@ main_function <- function(n, size, database, exclusions = NULL,
 				temp.targets <- NULL
 				n.targets = 0
 			}
-
-	# fetch the baits' sequences (Python stuff)
-	
-	baits <- lapply(seq_along(bait.points), function(i) {
-		write.table(bait.points[[i]], file = paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], ".txt"), row.names = FALSE, quote = FALSE)
-		retrieve_baits(chr = names(bait.points)[i], database = database)
-		output <- data.table::fread(paste0("temp_folder_for_supeRbaits/", names(bait.points)[i], "_py.txt"))
-		output$pGC <- output$Number_GC / (size + 1)
-		return(output)
+			# random baits
+			n.random <- n - (n.regions + n.targets)
+			if (n.random > 0) {
+				temp.random <- random_baits(chr.length = the.lengths[i, 2], n = n.random, size = size, 
+					exclusions = params$exclusions, chr = the.lengths[i, 1], used.baits = used.baits, verbose = verbose)
+				temp.random$Type <- rep("random", nrow(temp.random))
+			} else {
+				temp.random <- NULL
+			}
+			# bring together the different parts
+			output <- rbind(temp.regions, temp.targets, temp.random)
 	    if (!verbose)
 	    	setTxtProgressBar(pb, i) # Progress bar    			
 			return(output)
+		})
 	  if (!verbose)
 			close(pb)
+		names(bait.points) <- as.character(the.lengths[, 1])
 	})
-	names(baits) <- names(bait.points)
 	if (debug)
 		print(elapsed.time)
 	rm(elapsed.time)
 
 	message("M: Retrieving bait base pairs. This operation can take some time."); flush.console()
 
+	to.print <- data.table::rbindlist(bait.points, use.names = TRUE, idcol = "ChromName")
+	data.table::fwrite(to.print, file = "temp_folder_for_supeRbaits/bait_positions.txt", sep = "\t")
+
+	if (debug)
+		print(system.time(baits <- retrieve_baits(database = database)))
+	else
+		baits <- retrieve_baits(database = database)
 
 	message("M: Verifying GC content in the baits")
 
+	baits$pGC <- baits$Number_GC / (size + 1)
+	baits <- split(baits, baits$ChromName)
+	
 	good.baits <- lapply(seq_along(baits), function(i) {
 		link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
 		if (verbose) {

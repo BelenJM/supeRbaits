@@ -110,65 +110,54 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (any(size > the.lengths[, 2]))
 		stop("'size' is larger than at least one of the chromosome lengths.\n")
 
-	bait.points <- list()
-	for (i in 1:nrow(lengths)) {
-		# extract relevant parameters
-		params <- trim_parameters(chr = lengths[i, 1], exclusions = exclusions, regions = regions, targets = targets)
-		# region baits
-		if(!is.null(regions.prop) && regions.prop > 0) {
-			n.regions = n * regions.prop
-			if (!is.null(params$regions)) {
-				temp.regions <- region_baits(chr.length = lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
-				regions = params$regions, exclusions = params$exclusions, chr = lengths[i, 1], used.baits = NULL)
-				temp.regions$Type <- rep("region", nrow(temp.regions))
-				n.regions = nrow(temp.regions)
-				used.baits <- temp.regions$Start
 	message("M: Finding bait positions for each sequence.")
 	if (!verbose)
   	pb <- txtProgressBar(min = 0, max = nrow(the.lengths), initial = 0, style = 3, width = 60)
 
+	elapsed.time <- system.time({
+		bait.points <- lapply(1:nrow(the.lengths), function(i) {
+			# extract relevant parameters
+			params <- trim_parameters(chr = the.lengths[i, 1], exclusions = exclusions, regions = regions, targets = targets)
+			# region baits
+			if(!is.null(regions.prop) && regions.prop > 0) {
+				n.regions = n * regions.prop
+				if (!is.null(params$regions)) {
+					temp.regions <- region_baits(chr.length = the.lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
+					regions = params$regions, exclusions = params$exclusions, chr = the.lengths[i, 1], used.baits = NULL, verbose = verbose)
+					temp.regions$Type <- rep("region", nrow(temp.regions))
+					n.regions = nrow(temp.regions)
+					used.baits <- temp.regions$Start
+				} else {
+					if (verbose)
+						message("M: No regions found for chromosome ", the.lengths[i, 1], ".")
+					temp.regions <- NULL
+					n.regions = 0
+					used.baits <- NULL
+				}
 			} else {
 				temp.regions <- NULL
 				n.regions = 0
 				used.baits <- NULL
 			}
-		} else {
-			temp.regions <- NULL
-			n.regions = 0
-			used.baits <- NULL
-		}
-		# targetted baits
-		if(!is.null(targets.prop) && targets.prop > 0) {
-			n.targets = n * targets.prop
-			if (!is.null(params$targets)) {
-				temp.targets <- target_baits(chr.length = lengths[i, 2], n = n.targets, size = size, tiling = targets.tiling,
-					targets = params$targets, exclusions = params$exclusions, chr = lengths[i, 1], used.baits = used.baits)
-				temp.targets$Type <- rep("target", nrow(temp.targets))
-				n.targets = nrow(temp.targets)
-				used.baits <- c(used.baits, temp.targets$Start)
+			# targetted baits
+			if(!is.null(targets.prop) && targets.prop > 0) {
+				n.targets = n * targets.prop
+				if (!is.null(params$targets)) {
+					temp.targets <- target_baits(chr.length = the.lengths[i, 2], n = n.targets, size = size, tiling = targets.tiling,
+						targets = params$targets, exclusions = params$exclusions, chr = the.lengths[i, 1], used.baits = used.baits, verbose = verbose)
+					temp.targets$Type <- rep("target", nrow(temp.targets))
+					n.targets = nrow(temp.targets)
+					used.baits <- c(used.baits, temp.targets$Start)
+				} else {
 					if (verbose)
 						message("M: No targets found for chromosome ", the.lengths[i, 1], ".")
+					temp.targets <- NULL
+					n.targets = 0
+				}
 			} else {
 				temp.targets <- NULL
 				n.targets = 0
 			}
-		} else {
-			temp.targets <- NULL
-			n.targets = 0
-		}
-		# random baits
-		n.random <- n - (n.regions + n.targets)
-		if (n.random > 0) {
-			temp.random <- random_baits(chr.length = lengths[i, 2], n = n.random, size = size, 
-				exclusions = params$exclusions, chr = lengths[i, 1], used.baits = used.baits)
-			temp.random$Type <- rep("random", nrow(temp.random))
-		} else {
-			temp.random <- NULL
-		}
-		# bring together the different parts
-		bait.points[[i]] <- rbind(temp.regions, temp.targets, temp.random)
-	}
-	names(bait.points) <- as.character(lengths[, 1])
 
 	# fetch the baits' sequences (Python stuff)
 	

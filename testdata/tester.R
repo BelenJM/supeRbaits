@@ -4,9 +4,10 @@ devtools::load_all()
 setwd("testdata")
 
 reload <- function(){	
+	x <- getwd()
+	on.exit(setwd(x))
 	setwd("..")
 	devtools::load_all()
-	setwd("testdata")
 }
 
 reload()

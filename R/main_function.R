@@ -14,6 +14,9 @@
 #' @param targets.tiling The minimum number of baits to distribute per target.
 #' @param seed A number to fix the randomization process, for reproducibility
 #' @param restrict A vector of chromosome names to which the analysis should be restricted.
+#' @param gc A vector of two values between 0 and 1, specifying the minimum and maximmum GC percentage allowed in the output baits.
+#' @param debug Logical: Should debug files be created?
+#' @param verbose Logical: Should detailed bait processing messages be displayed per sequence?
 #' 
 #' @return A dataframe of baits
 #' 
@@ -36,9 +39,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if(!is.null(seed))
 		set.seed(seed)
 
-	# Initial checks
-	# check_python()
-	
 	if (!is.numeric(n))
 		stop("'n' must be numeric.\n")
 	if (length(n) != 1)
@@ -89,14 +89,15 @@ main_function <- function(n, size, database, exclusions = NULL,
 	# create temp folder to dump stuff in
 	if (!dir.exists("temp_folder_for_supeRbaits"))
 		dir.create("temp_folder_for_supeRbaits")
-		
-	# extract lengths with python
-	#setwd("temp_folder_for_supeRbaits")
-	get_lengths(database = database, restrict = restrict)
-	#setwd("..")
 
 	# Import data
-	the.lengths <- load_lengths(file = database, debug = debug)
+		message("M: Compiling the sequences' lengths. This process can take some minutes.")
+		flush.console()
+		if (debug)
+			print(system.time(the.lengths <- getChromLengths(path = database)))
+		else
+			the.lengths <- getChromLengths(path = database)
+
 	if(!is.null(exclusions))
 		exclusions <- load_exclusions(file = exclusions)
 	if(!is.null(regions))

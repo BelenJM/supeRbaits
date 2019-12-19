@@ -4,11 +4,9 @@
 \alias{retrieve_baits}
 \title{Return bps}
 \usage{
-retrieve_baits(chr, database)
+retrieve_baits(database)
 }
 \arguments{
-\item{chr}{The chromosome name, used in error messages.}
-
 \item{database}{A database of chromosomes}
 }
 \value{

@@ -73,31 +73,6 @@ load_targets <- function(file){
 	return(output)
 }
 
-#' Load file with the chromosomes' length
-#' 
-#' @inheritParams load_exclusions
-#' 
-#' @keywords internal
-#' 
-#' @return The lengths dataframe
-#' 
-load_lengths <- function(file){
-	output <- read.table(file, sep = "\t")
-	if (!is.integer(output[, 2]))
-		stop("The second column in the chromosomes' length file does not appear to contain only numeric data.\n")
-	if (any(is.na(output)))
-		stop("There appear to be NA's in the chromosomes' length file.\n")
-	if (any(output[, 2] < 0))
-		stop("Some data in the chromosomes' length file appears to be negative.\n")
-	if (any(output[, 2] == 0))
-		stop("Some chromosomes' length is 0.\n")
-	if (any(table(output[, 1]) > 1))
-		stop("There are repeated chromosome names in the chromosomes' length file.\n")
-	colnames(output) <- c("chr", "length")
-	return(output)
- #	cat("debug: load_lengths\n"); flush.console()
-}
-
 #' Check chromosome name consistency
 #' 
 #' @param exclusions The exclusions dataframe

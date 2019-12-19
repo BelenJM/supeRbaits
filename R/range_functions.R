@@ -158,7 +158,7 @@ trim_ranges <- function(ranges, exclusions) {
 		}
 	}
 	if (!is.null(exclude.range)) {
-		ranges <- temp.ranges[-exclude.range, ]
+		ranges <- ranges[-exclude.range, ]
 	}
 	return(ranges)
 }

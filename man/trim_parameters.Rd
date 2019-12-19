@@ -4,8 +4,7 @@
 \alias{trim_parameters}
 \title{extract exclusions, regions, and targets relevant for the chromosome being analysed}
 \usage{
-trim_parameters(chr, exclusions = NULL, regions = NULL,
-  targets = NULL)
+trim_parameters(chr, exclusions = NULL, regions = NULL, targets = NULL)
 }
 \arguments{
 \item{chr}{The chromosome name}

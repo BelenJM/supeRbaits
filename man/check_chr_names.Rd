@@ -4,8 +4,7 @@
 \alias{check_chr_names}
 \title{Check chromosome name consistency}
 \usage{
-check_chr_names(exclusions = NULL, regions = NULL, targets = NULL,
-  lengths)
+check_chr_names(exclusions = NULL, regions = NULL, targets = NULL, the.lengths)
 }
 \arguments{
 \item{exclusions}{The exclusions dataframe}
@@ -14,7 +13,7 @@ check_chr_names(exclusions = NULL, regions = NULL, targets = NULL,
 
 \item{targets}{The targets dataframe}
 
-\item{lengths}{The lengths dataframe}
+\item{the.lengths}{The lengths dataframe}
 }
 \value{
 The lengths dataframe

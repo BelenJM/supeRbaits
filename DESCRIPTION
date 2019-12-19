@@ -8,10 +8,14 @@ Authors@R:
            email = "first.last@example.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
-License: What license it uses
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
+LinkingTo: Rcpp
 Imports: 
-    reticulate
-VignetteBuilder: knitr
+    Rcpp,
+    data.table,
+    utils,
+    graphics,
+    stats

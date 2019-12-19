@@ -4,8 +4,12 @@
 \alias{check_chr_boundaries}
 \title{Check that start and end points fall whithin chromosome boundaries}
 \usage{
-check_chr_boundaries(exclusions = NULL, regions = NULL,
-  targets = NULL, lengths)
+check_chr_boundaries(
+  exclusions = NULL,
+  regions = NULL,
+  targets = NULL,
+  the.lengths
+)
 }
 \arguments{
 \item{exclusions}{The exclusions dataframe}
@@ -14,7 +18,7 @@ check_chr_boundaries(exclusions = NULL, regions = NULL,
 
 \item{targets}{The targets dataframe}
 
-\item{lengths}{The lengths dataframe}
+\item{the.lengths}{The lengths dataframe}
 }
 \value{
 The lengths dataframe

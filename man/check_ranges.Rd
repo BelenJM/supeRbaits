@@ -4,7 +4,7 @@
 \alias{check_ranges}
 \title{Compare ranges' size with intended bait size}
 \usage{
-check_ranges(ranges, n, size, chr, tiling = 1)
+check_ranges(ranges, n, size, chr, tiling = 1, used.baits = NULL, verbose)
 }
 \arguments{
 \item{ranges}{a dataframe with starting and ending positions}

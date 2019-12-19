@@ -4,10 +4,23 @@
 \alias{main_function}
 \title{Generates random baits}
 \usage{
-main_function(n, size, database, exclusions = NULL, regions = NULL,
-  regions.prop = NULL, regions.tiling = NULL, targets = NULL,
-  targets.prop = NULL, targets.tiling = NULL, seed = NULL,
-  restrict = NULL, debug = FALSE)
+main_function(
+  n,
+  size,
+  database,
+  exclusions = NULL,
+  regions = NULL,
+  regions.prop = NULL,
+  regions.tiling = NULL,
+  targets = NULL,
+  targets.prop = NULL,
+  targets.tiling = NULL,
+  seed = NULL,
+  restrict = NULL,
+  debug = FALSE,
+  gc = c(0.3, 0.5),
+  verbose = FALSE
+)
 }
 \arguments{
 \item{n}{number of baits to generate}
@@ -33,6 +46,12 @@ main_function(n, size, database, exclusions = NULL, regions = NULL,
 \item{seed}{A number to fix the randomization process, for reproducibility}
 
 \item{restrict}{A vector of chromosome names to which the analysis should be restricted.}
+
+\item{debug}{Logical: Should debug files be created?}
+
+\item{gc}{A vector of two values between 0 and 1, specifying the minimum and maximmum GC percentage allowed in the output baits.}
+
+\item{verbose}{Logical: Should detailed bait processing messages be displayed per sequence?}
 }
 \value{
 A dataframe of baits

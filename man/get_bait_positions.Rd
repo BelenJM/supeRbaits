@@ -4,7 +4,7 @@
 \alias{get_bait_positions}
 \title{Extract the bait start and ending points from the valid ranges}
 \usage{
-get_bait_positions(ranges, size, n)
+get_bait_positions(ranges, size, n, used.baits = NULL)
 }
 \arguments{
 \item{ranges}{a dataframe with starting and ending positions}

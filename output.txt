@@ -1,3 +1,0 @@
-Bait_no	Chrom	Start_bp	End_bp	Sequence_bait	Length_bait	No_A	No_T	No_G	No_C	No_Unk	No_AT	No_GC
-1	CM003279	5	7	CT	3	0	1	0	1	1	1	0
-2	CM003279	9	22	ACAGAGCACAACA	14	7	0	2	4	7	6	0

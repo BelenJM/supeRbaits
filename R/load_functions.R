@@ -8,7 +8,7 @@
 #' 
 load_exclusions <- function(file){
  #	cat("debug: load_exclusions\n"); flush.console()
-	output <- data.table::fread(file, sep = "\t")
+	output <- as.data.frame(data.table::fread(file, sep = "\t"))
 	if (!is.integer(output[, 2]))
 		stop("The second column in the exclusions file does not appear to contain only numeric data.\n")
 	if (!is.integer(output[, 3]))
@@ -35,7 +35,7 @@ load_exclusions <- function(file){
 #' 
 load_regions <- function(file){
  #	cat("debug: load_regions\n"); flush.console()
-	output <- data.table::fread(file, sep = "\t")
+	output <- as.data.frame(data.table::fread(file, sep = "\t"))
 	if (!is.integer(output[, 2]))
 		stop("The second column in the regions of interest file does not appear to contain only numeric data.\n")
 	if (!is.integer(output[, 3]))
@@ -62,7 +62,7 @@ load_regions <- function(file){
 #' 
 load_targets <- function(file){
  #	cat("debug: load_targets\n"); flush.console()
-	output <- data.table::fread(file, sep = "\t")
+	output <- as.data.frame(data.table::fread(file, sep = "\t"))
 	if (!is.integer(output[, 2]))
 		stop("The second column in the targets file does not appear to contain only numeric data.\n")
 	if (any(is.na(output)))

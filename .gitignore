@@ -1,2 +1,4 @@
 testdata/*.RData
 testdata/*.Rhistory
+supeRbaits_debug.RData
+testdata/temp_folder_for_supeRbaits/bait_positions.txt

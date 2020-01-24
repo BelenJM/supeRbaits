@@ -54,6 +54,7 @@ DataFrame getBaits(std::string gen_path, std::string bait_path) {
 	}
 	if(!gen_line.empty()) {
 	  gen_chrom_name.clear();
+	  gen_chrom.clear();
 	  for (unsigned int i=1; gen_line[i] != ' ' && i < gen_line.length(); i++) {
 	    gen_chrom_name += gen_line[i];
 	  }
@@ -71,7 +72,7 @@ DataFrame getBaits(std::string gen_path, std::string bait_path) {
     if(gen_chrom_name.empty() || !(gen_chrom_name == bait_chrom_name)) {
       Rcout << "Could not find bait chromosome " << bait_chrom_name << " in genome file " << gen_path << ". Skipping..." << endl;
     } else {
-      string bait_seq = gen_chrom.substr(bait_start-1, bait_stop);
+      string bait_seq = gen_chrom.substr(bait_start-1, bait_stop-(bait_start-1));
       int no_A = 0, no_T = 0, no_G = 0, no_C = 0, no_UNK = 0;
       for (char c : bait_seq) {
 	c = toupper(c);

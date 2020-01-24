@@ -188,9 +188,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 	data.table::fwrite(to.print, file = "temp_folder_for_supeRbaits/bait_positions.txt", sep = "\t")
 
 	if (debug)
-		print(system.time(baits <- retrieve_baits(database = database)))
+		print(system.time(baits <- getBaits(gen_path = database, bait_path = "temp_folder_for_supeRbaits/bait_positions.txt")))
 	else
-		baits <- retrieve_baits(database = database)
+		baits <- getBaits(gen_path = database, bait_path = "temp_folder_for_supeRbaits/bait_positions.txt")
 
 	message("M: Verifying GC content in the baits")
 

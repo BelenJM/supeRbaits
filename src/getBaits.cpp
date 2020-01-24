@@ -16,8 +16,8 @@ enum {BAIT_CHROM_NAME = 0,
 
 // [[Rcpp::export]]
 DataFrame getBaits(std::string gen_path, std::string bait_path) {
-  ifstream gen_input(gen_path),
-           bait_input(bait_path);
+  ifstream gen_input(gen_path.c_str()),
+           bait_input(bait_path.c_str());
   if(!gen_input.good()) {
     stop("Error opening file '%s'. Exiting...", gen_path);
   }

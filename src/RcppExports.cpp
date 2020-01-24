@@ -5,6 +5,18 @@
 
 using namespace Rcpp;
 
+// getBaits
+DataFrame getBaits(std::string gen_path, std::string bait_path);
+RcppExport SEXP _supeRbaits_getBaits(SEXP gen_pathSEXP, SEXP bait_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type gen_path(gen_pathSEXP);
+    Rcpp::traits::input_parameter< std::string >::type bait_path(bait_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(getBaits(gen_path, bait_path));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getChromLengths
 DataFrame getChromLengths(std::string path);
 RcppExport SEXP _supeRbaits_getChromLengths(SEXP pathSEXP) {
@@ -18,6 +30,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_supeRbaits_getBaits", (DL_FUNC) &_supeRbaits_getBaits, 2},
     {"_supeRbaits_getChromLengths", (DL_FUNC) &_supeRbaits_getChromLengths, 1},
     {NULL, NULL, 0}
 };

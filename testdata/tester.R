@@ -170,6 +170,18 @@ reload()
 	
 # All seems to be up and running.
 
+
+
+# Test print functions
+
+	gc_table(baits = x$good.baits)
+	gc_table(baits = x$good.baits, combine = TRUE)
+
+	# only works working on debug environment
+	print_coverage(chr.lengths = the.lengths, baits = good.baits, exclusions = exclusions, targets = targets)
+	coverage(chr.lengths = the.lengths, baits = good.baits, exclusions = exclusions)
+
+
 # ----------------	
 
 # tests to the subsample function's fail-safes

@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <unordered_map>
 
 using namespace Rcpp;
 using namespace std;
@@ -24,12 +25,13 @@ DataFrame getBaits(std::string gen_path, std::string bait_path) {
   if(!bait_input.good()) {
     stop("Error opening file '%s'. Exiting...", bait_path);
   }
+  unordered_map<string, string> memo; // chromosome cache
   vector<string> bait_chrom_names, bait_types, bait_seqs;
-  vector<int> bait_nos, bait_starts, bait_stops, bait_seq_sizes,
-              no_As, no_Ts, no_Gs, no_Cs, no_UNKs, no_ATs, no_GCs;
+  vector<long long> bait_nos, bait_starts, bait_stops, bait_seq_sizes,
+                    no_As, no_Ts, no_Gs, no_Cs, no_UNKs, no_ATs, no_GCs;
 
   string bait_line;
-  int index = 0;
+  long long index = 0;
   while (getline(bait_input, bait_line).good()) {
     if (index == 0) { // skip header
       index++;
@@ -42,38 +44,48 @@ DataFrame getBaits(std::string gen_path, std::string bait_path) {
       stop("Error parsing baits file. Wrong number of columns...");
     }
     string bait_chrom_name = columns[BAIT_CHROM_NAME];
-    int    bait_start      = stoi(columns[BAIT_START]);
-    int    bait_stop       = stoi(columns[BAIT_STOP]);
+    long long bait_start   = stoll(columns[BAIT_START]);
+    long long bait_stop    = stoll(columns[BAIT_STOP]);
     string bait_type       = columns[BAIT_TYPE];
-    
-    string gen_line, gen_chrom_name, gen_chrom;
-    while (getline(gen_input, gen_line).good()) {
-      if (gen_line.empty() || gen_line[0] == '>') { // identifier marker
-	if(!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) { // found bait chromosome
-	  break;
-	}
-	if(!gen_line.empty()) {
-	  gen_chrom_name.clear();
-	  gen_chrom.clear();
-	  for (unsigned int i=1; gen_line[i] != ' ' && i < gen_line.length(); i++) {
-	    gen_chrom_name += gen_line[i];
+
+    string gen_chrom_name, gen_chrom;
+    unordered_map<string, string>::iterator it = memo.find(bait_chrom_name); 
+    if (it != memo.end()) { // cache hit
+      gen_chrom_name = it->first;
+      gen_chrom      = it->second;
+    } else { // cache miss
+      string gen_line;
+      while (getline(gen_input, gen_line).good()) {
+	if (gen_line.empty() || gen_line[0] == '>') { // identifier marker
+	  if (!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) {
+	    memo[gen_chrom_name] = gen_chrom;
+	    break;
+	  }
+	  if(!gen_line.empty()) {
+	    gen_chrom_name.clear();
+	    gen_chrom.clear();
+	    for (unsigned long long i=1; gen_line[i] != ' ' && i < gen_line.length(); i++) {
+	      gen_chrom_name += gen_line[i];
+	    }
+	  }
+	} else if(!gen_chrom_name.empty()) {
+	  if(gen_line.find(' ') != string::npos){ // invalid: sequence with spaces
+	    gen_chrom_name.clear();
+	    gen_chrom.clear();
+	  } else {
+	    gen_chrom += gen_line;
 	  }
 	}
-      } else if(!gen_chrom_name.empty()) {
-	if(gen_line.find(' ') != string::npos){ // invalid: sequence with spaces
-	  gen_chrom_name.clear();
-	  gen_chrom.clear();
-	} else {
-	  gen_chrom += gen_line;
-	}
       }
+      if (!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) {
+	memo[gen_chrom_name] = gen_chrom;
+      }
+      gen_input.clear(); gen_input.seekg(0, ios::beg);
     }
-    gen_input.clear(); gen_input.seekg(0, ios::beg);
-    if(gen_chrom_name.empty() || !(gen_chrom_name == bait_chrom_name)) {
-      Rcout << "Could not find bait chromosome " << bait_chrom_name << " in genome file " << gen_path << ". Skipping..." << endl;
-    } else {
+
+    if (!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) { // chromosome found
       string bait_seq = gen_chrom.substr(bait_start-1, bait_stop-(bait_start-1));
-      int no_A = 0, no_T = 0, no_G = 0, no_C = 0, no_UNK = 0;
+      long long no_A = 0, no_T = 0, no_G = 0, no_C = 0, no_UNK = 0;
       for (char c : bait_seq) {
 	c = toupper(c);
 	switch(c) {
@@ -104,6 +116,8 @@ DataFrame getBaits(std::string gen_path, std::string bait_path) {
       no_UNKs.push_back(no_UNK);
       no_ATs.push_back(no_A + no_T);
       no_GCs.push_back(no_G + no_C);
+    } else { // chromosome not found
+      Rcout << "Could not find bait chromosome " << bait_chrom_name << " in genome file " << gen_path << ". Skipping..." << endl;
     }
     index++;
   }
@@ -119,6 +133,7 @@ DataFrame getBaits(std::string gen_path, std::string bait_path) {
 				   _["no_T"]            = no_Ts,
 				   _["no_G"]            = no_Gs,
 				   _["no_C"]            = no_Cs,
+				   _["no_UNK"]          = no_UNKs,
 				   _["no_AT"]           = no_ATs,
 				   _["no_GC"]           = no_GCs);
 				   

@@ -15,10 +15,10 @@ DataFrame getChromLengths(std::string path) {
     stop("Error opening file '%s'. Exiting...", path);
   }
 
-  int size;
+  long long size;
   string line, name;
   vector<string> names;
-  vector<int> sizes;
+  vector<long long> sizes;
 
   while (getline(input, line).good()) {
     if (line.empty() || line[0] == '>') { // identifier marker
@@ -28,7 +28,7 @@ DataFrame getChromLengths(std::string path) {
 	name.clear();
       }
       if(!line.empty()) {
-	for (unsigned int i=1; line[i] != ' ' && i < line.length(); i++) {
+	for (unsigned long long i=1; line[i] != ' ' && i < line.length(); i++) {
 	  name += line[i];
 	}
       }
@@ -42,7 +42,7 @@ DataFrame getChromLengths(std::string path) {
       }
     }
   }
-  if( !name.empty() ) {
+  if(!name.empty()) {
     names.push_back(name);
     sizes.push_back(size);
   }

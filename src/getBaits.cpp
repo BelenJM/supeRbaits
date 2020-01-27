@@ -8,6 +8,13 @@
 using namespace Rcpp;
 using namespace std;
 
+/*
+test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CMF", "CMF"),
+ 		      "Start" = c(53, 56, 2, 1),
+ 		      "Stop" = c(72, 75, 21, 20),
+ 		      "Type" = c("region", "region", "random", "random"))
+*/
+
 const int NO_COLUMNS = 4;
 
 enum {BAIT_CHROM_NAME = 0,
@@ -16,38 +23,31 @@ enum {BAIT_CHROM_NAME = 0,
       BAIT_TYPE       = 3};
 
 // [[Rcpp::export]]
-DataFrame getBaits(std::string gen_path, std::string bait_path) {
-  ifstream gen_input(gen_path.c_str()),
-           bait_input(bait_path.c_str());
+DataFrame getBaits(std::string gen_path, DataFrame bait_df) {
+  ifstream gen_input(gen_path.c_str());
   if(!gen_input.good()) {
     stop("Error opening file '%s'. Exiting...", gen_path);
-  }
-  if(!bait_input.good()) {
-    stop("Error opening file '%s'. Exiting...", bait_path);
   }
   unordered_map<string, string> memo; // chromosome cache
   vector<string> bait_chrom_names, bait_types, bait_seqs;
   vector<long long> bait_nos, bait_starts, bait_stops, bait_seq_sizes,
                     no_As, no_Ts, no_Gs, no_Cs, no_UNKs, no_ATs, no_GCs;
 
-  string bait_line;
-  long long index = 0;
-  while (getline(bait_input, bait_line).good()) {
-    if (index == 0) { // skip header
-      index++;
-      continue;
-    }
-    istringstream iss(bait_line);
-    std::vector<std::string> columns{std::istream_iterator<std::string>(iss), 
-				     std::istream_iterator<std::string>()};
-    if (columns.size() != NO_COLUMNS) {
+  if (bait_df.size() != NO_COLUMNS) {
       stop("Error parsing baits file. Wrong number of columns...");
-    }
-    string bait_chrom_name = columns[BAIT_CHROM_NAME];
-    long long bait_start   = stoll(columns[BAIT_START]);
-    long long bait_stop    = stoll(columns[BAIT_STOP]);
-    string bait_type       = columns[BAIT_TYPE];
+  }
+  StringVector bait_df_chrom_names = bait_df[BAIT_CHROM_NAME];
+  NumericVector bait_df_starts = bait_df[BAIT_START];
+  NumericVector bait_df_stops = bait_df[BAIT_STOP];
+  StringVector bait_df_types = bait_df[BAIT_TYPE];
 
+  long long index = 0;
+  while (index < bait_df_chrom_names.size()) {
+    string bait_chrom_name = as<string>(bait_df_chrom_names[index]);
+    long long bait_start   = bait_df_starts[index];
+    long long bait_stop    = bait_df_stops[index];
+    string bait_type       = as<string>(bait_df_types[index]);
+      
     string gen_chrom_name, gen_chrom;
     unordered_map<string, string>::iterator it = memo.find(bait_chrom_name); 
     if (it != memo.end()) { // cache hit

@@ -182,6 +182,12 @@ reload()
 	coverage(chr.lengths = the.lengths, baits = good.baits, exclusions = exclusions)
 
 
+# Test temporary variable useR
+
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", exclusions = "exclusion_example.txt", 
+		targets = "targets_example.txt", targets.prop = 0.5, regions = "region_example.txt", regions.prop = 0.5, debug = TRUE, useR = FALSE)
+
+
 # ----------------	
 
 # tests to the subsample function's fail-safes

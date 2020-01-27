@@ -13,7 +13,7 @@
 #' @param targets.prop The proportion of baits that should overlap the targets.
 #' @param targets.tiling The minimum number of baits to distribute per target.
 #' @param seed A number to fix the randomization process, for reproducibility
-#' @param restrict A vector of chromosome names to which the analysis should be restricted.
+#' @param restrict A vector of chromosome names OR position numbers to which the analysis should be restricted.
 #' @param gc A vector of two values between 0 and 1, specifying the minimum and maximmum GC percentage allowed in the output baits.
 #' @param debug Logical: Should debug files be created?
 #' @param verbose Logical: Should detailed bait processing messages be displayed per sequence?
@@ -26,15 +26,12 @@ main_function <- function(n, size, database, exclusions = NULL,
 	regions = NULL, regions.prop = NULL, regions.tiling = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
 	seed = NULL, restrict = NULL, debug = FALSE, gc = c(0.3, 0.5),
-	verbose = FALSE){
+	verbose = FALSE, useR = FALSE){
 
-  
 	if (debug) {
     message("!!!--- Debug mode has been activated ---!!!\n            ", Sys.time())
 		on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
-	} else {
-		on.exit(unlink("temp_folder_for_supeRbaits", recursive = TRUE), add = TRUE)
-	}
+	} 
 
 	if(!is.null(seed))
 		set.seed(seed)
@@ -86,10 +83,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 	# Reduce size to include the first bp
 	size <- size - 1
 
-	# create temp folder to dump stuff in
-	if (!dir.exists("temp_folder_for_supeRbaits"))
-		dir.create("temp_folder_for_supeRbaits")
-
 	# Import data
 		message("M: Compiling the sequences' lengths. This process can take some minutes.")
 		flush.console()
@@ -97,6 +90,27 @@ main_function <- function(n, size, database, exclusions = NULL,
 			print(system.time(the.lengths <- getChromLengths(path = database)))
 		else
 			the.lengths <- getChromLengths(path = database)
+
+	if (is.numeric(restrict)) {
+		if (all(restrict > nrow(the.lengths)))
+			stop("'restrict' is set to numeric values, but ALL listed values are larger than the number of available sequences\nNumber of available sequences: ", nrow(the.lengths), "\nMin. index requested: ", min(restrict), "\nMax. index requested: ", max(restrict), "\n", call. = FALSE)
+		if (max(restrict) > nrow(the.lengths)) {
+			warning("'restrict' is set to numeric values, but some listed values are larger than the number of available sequences. Running analysis on matching sequences.\nDiscarded index values: ", paste(restrict[restrict > nrow(the.lengths)], collapse = " "), immediate. = TRUE, call. = FALSE)
+			restrict <- restrict[restrict <= nrow(the.lengths)]
+		}
+		the.lengths <- the.lengths[restrict, ]
+	}
+	if (is.character(restrict)) {
+		link <- match(restrict, the.lengths$name)
+		if (all(is.na(link)))
+			stop("None of the sequence names listed in 'restrict' matches the available sequences.\n", call. = FALSE)
+		if (any(is.na(link))) {
+			warning("Some sequences listed in 'restrict' do not match the available sequences. Running analysis on matching sequences\nMissing sequences: '", paste(restrict[is.na(link)], collapse = "', '"), "'", immediate. = TRUE, call. = FALSE)
+			link <- link[!is.na(link)]
+		}
+		the.lengths <- the.lengths[link, ]
+		rm(link)
+	}
 
 	if(!is.null(exclusions))
 		exclusions <- load_exclusions(file = exclusions)
@@ -118,19 +132,19 @@ main_function <- function(n, size, database, exclusions = NULL,
 	elapsed.time <- system.time({
 		bait.points <- lapply(1:nrow(the.lengths), function(i) {
 			# extract relevant parameters
-			params <- trim_parameters(chr = the.lengths[i, 1], exclusions = exclusions, regions = regions, targets = targets)
+			params <- trim_parameters(chr = the.lengths$name[i], exclusions = exclusions, regions = regions, targets = targets)
 			# region baits
 			if(!is.null(regions.prop) && regions.prop > 0) {
 				n.regions = n * regions.prop
 				if (!is.null(params$regions)) {
-					temp.regions <- region_baits(chr.length = the.lengths[i, 2], n = n.regions, size = size, tiling = regions.tiling,
-					regions = params$regions, exclusions = params$exclusions, chr = the.lengths[i, 1], used.baits = NULL, verbose = verbose)
+					temp.regions <- region_baits(chr.length = the.lengths$size[i], n = n.regions, size = size, tiling = regions.tiling,
+					regions = params$regions, exclusions = params$exclusions, chr = the.lengths$name[i], used.baits = NULL, verbose = verbose)
 					temp.regions$Type <- rep("region", nrow(temp.regions))
 					n.regions = nrow(temp.regions)
 					used.baits <- temp.regions$Start
 				} else {
 					if (verbose)
-						message("M: No regions found for chromosome ", the.lengths[i, 1], ".")
+						message("M: No regions found for chromosome ", the.lengths$name[i], ".")
 					temp.regions <- NULL
 					n.regions = 0
 					used.baits <- NULL
@@ -144,14 +158,14 @@ main_function <- function(n, size, database, exclusions = NULL,
 			if(!is.null(targets.prop) && targets.prop > 0) {
 				n.targets = n * targets.prop
 				if (!is.null(params$targets)) {
-					temp.targets <- target_baits(chr.length = the.lengths[i, 2], n = n.targets, size = size, tiling = targets.tiling,
-						targets = params$targets, exclusions = params$exclusions, chr = the.lengths[i, 1], used.baits = used.baits, verbose = verbose)
+					temp.targets <- target_baits(chr.length = the.lengths$size[i], n = n.targets, size = size, tiling = targets.tiling,
+						targets = params$targets, exclusions = params$exclusions, chr = the.lengths$name[i], used.baits = used.baits, verbose = verbose)
 					temp.targets$Type <- rep("target", nrow(temp.targets))
 					n.targets = nrow(temp.targets)
 					used.baits <- c(used.baits, temp.targets$Start)
 				} else {
 					if (verbose)
-						message("M: No targets found for chromosome ", the.lengths[i, 1], ".")
+						message("M: No targets found for chromosome ", the.lengths$name[i], ".")
 					temp.targets <- NULL
 					n.targets = 0
 				}
@@ -162,14 +176,18 @@ main_function <- function(n, size, database, exclusions = NULL,
 			# random baits
 			n.random <- n - (n.regions + n.targets)
 			if (n.random > 0) {
-				temp.random <- random_baits(chr.length = the.lengths[i, 2], n = n.random, size = size, 
-					exclusions = params$exclusions, chr = the.lengths[i, 1], used.baits = used.baits, verbose = verbose)
+				temp.random <- random_baits(chr.length = the.lengths$size[i], n = n.random, size = size, 
+					exclusions = params$exclusions, chr = the.lengths$name[i], used.baits = used.baits, verbose = verbose)
 				temp.random$Type <- rep("random", nrow(temp.random))
 			} else {
 				temp.random <- NULL
 			}
 			# bring together the different parts
 			output <- rbind(temp.regions, temp.targets, temp.random)
+			if (useR) {
+				output$ChromName <- the.lengths$name[i]
+				output <- output[, c(4, 1:3)]
+			}
 	    if (!verbose)
 	    	setTxtProgressBar(pb, i) # Progress bar    			
 			return(output)
@@ -184,19 +202,42 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	message("M: Retrieving bait base pairs. This operation can take some time."); flush.console()
 
-	to.print <- data.table::rbindlist(bait.points, use.names = TRUE, idcol = "ChromName")
-	data.table::fwrite(to.print, file = "temp_folder_for_supeRbaits/bait_positions.txt", sep = "\t")
+	if (!useR) {
+		message("Temp: Running getBaits for the whole content."); flush.console()
+		to.fetch <- data.table::rbindlist(bait.points, use.names = TRUE, idcol = "ChromName")
+		if (debug)
+			print(system.time(baits <- getBaits(gen_path = database, bait_df = to.fetch)))
+		else
+			baits <- getBaits(gen_path = database, bait_df = to.fetch)
+	} else {
+		message("Temp: Running getBaits once per sequence, wrapped in lapply."); flush.console()
+		if (!debug)
+	  	pb <- txtProgressBar(min = 0, max = length(bait.points), initial = 0, style = 3, width = 60)
 
-	if (debug)
-		print(system.time(baits <- getBaits(gen_path = database, bait_path = "temp_folder_for_supeRbaits/bait_positions.txt")))
-	else
-		baits <- getBaits(gen_path = database, bait_path = "temp_folder_for_supeRbaits/bait_positions.txt")
+		baits <- lapply(1:length(bait.points), function(i) {
+			if (debug) {
+				message("debug: Fetching baits for ", names(bait.points)[i]); flush.console()
+				print(system.time(output <- getBaits(gen_path = database, bait_df = bait.points[[i]])))
+			} else {
+				output <- getBaits(gen_path = database, bait_df = bait.points[[i]])
+				setTxtProgressBar(pb, i)
+			}
+			output$pGC <- output$no_GC / (size + 1)
+			return(output)
+		})
+		names(baits) <- names(bait.points)
+		
+		if (!debug)
+			close(pb)
+	}
 
 	message("M: Verifying GC content in the baits")
 
-	baits$pGC <- baits$Number_GC / (size + 1)
-	baits <- split(baits, baits$ChromName)
-	
+	if (!useR) {
+		baits$pGC <- baits$no_GC / (size + 1)
+		baits <- split(baits, baits$bait_chrom_name)
+	}
+
 	good.baits <- lapply(seq_along(baits), function(i) {
 		link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
 		if (verbose) {

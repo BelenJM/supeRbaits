@@ -6,14 +6,14 @@
 using namespace Rcpp;
 
 // getBaits
-DataFrame getBaits(std::string gen_path, std::string bait_path);
-RcppExport SEXP _supeRbaits_getBaits(SEXP gen_pathSEXP, SEXP bait_pathSEXP) {
+DataFrame getBaits(std::string gen_path, DataFrame bait_df);
+RcppExport SEXP _supeRbaits_getBaits(SEXP gen_pathSEXP, SEXP bait_dfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type gen_path(gen_pathSEXP);
-    Rcpp::traits::input_parameter< std::string >::type bait_path(bait_pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(getBaits(gen_path, bait_path));
+    Rcpp::traits::input_parameter< DataFrame >::type bait_df(bait_dfSEXP);
+    rcpp_result_gen = Rcpp::wrap(getBaits(gen_path, bait_df));
     return rcpp_result_gen;
 END_RCPP
 }

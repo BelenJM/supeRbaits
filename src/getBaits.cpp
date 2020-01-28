@@ -23,7 +23,7 @@ enum {BAIT_CHROM_NAME = 0,
       BAIT_TYPE       = 3};
 
 // [[Rcpp::export]]
-DataFrame getBaits(std::string gen_path, DataFrame bait_df) {
+DataFrame getBaits(std::string gen_path, DataFrame bait_df, int max_memo = 5) {
   ifstream gen_input(gen_path.c_str());
   if(!gen_input.good()) {
     stop("Error opening file '%s'. Exiting...", gen_path);
@@ -49,7 +49,7 @@ DataFrame getBaits(std::string gen_path, DataFrame bait_df) {
     string bait_type       = as<string>(bait_df_types[index]);
       
     string gen_chrom_name, gen_chrom;
-    unordered_map<string, string>::iterator it = memo.find(bait_chrom_name); 
+    unordered_map<string, string>::iterator it = memo.find(bait_chrom_name);
     if (it != memo.end()) { // cache hit
       gen_chrom_name = it->first;
       gen_chrom      = it->second;
@@ -58,7 +58,6 @@ DataFrame getBaits(std::string gen_path, DataFrame bait_df) {
       while (getline(gen_input, gen_line).good()) {
 	if (gen_line.empty() || gen_line[0] == '>') { // identifier marker
 	  if (!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) {
-	    memo[gen_chrom_name] = gen_chrom;
 	    break;
 	  }
 	  if(!gen_line.empty()) {
@@ -78,6 +77,9 @@ DataFrame getBaits(std::string gen_path, DataFrame bait_df) {
 	}
       }
       if (!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) {
+	if (memo.size() > max_memo) {
+	  memo.clear();
+	}
 	memo[gen_chrom_name] = gen_chrom;
       }
       gen_input.clear(); gen_input.seekg(0, ios::beg);
@@ -121,7 +123,8 @@ DataFrame getBaits(std::string gen_path, DataFrame bait_df) {
     }
     index++;
   }
-
+  gen_input.close();
+  
   DataFrame df = DataFrame::create(_["bait_no"]         = bait_nos,
 				   _["bait_chrom_name"] = bait_chrom_names,
 				   _["bait_type"]       = bait_types,

@@ -19,7 +19,8 @@ main_function(
   restrict = NULL,
   debug = FALSE,
   gc = c(0.3, 0.5),
-  verbose = FALSE
+  verbose = FALSE,
+  useR = FALSE
 )
 }
 \arguments{
@@ -45,7 +46,7 @@ main_function(
 
 \item{seed}{A number to fix the randomization process, for reproducibility}
 
-\item{restrict}{A vector of chromosome names to which the analysis should be restricted.}
+\item{restrict}{A vector of chromosome names OR position numbers to which the analysis should be restricted.}
 
 \item{debug}{Logical: Should debug files be created?}
 

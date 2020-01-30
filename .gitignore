@@ -5,3 +5,5 @@ testdata/temp_folder_for_supeRbaits/bait_positions.txt
 testdata/test_chr.png
 testdata/test_CM003279.png
 testdata/test_CMF.png
+src/*.o
+src/supeRbaits.dll

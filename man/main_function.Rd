@@ -19,8 +19,7 @@ main_function(
   restrict = NULL,
   debug = FALSE,
   gc = c(0.3, 0.5),
-  verbose = FALSE,
-  useR = FALSE
+  verbose = FALSE
 )
 }
 \arguments{

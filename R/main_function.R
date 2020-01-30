@@ -26,7 +26,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 	regions = NULL, regions.prop = NULL, regions.tiling = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
 	seed = NULL, restrict = NULL, debug = FALSE, gc = c(0.3, 0.5),
-	verbose = FALSE, useR = FALSE){
+	verbose = FALSE){
 
 	if (debug) {
     message("!!!--- Debug mode has been activated ---!!!\n            ", Sys.time())
@@ -87,7 +87,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		message("M: Compiling the sequences' lengths. This process can take some minutes.")
 		flush.console()
 		if (debug)
-			print(system.time(the.lengths <- getChromLengths(path = database)))
+			print(getlengths.time <- system.time(the.lengths <- getChromLengths(path = database)))
 		else
 			the.lengths <- getChromLengths(path = database)
 
@@ -129,7 +129,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (!verbose)
   	pb <- txtProgressBar(min = 0, max = nrow(the.lengths), initial = 0, style = 3, width = 60)
 
-	elapsed.time <- system.time({
+	sample.baits.time <- system.time({
 		bait.points <- lapply(1:nrow(the.lengths), function(i) {
 			# extract relevant parameters
 			params <- trim_parameters(chr = the.lengths$name[i], exclusions = exclusions, regions = regions, targets = targets)
@@ -184,10 +184,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 			}
 			# bring together the different parts
 			output <- rbind(temp.regions, temp.targets, temp.random)
-			if (useR) {
-				output$ChromName <- the.lengths$name[i]
-				output <- output[, c(4, 1:3)]
-			}
 	    if (!verbose)
 	    	setTxtProgressBar(pb, i) # Progress bar    			
 			return(output)
@@ -197,46 +193,21 @@ main_function <- function(n, size, database, exclusions = NULL,
 		names(bait.points) <- as.character(the.lengths[, 1])
 	})
 	if (debug)
-		print(elapsed.time)
-	rm(elapsed.time)
+		print(sample.baits.time)
 
 	message("M: Retrieving bait base pairs. This operation can take some time."); flush.console()
 
-	if (!useR) {
-		message("Temp: Running getBaits for the whole content."); flush.console()
-		to.fetch <- data.table::rbindlist(bait.points, use.names = TRUE, idcol = "ChromName")
-		if (debug)
-			print(system.time(baits <- getBaits(gen_path = database, bait_df = to.fetch)))
-		else
-			baits <- getBaits(gen_path = database, bait_df = to.fetch)
-	} else {
-		message("Temp: Running getBaits once per sequence, wrapped in lapply."); flush.console()
-		if (!debug)
-	  	pb <- txtProgressBar(min = 0, max = length(bait.points), initial = 0, style = 3, width = 60)
-
-		baits <- lapply(1:length(bait.points), function(i) {
-			if (debug) {
-				message("debug: Fetching baits for ", names(bait.points)[i]); flush.console()
-				print(system.time(output <- getBaits(gen_path = database, bait_df = bait.points[[i]])))
-			} else {
-				output <- getBaits(gen_path = database, bait_df = bait.points[[i]])
-				setTxtProgressBar(pb, i)
-			}
-			output$pGC <- output$no_GC / (size + 1)
-			return(output)
-		})
-		names(baits) <- names(bait.points)
-		
-		if (!debug)
-			close(pb)
-	}
+	message("Temp: Running getBaits for the whole content."); flush.console()
+	to.fetch <- data.table::rbindlist(bait.points, use.names = TRUE, idcol = "ChromName")
+	if (debug)
+		print(getbaits.time <- system.time(baits <- getBaits(gen_path = database, bait_df = to.fetch)))
+	else
+		baits <- getBaits(gen_path = database, bait_df = to.fetch)
 
 	message("M: Verifying GC content in the baits")
 
-	if (!useR) {
-		baits$pGC <- baits$no_GC / (size + 1)
-		baits <- split(baits, baits$bait_chrom_name)
-	}
+	baits$pGC <- baits$no_GC / (size + 1)
+	baits <- split(baits, baits$bait_chrom_name)
 
 	good.baits <- lapply(seq_along(baits), function(i) {
 		link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
@@ -256,7 +227,13 @@ main_function <- function(n, size, database, exclusions = NULL,
 	})
 	names(good.baits) <- names(baits)
 
-	return(list(baits = baits, good.baits = good.baits))
+	if (debug)
+		return(list(baits = baits, good.baits = good.baits, chr.lengths = the.lengths, exclusions = exclusions, 
+			targets = targets, regions = regions, getlengths.time = getlengths.time["elapsed"], 
+			sample.baits.time = sample.baits.time["elapsed"], getbaits.time = getbaits.time["elapsed"]))
+	else
+		return(list(baits = baits, good.baits = good.baits, chr.lengths = the.lengths, 
+			exclusions = exclusions, targets = targets, regions = regions))
 }
 
 #' extract exclusions, regions, and targets relevant for the chromosome being analysed

@@ -19,11 +19,11 @@ gc_table <- function(baits, combine = FALSE) {
     input <- list(input)
 
 	output <- lapply(input, function(i) {
-    aux <- as.data.frame(with(i, table(Type)))
+    aux <- as.data.frame(with(i, table(bait_type)))
     colnames(aux)[2] <- "n"
-    aux$min_GC <-  with(i, aggregate(pGC, list(Type), min))$x
-    aux$mean_GC <- with(i, aggregate(pGC, list(Type), mean))$x
-    aux$max_GC <-  with(i, aggregate(pGC, list(Type), max))$x
+    aux$min_GC <-  with(i, aggregate(pGC, list(bait_type), min))$x
+    aux$mean_GC <- with(i, aggregate(pGC, list(bait_type), mean))$x
+    aux$max_GC <-  with(i, aggregate(pGC, list(bait_type), max))$x
     return(aux)
   })
 
@@ -47,9 +47,9 @@ coverage <- function(chr.lengths, baits, exclusions = NULL, combined = TRUE) {
     input <- baits[[i]]
     
     if (combined)
-      input$Type <- "All"
+      input$bait_type <- "All"
 
-    input <- split(input, input$Type)
+    input <- split(input, input$bait_type)
 
     total_length <- chr.lengths$size[chr.lengths$name == i]
     if (!is.null(exclusions)) {
@@ -69,8 +69,8 @@ coverage <- function(chr.lengths, baits, exclusions = NULL, combined = TRUE) {
     }
 
     capture <- lapply(names(input), function(x) {
-      bp_covered <- length(unique(as.vector(apply(input[[x]], 1, function(j) j["Start_bp"]:j["End_bp"]))))
-      output <- data.frame(Type = x, bp = bp_covered, Valid_coverage = bp_covered/valid_length, Total_coverage = bp_covered/total_length)
+      bp_covered <- length(unique(as.vector(apply(input[[x]], 1, function(j) j["bait_start"]:j["bait_stop"]))))
+      output <- data.frame(bait_type = x, bp = bp_covered, Valid_coverage = bp_covered/valid_length, Total_coverage = bp_covered/total_length)
       return(output)
     })
     return(data.table::rbindlist(capture))
@@ -88,15 +88,18 @@ coverage <- function(chr.lengths, baits, exclusions = NULL, combined = TRUE) {
 #' 
 #' @keywords internal
 #' 
-print_coverage <- function(chr.lengths, baits, exclusions = NULL, targets = NULL) {
+print_coverage <- function(chr.lengths, baits, size, exclusions = NULL, targets = NULL) {
   capture <- lapply(names(baits), function(i) {
-    aux <- baits[[i]][, c("Bait_no", "Type", "Start_bp", "End_bp")]
-    plotdata <- reshape2::melt(aux, id.vars = c("Type", "Bait_no"))
+    baitpoints <- baits[[i]][, c("bait_no", "bait_type", "bait_start", "bait_stop")]
+    plotdata <- reshape2::melt(baitpoints, id.vars = c("bait_type", "bait_no"))
     plotdata$Colour <- "covered zones"
 
-    aux <- data.frame(Type = rep(i, 2), 
-      Bait_no = rep(-999, 2), 
-      variable = c("Start_bp", "End_bp"), 
+    baitpoints$X <- apply(baitpoints[, c("bait_start", "bait_stop")], 1, mean)
+    baitpoints$Colour <- "covered zones"
+
+    aux <- data.frame(bait_type = rep(i, 2), 
+      bait_no = rep(-999, 2), 
+      variable = c("bait_start", "bait_stop"), 
       value = c(1, chr.lengths$size[chr.lengths$name == i]),
       Colour = rep("chromosome", 2))
 
@@ -105,27 +108,36 @@ print_coverage <- function(chr.lengths, baits, exclusions = NULL, targets = NULL
     if (!is.null(exclusions)) {
       if (any(exclusions$chr == i)) {
         aux <- exclusions[exclusions$chr == i, ]
-        colnames(aux) <- c("Type", "Start_bp", "End_bp")
-        aux$Bait_no <- c(-998:(-999 + nrow(aux)))
-        aux <- reshape2::melt(aux, id.vars = c("Type", "Bait_no"))
+        colnames(aux) <- c("bait_type", "bait_start", "bait_stop")
+        aux$bait_no <- c(-998:(-999 + nrow(aux)))
+        aux <- reshape2::melt(aux, id.vars = c("bait_type", "bait_no"))
         aux$Colour <- "excluded zones"
       }
       plotdata <- rbind(plotdata, aux)
     }
 
-    plotdata$Type <- factor(plotdata$Type, levels = c("random", "target", "region", i))
+    plotdata$bait_type <- factor(plotdata$bait_type, levels = c("random", "target", "region", i))
+    used.levels <- levels(droplevels(plotdata$bait_type))
+    baitpoints$bait_type <- factor(baitpoints$bait_type, levels = c("random", "target", "region", i))
     plotdata$Colour <- factor(plotdata$Colour, levels = c("chromosome", "excluded zones", "covered zones"))
 
     p <- ggplot2::ggplot()
-    p <- p + ggplot2::geom_line(data = plotdata, ggplot2::aes(x = value, y = Type, group = Bait_no, colour = Colour), size = 2)
+    if (size / chr.lengths$size[chr.lengths$name == i] > 0.003) {
+      p <- p + ggplot2::geom_line(data = plotdata, ggplot2::aes(x = value, y = bait_type, group = bait_no, colour = Colour), size = 2)
+    } else {
+      p <- p + ggplot2::geom_line(data = plotdata[plotdata$bait_no < 0, ], ggplot2::aes(x = value, y = bait_type, group = bait_no, colour = Colour), size = 2)
+      p <- p + ggplot2::geom_point(data = baitpoints, ggplot2::aes(x = X, y = bait_type, colour = Colour), shape = "I", size = 2)
+    }
     p <- p + ggplot2::scale_colour_manual(values = c("chromosome" = "#56B4E9", "excluded zones" = "grey", "covered zones" = "#009E73"))
+    p <- p + ggplot2::scale_y_discrete(limits = used.levels)
     p <- p + ggplot2::labs(x = "bp", y = "")
     if (any(targets$chr == i)) {
       aux <- targets[targets$chr == i, ]
-      aux$Type <- "target"
-      p <- p + ggplot2::geom_point(data = aux, ggplot2::aes(x = target, y = Type), colour = "#E69F00", shape = "I", size = 5)
+      aux$bait_type <- "target"
+      p <- p + ggplot2::geom_point(data = aux, ggplot2::aes(x = target, y = bait_type), colour = "#E69F00", shape = "I", size = 5)
     }
     p <- p + ggplot2::theme(legend.position = "none")
+    p
     ggplot2::ggsave(paste0("test_", i, ".png"), width = 10, height = 1.2)
     return(p)
   })

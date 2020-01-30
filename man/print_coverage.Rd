@@ -4,7 +4,7 @@
 \alias{print_coverage}
 \title{Print graphics with coverage per chromosome}
 \usage{
-print_coverage(chr.lengths, baits, exclusions = NULL, targets = NULL)
+print_coverage(chr.lengths, baits, size, exclusions = NULL, targets = NULL)
 }
 \arguments{
 \item{chr.lengths}{The lengths of the chromosomes}

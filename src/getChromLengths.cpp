@@ -4,41 +4,37 @@
 #include <fstream>
 #include <iostream>
 
-using namespace Rcpp;
-using namespace std;
-
 // [[Rcpp::export]]
-DataFrame getChromLengths(std::string path) {
-  ifstream input(path.c_str());
+Rcpp::DataFrame getChromLengths(std::string path) {
+  std::ifstream input(path.c_str());
   
   if(!input.good()) {
-    stop("Error opening file '%s'. Exiting...", path);
+    Rcpp::stop("Error opening file '%s'. Exiting...", path);
   }
 
-  long long size;
-  string line, name;
-  vector<string> names;
-  vector<long long> sizes;
-
+  size_t size;
+  std::string line, name;
+  std::vector<std::string> names;
+  std::vector<size_t> sizes;
   while (getline(input, line).good()) {
-    if (line.empty() || line[0] == '>') { // identifier marker
+    if (line.empty() || line[0] == '>') {
       if(!name.empty()) {
 	names.push_back(name);
 	sizes.push_back(size);
 	name.clear();
       }
       if(!line.empty()) {
-	for (unsigned long long i=1; line[i] != ' ' && i < line.length(); i++) {
+	for (size_t i=1; line[i] != ' ' && i < line.size(); i++) {
 	  name += line[i];
 	}
       }
       size = 0;
     } else if(!name.empty()) {
-      if(line.find(' ') != string::npos){ // invalid: sequence with spaces
+      if(line.find(' ') != std::string::npos){
 	name.clear();
 	size = 0;
       } else {
-	size += line.length();
+	size += line.size();
       }
     }
   }
@@ -47,7 +43,7 @@ DataFrame getChromLengths(std::string path) {
     sizes.push_back(size);
   }
 
-  DataFrame df = DataFrame::create(_["name"] = names, _["size"] = sizes);
+  Rcpp::DataFrame df = Rcpp::DataFrame::create(Rcpp::_["name"] = names, Rcpp::_["size"] = sizes);
   
   return df;
 }

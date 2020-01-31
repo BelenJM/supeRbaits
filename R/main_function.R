@@ -200,9 +200,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 	message("Temp: Running getBaits for the whole content."); flush.console()
 	to.fetch <- data.table::rbindlist(bait.points, use.names = TRUE, idcol = "ChromName")
 	if (debug)
-		print(getbaits.time <- system.time(baits <- getBaits(gen_path = database, bait_df = to.fetch)))
+		print(getbaits.time <- system.time(baits <- getBaits(db = database, df = to.fetch)))
 	else
-		baits <- getBaits(gen_path = database, bait_df = to.fetch)
+		baits <- getBaits(db = database, df = to.fetch)
 
 	message("M: Verifying GC content in the baits")
 

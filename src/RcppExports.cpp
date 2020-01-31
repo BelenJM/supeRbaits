@@ -6,15 +6,14 @@
 using namespace Rcpp;
 
 // getBaits
-DataFrame getBaits(std::string gen_path, DataFrame bait_df, int max_memo);
-RcppExport SEXP _supeRbaits_getBaits(SEXP gen_pathSEXP, SEXP bait_dfSEXP, SEXP max_memoSEXP) {
+Rcpp::DataFrame getBaits(std::string db_path, Rcpp::DataFrame df);
+RcppExport SEXP _supeRbaits_getBaits(SEXP db_pathSEXP, SEXP dfSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type gen_path(gen_pathSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type bait_df(bait_dfSEXP);
-    Rcpp::traits::input_parameter< int >::type max_memo(max_memoSEXP);
-    rcpp_result_gen = Rcpp::wrap(getBaits(gen_path, bait_df, max_memo));
+    Rcpp::traits::input_parameter< std::string >::type db_path(db_pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type df(dfSEXP);
+    rcpp_result_gen = Rcpp::wrap(getBaits(db_path, df));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -31,7 +30,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_supeRbaits_getBaits", (DL_FUNC) &_supeRbaits_getBaits, 3},
+    {"_supeRbaits_getBaits", (DL_FUNC) &_supeRbaits_getBaits, 2},
     {"_supeRbaits_getChromLengths", (DL_FUNC) &_supeRbaits_getChromLengths, 1},
     {NULL, NULL, 0}
 };

@@ -5,9 +5,6 @@
 #include <iostream>
 #include <unordered_map>
 
-using namespace Rcpp;
-using namespace std;
-
 /*
 test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CMF", "CMF"),
  		      "Start" = c(53, 56, 2, 1),
@@ -15,130 +12,153 @@ test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CMF", "CMF"),
  		      "Type" = c("region", "region", "random", "random"))
 */
 
-const int NO_COLUMNS = 4;
+const int DF_NO_COLS = 4,
+          DF_NAME_INDEX = 0,
+          DF_START_INDEX = 1,
+          DF_STOP_INDEX = 2,
+          DF_TYPE_INDEX = 3;
 
-enum {BAIT_CHROM_NAME = 0,
-      BAIT_START      = 1,
-      BAIT_STOP       = 2,
-      BAIT_TYPE       = 3};
-
-// [[Rcpp::export]]
-DataFrame getBaits(std::string gen_path, DataFrame bait_df, int max_memo = 5) {
-  ifstream gen_input(gen_path.c_str());
-  if(!gen_input.good()) {
-    stop("Error opening file '%s'. Exiting...", gen_path);
-  }
-  unordered_map<string, string> memo; // chromosome cache
-  vector<string> bait_chrom_names, bait_types, bait_seqs;
-  vector<long long> bait_nos, bait_starts, bait_stops, bait_seq_sizes,
-                    no_As, no_Ts, no_Gs, no_Cs, no_UNKs, no_ATs, no_GCs;
-
-  if (bait_df.size() != NO_COLUMNS) {
-      stop("Error parsing baits file. Wrong number of columns...");
-  }
-  StringVector bait_df_chrom_names = bait_df[BAIT_CHROM_NAME];
-  NumericVector bait_df_starts = bait_df[BAIT_START];
-  NumericVector bait_df_stops = bait_df[BAIT_STOP];
-  StringVector bait_df_types = bait_df[BAIT_TYPE];
-
-  long long index = 0;
-  while (index < bait_df_chrom_names.size()) {
-    string bait_chrom_name = as<string>(bait_df_chrom_names[index]);
-    long long bait_start   = bait_df_starts[index];
-    long long bait_stop    = bait_df_stops[index];
-    string bait_type       = as<string>(bait_df_types[index]);
-      
-    string gen_chrom_name, gen_chrom;
-    unordered_map<string, string>::iterator it = memo.find(bait_chrom_name);
-    if (it != memo.end()) { // cache hit
-      gen_chrom_name = it->first;
-      gen_chrom      = it->second;
-    } else { // cache miss
-      string gen_line;
-      while (getline(gen_input, gen_line).good()) {
-	if (gen_line.empty() || gen_line[0] == '>') { // identifier marker
-	  if (!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) {
-	    break;
-	  }
-	  if(!gen_line.empty()) {
-	    gen_chrom_name.clear();
-	    gen_chrom.clear();
-	    for (unsigned long long i=1; gen_line[i] != ' ' && i < gen_line.length(); i++) {
-	      gen_chrom_name += gen_line[i];
-	    }
-	  }
-	} else if(!gen_chrom_name.empty()) {
-	  if(gen_line.find(' ') != string::npos){ // invalid: sequence with spaces
-	    gen_chrom_name.clear();
-	    gen_chrom.clear();
-	  } else {
-	    gen_chrom += gen_line;
-	  }
-	}
-      }
-      if (!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) {
-	if (memo.size() > max_memo) {
-	  memo.clear();
-	}
-	memo[gen_chrom_name] = gen_chrom;
-      }
-      gen_input.clear(); gen_input.seekg(0, ios::beg);
-    }
-
-    if (!gen_chrom_name.empty() && gen_chrom_name == bait_chrom_name) { // chromosome found
-      string bait_seq = gen_chrom.substr(bait_start-1, bait_stop-(bait_start-1));
-      long long no_A = 0, no_T = 0, no_G = 0, no_C = 0, no_UNK = 0;
-      for (char c : bait_seq) {
-	c = toupper(c);
-	switch(c) {
-	case 'A':
-	  no_A++; break;
-	case 'T':
-	  no_T++; break;
-	case 'G':
-	  no_G++; break;
-	case 'C':
-	  no_C++; break;
-	default:
-	  no_UNK++;
-	  break;
-	}
-      }
-      bait_nos.push_back(index);
-      bait_chrom_names.push_back(bait_chrom_name);
-      bait_types.push_back(bait_type);
-      bait_starts.push_back(bait_start);
-      bait_stops.push_back(bait_stop);
-      bait_seqs.push_back(bait_seq);
-      bait_seq_sizes.push_back(bait_seq.size());
-      no_As.push_back(no_A);
-      no_Ts.push_back(no_T);
-      no_Gs.push_back(no_G);
-      no_Cs.push_back(no_C);
-      no_UNKs.push_back(no_UNK);
-      no_ATs.push_back(no_A + no_T);
-      no_GCs.push_back(no_G + no_C);
-    } else { // chromosome not found
-      Rcout << "Could not find bait chromosome " << bait_chrom_name << " in genome file " << gen_path << ". Skipping..." << endl;
-    }
-    index++;
-  }
-  gen_input.close();
+struct Bait {
+  size_t no;
+  std::string name;
+  std::string type;
+  std::string seq;
+  size_t start;
+  size_t stop;
+  size_t no_A;
+  size_t no_T;
+  size_t no_G;
+  size_t no_C;
+  size_t no_UNK;
+};
   
-  DataFrame df = DataFrame::create(_["bait_no"]         = bait_nos,
-				   _["bait_chrom_name"] = bait_chrom_names,
-				   _["bait_type"]       = bait_types,
-				   _["bait_start"]      = bait_starts,
-				   _["bait_stop"]       = bait_stops,
-				   _["bait_seq"]        = bait_seqs,
-				   _["bait_seq_size"]   = bait_seq_sizes,
-				   _["no_A"]            = no_As,
-				   _["no_T"]            = no_Ts,
-				   _["no_G"]            = no_Gs,
-				   _["no_C"]            = no_Cs,
-				   _["no_UNK"]          = no_UNKs,
-				   _["no_AT"]           = no_ATs,
-				   _["no_GC"]           = no_GCs);
-				   
+
+Bait getBait(std::ifstream &db,
+	     std::unordered_map<std::string,
+	     size_t> &map,
+	     size_t no,
+	     std::string name,
+	     std::string type,
+	     size_t start,
+	     size_t stop) {
+  size_t fpos = map[name];
+  if (fpos == 0) {
+    Rcpp::stop("Error: '%s' not found. Exiting...", name);
+  }
+
+  db.clear(); db.seekg(fpos+(start-1), std::ios::beg);
+  
+  char c;
+  std::string seq = "";
+  size_t no_A = 0, no_T = 0, no_C = 0, no_G = 0, no_UNK = 0;
+  for (size_t i = 0; i <= stop-start && db.get(c); i++) {
+    if (c == '>') {
+      Rcpp::stop("Error: sequence stop overflow for '%s'. Exiting...", name);
+    }
+    if (c == '\n') {
+      i--;
+    } else {
+      switch(toupper(c)) {
+      case 'A': no_A++; break;
+      case 'T': no_T++; break;
+      case 'C': no_C++; break;
+      case 'G': no_G++; break;
+      default: no_UNK++; break;
+      }
+      seq += c;
+    }
+  }
+  if (db.eof()) {
+    Rcpp::stop("Error: sequence stop overflow for '%s'. Exiting...", name);
+  }
+
+  Bait b {no, name, type, seq, start, stop, no_A, no_T, no_G, no_C, no_UNK};
+  return b;
+}
+
+std::unordered_map<std::string, size_t> preProcDB(std::ifstream &db) {
+  std::unordered_map<std::string, size_t> map;
+  
+  std::string line, name;
+  while(getline(db, line).good()) {
+    if(line[0] == '>') {
+      for (size_t i=1; line[i] != ' ' && i < line.size(); i++) {
+	name += line[i];
+      }
+      map[name] = db.tellg();
+      name.clear();
+    }
+  }
+
+  return map;
+}
+
+Rcpp::DataFrame buildRdf(std::vector<Bait> &baits) {
+  std::vector<std::string> names, types, seqs;
+  std::vector<size_t> nos, starts, stops, sizes,
+    no_As, no_Ts, no_Gs, no_Cs, no_UNKs, no_ATs, no_GCs;
+
+  for (Bait b : baits) {
+    nos.push_back(b.no);
+    names.push_back(b.name);
+    types.push_back(b.type);
+    seqs.push_back(b.seq);
+    starts.push_back(b.start);
+    stops.push_back(b.stop);
+    sizes.push_back(b.stop-b.start+1);
+    no_As.push_back(b.no_A);
+    no_Ts.push_back(b.no_T);
+    no_Gs.push_back(b.no_G);
+    no_Cs.push_back(b.no_C);
+    no_UNKs.push_back(b.no_UNK);
+    no_ATs.push_back(b.no_A + b.no_T);
+    no_GCs.push_back(b.no_G + b.no_C);
+  }
+
+  Rcpp::DataFrame df = Rcpp::DataFrame::create(Rcpp::_["bait_no"]         = nos,
+					       Rcpp::_["bait_chrom_name"] = names,
+					       Rcpp::_["bait_type"]       = types,
+					       Rcpp::_["bait_seq"]        = seqs,
+					       Rcpp::_["bait_start"]      = starts,
+					       Rcpp::_["bait_stop"]       = stops,
+					       Rcpp::_["bait_seq_size"]   = sizes,
+					       Rcpp::_["no_A"]            = no_As,
+					       Rcpp::_["no_T"]            = no_Ts,
+					       Rcpp::_["no_G"]            = no_Gs,
+					       Rcpp::_["no_C"]            = no_Cs,
+					       Rcpp::_["no_UNK"]          = no_UNKs,
+					       Rcpp::_["no_AT"]           = no_ATs,
+					       Rcpp::_["no_GC"]           = no_GCs);
   return df;
+}
+			 
+// [[Rcpp::export]]
+Rcpp::DataFrame getBaits(std::string db_path, Rcpp::DataFrame df) {
+  std::vector<Bait> baits;
+  std::ifstream db(db_path.c_str());
+  
+  if(!db.good()) {
+    Rcpp::stop("Error opening file '%s'. Exiting...", db_path);
+  }
+  
+  std::unordered_map<std::string, size_t> map = preProcDB(db);
+
+  if (df.size() != DF_NO_COLS) {
+    Rcpp::stop("Error: data frame has the wrong number of columns. Exiting...");
+  }
+
+  Rcpp::StringVector df_names = df[DF_NAME_INDEX], df_types = df[DF_TYPE_INDEX];
+  Rcpp::NumericVector df_starts = df[DF_START_INDEX], df_stops  = df[DF_STOP_INDEX];
+
+  for (size_t i = 0; i < df_names.size(); i++) {
+    baits.push_back(getBait(db,
+			    map,
+			    i,
+			    Rcpp::as<std::string>(df_names[i]),
+			    Rcpp::as<std::string>(df_types[i]),
+			    df_starts[i],
+			    df_stops[i]));
+  }
+
+  return buildRdf(baits);
 }

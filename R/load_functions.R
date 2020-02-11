@@ -7,21 +7,20 @@
 #' @return The exclusions dataframe
 #' 
 load_exclusions <- function(file){
- #	cat("debug: load_exclusions\n"); flush.console()
-	output <- as.data.frame(data.table::fread(file, sep = "\t"))
-	if (!is.integer(output[, 2]))
-		stop("The second column in the exclusions file does not appear to contain only numeric data.\n")
-	if (!is.integer(output[, 3]))
-		stop("The third column in the exclusions file does not appear to contain only numeric data.\n")
-	if (any(is.na(output)))
-		stop("There appear to be NA's in the exclusions file.\n")
-	if (any(output[, 2:3] < 0))
-		stop("Some data in the exclusions file appears to be negative.\n")
-	for (i in 1:nrow(output)) {
-		if(output[i, 2] > output[i, 3])
-			stop("The starting poing in line ", i, " is greater than the ending point in the exclusions file.\n")
-	}
+	output <- as.data.frame(data.table::fread(file, showProgress = FALSE))
+	if (ncol(output) != 3)
+		stop("The exclusions file does not appear to contain exactly three columns\n", call. = FALSE)
 	colnames(output) <- c("chr", "start", "stop")
+	if (!is.integer(output$start))
+		stop("The second column in the exclusions file does not appear to contain only numeric data.\n", call. = FALSE)
+	if (!is.integer(output$stop))
+		stop("The third column in the exclusions file does not appear to contain only numeric data.\n", call. = FALSE)
+	if (any(is.na(output)))
+		stop("There appear to be NA's in the exclusions file.\n", call. = FALSE)
+	if (any(output[, 2:3] < 0))
+		stop("Some data in the exclusions file appears to be negative.\n", call. = FALSE)
+	if(any(output$start > output$stop))
+		stop("Not all starting points are greater than the ending points in the exclusions file.\n", call. = FALSE)
 	return(output)
 }
 
@@ -34,21 +33,20 @@ load_exclusions <- function(file){
 #' @return The regions dataframe
 #' 
 load_regions <- function(file){
- #	cat("debug: load_regions\n"); flush.console()
-	output <- as.data.frame(data.table::fread(file, sep = "\t"))
-	if (!is.integer(output[, 2]))
-		stop("The second column in the regions of interest file does not appear to contain only numeric data.\n")
-	if (!is.integer(output[, 3]))
-		stop("The third column in the regions of interest file does not appear to contain only numeric data.\n")
-	if (any(is.na(output)))
-		stop("There appear to be NA's in the regions of interest file.\n")
-	if (any(output[, 2:3] < 0))
-		stop("Some data in the regions of interest file appears to be negative.\n")
-	for (i in 1:nrow(output)) {
-		if(output[i, 2] > output[i, 3])
-			stop("The starting poing in line ", i, " is greater than the ending point in the regions of interest file.\n")
-	}	
+	output <- as.data.frame(data.table::fread(file, showProgress = FALSE))
+	if (ncol(output) != 3)
+		stop("The regions file does not appear to contain exactly three columns\n", call. = FALSE)
 	colnames(output) <- c("chr", "start", "stop")
+	if (!is.integer(output$start))
+		stop("The second column in the regions of interest file does not appear to contain only numeric data.\n", call. = FALSE)
+	if (!is.integer(output$stop))
+		stop("The third column in the regions of interest file does not appear to contain only numeric data.\n", call. = FALSE)
+	if (any(is.na(output)))
+		stop("There appear to be NA's in the regions of interest file.\n", call. = FALSE)
+	if (any(output[, 2:3] < 0))
+		stop("Some data in the regions of interest file appears to be negative.\n", call. = FALSE)
+	if(any(output$start > output$stop))
+		stop("Not all starting points are greater than the ending points in the regions of interest file.\n", call. = FALSE)
 	return(output)
 }
 
@@ -61,15 +59,16 @@ load_regions <- function(file){
 #' @return The targets dataframe
 #' 
 load_targets <- function(file){
- #	cat("debug: load_targets\n"); flush.console()
-	output <- as.data.frame(data.table::fread(file, sep = "\t"))
-	if (!is.integer(output[, 2]))
-		stop("The second column in the targets file does not appear to contain only numeric data.\n")
-	if (any(is.na(output)))
-		stop("There appear to be NA's in the targets file.\n")
-	if (any(output[, 2] < 0))
-		stop("Some data in the targets file appears to be negative.\n")
+	output <- as.data.frame(data.table::fread(file, showProgress = FALSE))
+	if (ncol(output) != 2)
+		stop("The exclusions file does not appear to contain exactly two columns\n", call. = FALSE)
 	colnames(output) <- c("chr", "target")
+	if (!is.integer(output$target))
+		stop("The second column in the targets file does not appear to contain only numeric data.\n", call. = FALSE)
+	if (any(is.na(output)))
+		stop("There appear to be NA's in the targets file.\n", call. = FALSE)
+	if (any(output$targets < 0))
+		stop("Some data in the targets file appears to be negative.\n", call. = FALSE)
 	return(output)
 }
 
@@ -85,19 +84,25 @@ load_targets <- function(file){
 #' @return The lengths dataframe
 #' 
 check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, the.lengths) {
- #	cat("debug: check_chr_names\n"); flush.console()
 	if (!is.null(exclusions)) {
-		if (any(is.na(match(exclusions[, 1], the.lengths[, 1]))))
-			stop("Not all chromosomes' names in the exclusions match the names of the listed chromosomes.\n")
+		if (any(link <- is.na(match(exclusions$chr, the.lengths$name)))) {
+			warning("Not all of the sequences' names in the exclusions match the names listed in the database. Removing orphan exclusions.", immediate. = TRUE, call. = FALSE)
+			exclusions <- exclusions[!link, ]
+		}
 	}
 	if (!is.null(regions)) {
-		if (any(is.na(match(regions[, 1], the.lengths[, 1]))))
-			stop("Not all chromosomes' names in the regions of interest match the names of the listed chromosomes.\n")
+		if (any(link <- is.na(match(regions$chr, the.lengths$name)))) {
+			warning("Not all of the sequences' names in the regions of interest match the names listed in the database. Removing orphan regions.", immediate. = TRUE, call. = FALSE)
+			regions <- regions[!link, ]
+		}
 	}
 	if (!is.null(targets)) {
-		if (any(is.na(match(targets[, 1], the.lengths[, 1]))))
-			stop("Not all chromosomes' names in the targets match the names of the listed chromosomes.\n")
+		if (any(link <- is.na(match(targets$chr, the.lengths$name)))) {
+			warning("Not all of the sequences' names in the targets match the names listed in the database. Removing orphan targets.", immediate. = TRUE, call. = FALSE)
+			targets <- targets[!link, ]
+		}
 	}
+	return(list(exclusions = exclusions, regions = regions, targets = targets))
 }
 
 #' Check that start and end points fall whithin chromosome boundaries
@@ -109,26 +114,26 @@ check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, t
 #' @return The lengths dataframe
 #' 
 check_chr_boundaries <- function(exclusions = NULL, regions = NULL, targets = NULL, the.lengths) {
- #	cat("debug: check_chr_boundaries\n"); flush.console()
 	if (!is.null(exclusions)) {
-		for(i in unique(exclusions[, 1])) {
-			link <- match(i, the.lengths[, 1])
-			if (any(exclusions[exclusions[ ,1] == i, 2:3] > the.lengths[link, 2]))
-				stop("Some data in the exclusions is off-boundaries.\n")
-		}
+		capture <- lapply(unique(exclusions$chr), function(i) {
+			cat(i)
+			link <- match(i, the.lengths$name)
+			if (any(exclusions[exclusions$chr == i, 2:3] > the.lengths$size[link]))
+				stop("Exclusion data for sequence ", the.lengths$name[link], " is off-boundaries.\n", call = FALSE)
+		})
 	}
 	if (!is.null(regions)) {
-		for(i in unique(regions[, 1])) {
-			link <- match(i, the.lengths[, 1])
-			if (any(regions[regions[ ,1] == i, 2:3] > the.lengths[link, 2]))
-				stop("Some data in the regions if interest is off-boundaries.\n")
-		}
+		capture <- lapply(unique(regions$chr), function(i) {
+			link <- match(i, the.lengths$name)
+			if (any(regions[regions[ ,1] == i, 2:3] > the.lengths[link]))
+				stop("Region data for sequence ", the.lengths$name[link], " is off-boundaries.\n", call = FALSE)
+		})
 	}
 	if (!is.null(targets)) {
-		for(i in unique(targets[, 1])) {
-			link <- match(i, the.lengths[, 1])
-			if (any(targets[targets[ ,1] == i, 2] > the.lengths[link, 2]))
-				stop("Some data in the targets is off-boundaries.\n")
-		}
+		capture <- lapply(unique(targets$chr), function(i) {
+			link <- match(i, the.lengths$name)
+			if (any(targets[targets$chr == i, 2] > the.lengths$size[link]))
+				stop("Target data for sequence ", the.lengths$name[link], " is off-boundaries.\n", call = FALSE)
+		})
 	}
 }

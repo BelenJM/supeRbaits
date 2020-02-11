@@ -15,6 +15,7 @@
 #' @param seed A number to fix the randomization process, for reproducibility
 #' @param restrict A vector of chromosome names OR position numbers to which the analysis should be restricted.
 #' @param gc A vector of two values between 0 and 1, specifying the minimum and maximmum GC percentage allowed in the output baits.
+#' @param show.times Logical: Should time spent at each step be displayed?
 #' @param debug Logical: Should debug files be created?
 #' @param verbose Logical: Should detailed bait processing messages be displayed per sequence?
 #' 
@@ -25,13 +26,17 @@
 main_function <- function(n, size, database, exclusions = NULL, 
 	regions = NULL, regions.prop = NULL, regions.tiling = NULL,
 	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
-	seed = NULL, restrict = NULL, debug = FALSE, gc = c(0.3, 0.5),
+	seed = NULL, restrict = NULL, show.times = FALSE, debug = FALSE, gc = c(0.3, 0.5),
 	verbose = FALSE){
 
 	if (debug) {
-    message("!!!--- Debug mode has been activated ---!!!\n            ", Sys.time())
+    message("!!!--- Debug mode has been activated ---!!!")
 		on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
 	} 
+	if (show.times)
+		message("Start time: ", Sys.time())
+	
+	flush.console()
 
 	if(!is.null(seed))
 		set.seed(seed)
@@ -84,13 +89,14 @@ main_function <- function(n, size, database, exclusions = NULL,
 	size <- size - 1
 
 	# Import data
-		message("M: Compiling the sequences' lengths. This process can take some minutes.")
-		flush.console()
-		if (debug)
-			print(getlengths.time <- system.time(the.lengths <- getChromLengths(path = database)))
-		else
-			the.lengths <- getChromLengths(path = database)
+	message("M: Compiling the sequences' lengths. This process can take some seconds."); flush.console()
+	getlengths.time <- system.time({
+		the.lengths <- callr::r(function(path) {supeRbaits:::getChromLengths(path = path)}, args = list(path = database), spinner = TRUE)
+	})
 
+	if (show.times)
+		print(getlengths.time)
+	
 	if (is.numeric(restrict)) {
 		if (all(restrict > nrow(the.lengths)))
 			stop("'restrict' is set to numeric values, but ALL listed values are larger than the number of available sequences\nNumber of available sequences: ", nrow(the.lengths), "\nMin. index requested: ", min(restrict), "\nMax. index requested: ", max(restrict), "\n", call. = FALSE)
@@ -100,6 +106,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		}
 		the.lengths <- the.lengths[restrict, ]
 	}
+
 	if (is.character(restrict)) {
 		link <- match(restrict, the.lengths$name)
 		if (all(is.na(link)))
@@ -112,20 +119,37 @@ main_function <- function(n, size, database, exclusions = NULL,
 		rm(link)
 	}
 
-	if(!is.null(exclusions))
-		exclusions <- load_exclusions(file = exclusions)
-	if(!is.null(regions))
-		regions <- load_regions(file = regions)
-	if(!is.null(targets))
-		targets <- load_targets(file = targets)
+	message("M: Loading exclusions/regions/targets (if any is present)."); flush.console()
+
+	load.extras.time <- system.time({
+		if(!is.null(exclusions))
+			exclusions <- load_exclusions(file = exclusions)
+		if(!is.null(regions))
+			regions <- load_regions(file = regions)
+		if(!is.null(targets))
+			targets <- load_targets(file = targets)
+	})
+	if (show.times)
+		print(load.extras.time)
 
 	# Compatibility checks
-	check_chr_names(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
-	check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
-	if (any(size > the.lengths[, 2]))
-		stop("'size' is larger than at least one of the chromosome lengths.\n")
+	message("M: Checking exclusions/regions/targets quality (if any is present)."); flush.console()
 
-	message("M: Finding bait positions for each sequence.")
+	check.input.time <- system.time({
+		if (any(size > the.lengths$size))
+			stop("'size' is larger than at least one of the chromosome lengths.\n")
+		recipient <- check_chr_names(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
+		exclusions <- recipient$exclusions
+		regions <- recipient$regions
+		targets <- recipient$targets
+		rm(recipient)
+
+		check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
+	})
+	if (show.times)
+		print(check.input.time)
+
+	message("M: Finding bait positions for each sequence."); flush.console()
 	if (!verbose)
   	pb <- txtProgressBar(min = 0, max = nrow(the.lengths), initial = 0, style = 3, width = 60)
 
@@ -184,50 +208,69 @@ main_function <- function(n, size, database, exclusions = NULL,
 			}
 			# bring together the different parts
 			output <- rbind(temp.regions, temp.targets, temp.random)
-	    if (!verbose)
-	    	setTxtProgressBar(pb, i) # Progress bar    			
+	    if (!verbose) {
+	    	setTxtProgressBar(pb, i) # Progress bar
+	    	flush.console()
+	    }
 			return(output)
 		})
 	  if (!verbose)
 			close(pb)
 		names(bait.points) <- as.character(the.lengths[, 1])
 	})
-	if (debug)
+	if (show.times)
 		print(sample.baits.time)
 
 	message("M: Retrieving bait base pairs. This operation can take some time."); flush.console()
 
 	message("Temp: Running getBaits for the whole content."); flush.console()
 	to.fetch <- data.table::rbindlist(bait.points, use.names = TRUE, idcol = "ChromName")
-	if (debug)
-		print(getbaits.time <- system.time(baits <- getBaits(db = database, df = to.fetch)))
-	else
+
+	getbaits.time <- system.time({
 		baits <- getBaits(db = database, df = to.fetch)
-
-	message("M: Verifying GC content in the baits")
-
-	baits$pGC <- baits$no_GC / (size + 1)
-	baits <- split(baits, baits$bait_chrom_name)
-
-	good.baits <- lapply(seq_along(baits), function(i) {
-		link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
-		if (verbose) {
-			if (all(!link)) {
-				message(paste0("M: No baits passed the GC percentage test for chromosome ", names(baits)[i], "."))
-				return(NULL)
-			}
-			if (any(!link)) {
-				if (sum(!link) == 1)
-					message(paste0("M: ", sum(!link), " bait was excluded from chr ", names(baits)[i], " due to its GC percentage."))
-				else
-					message(paste0("M: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage."))
-			}
-		}
-		return(baits[[i]][link, ])
 	})
-	names(good.baits) <- names(baits)
 
-	if (debug)
+	if (show.times)
+		print(getbaits.time)
+
+	message("M: Calculating GC content in the baits"); flush.console()
+
+	calc.baits.time <- system.time({
+		baits$pGC <- baits$no_GC / (size + 1)
+		baits <- split(baits, baits$bait_chrom_name)
+	})
+
+	if (show.times)
+		print(calc.baits.time)
+
+	message("M: Examining GC content in the baits"); flush.console()
+
+	assess.baits.time <- system.time({
+		good.baits <- lapply(seq_along(baits), function(i) {
+			link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
+			if (verbose) {
+				if (all(!link)) {
+					message(paste0("M: No baits passed the GC percentage test for chromosome ", names(baits)[i], "."))
+					return(NULL)
+				}
+				if (any(!link)) {
+					if (sum(!link) == 1)
+						message(paste0("M: ", sum(!link), " bait was excluded from chr ", names(baits)[i], " due to its GC percentage."))
+					else
+						message(paste0("M: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage."))
+				}
+			}
+			return(baits[[i]][link, ])
+		})
+		names(good.baits) <- names(baits)
+	})
+
+	if (show.times)
+		print(assess.baits.time)
+
+	message("M: Analysis completed."); flush.console()
+
+	if (show.times)
 		return(list(baits = baits, good.baits = good.baits, chr.lengths = the.lengths, exclusions = exclusions, 
 			targets = targets, regions = regions, getlengths.time = getlengths.time["elapsed"], 
 			sample.baits.time = sample.baits.time["elapsed"], getbaits.time = getbaits.time["elapsed"]))
@@ -246,7 +289,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 #' @keywords internal
 #' 
 trim_parameters <- function(chr, exclusions = NULL, regions = NULL, targets = NULL) {
-	# cat("debug: trim_parameters\n"); flush.console()
 	output <- list(exclusions  = NULL, regions = NULL, targets = NULL)
 	if (!is.null(exclusions)) 
 		output[[1]] <- subsample(input = exclusions, link = chr)
@@ -254,7 +296,6 @@ trim_parameters <- function(chr, exclusions = NULL, regions = NULL, targets = NU
 		output[[2]] <- subsample(input = regions, link = chr)
 	if (!is.null(targets)) 
 		output[[3]] <- subsample(input = targets, link = chr)
-	# names(output) <- c("exclusions", "regions", "targets")
 	return(output)
 }
 
@@ -268,32 +309,38 @@ trim_parameters <- function(chr, exclusions = NULL, regions = NULL, targets = NU
 #' @keywords internal
 #' 
 subsample <- function(input, link) {
- #	cat("debug: subsample\n"); flush.console()
 	chr <- link
 	link <- grepl(link, input[, 1])
 	if (any(link)) {
 		output <- input[link, ]
 		output <- output[order(output[, 2]), ]
+		rownames(output) <- 1:nrow(output)
 	}	else {
 		output <- NULL
 	}
 	if (!is.null(output)) {
-		if (any(table(output[, 2]) > 1))
-			stop("There are duplicated starting points/targets for one of the trimming elements of chromosome ", chr, ".")
+		# IF we are subsampling targets, remove duplicated entries
+		if (ncol(output) == 2) {
+			if (any(duplicated(output[,2]))) {
+				output <- output[!duplicated(output[,2]), ]
+			}
+		}
 		if (ncol(output) == 3) {
-			if(any(table(output[, 3]) > 1))
-				stop("There are duplicated ending points for one of the trimming elements for chromosome ", chr, ".")
 			if (nrow(output) > 1) {
-				trigger <- NULL
-				for (i in 2:nrow(output))
-					trigger[i - 1] <- output[i, 2] <= output[i - 1, 3]
-				if (any(trigger))
-					stop("The regions to include or exclude overlap for chromosome ", chr,".")
-				trigger <- NULL
-				for (i in 2:nrow(output))
-					trigger[i - 1] <- output[i, 2] == output[i - 1, 3] + 1
-				if (any(trigger))
-					stop("There are contiguous regions to include or exclude for chromosome ", chr,". Please list these as a single region.")
+				# combine areas contained within each other or contiguous
+				try.again <- TRUE
+				while (try.again) {
+					link <- c(FALSE, (output[-1, 2] <= output[-nrow(output), 3] | output[-1, 2] == (output[-nrow(output), 3] + 1)))
+					if (any(link)) {
+						rows.to.fix <- which(link)
+						for(i in rows.to.fix) {
+							output[i - 1, 3] <- output[i, 2]
+						}
+						output <- output[!link, ]
+					} else {
+						try.again <- FALSE
+					}
+				}
 			}
 		}
 	}

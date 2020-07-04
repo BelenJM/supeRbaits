@@ -6,4 +6,5 @@ testdata/test_chr.png
 testdata/test_CM003279.png
 testdata/test_CMF.png
 src/*.o
+src/supeRbaits.so
 src/supeRbaits.dll

@@ -10,6 +10,6 @@ getChromLengths <- function(path) {
 }
 
 sampleBaits <- function(chrom_lens, exclusions, regions, targets, n, size, regions_tiling, targets_tiling, regions_prop, targets_prop) {
-    invisible(.Call('_supeRbaits_sampleBaits', PACKAGE = 'supeRbaits', chrom_lens, exclusions, regions, targets, n, size, regions_tiling, targets_tiling, regions_prop, targets_prop))
+    .Call('_supeRbaits_sampleBaits', PACKAGE = 'supeRbaits', chrom_lens, exclusions, regions, targets, n, size, regions_tiling, targets_tiling, regions_prop, targets_prop)
 }
 

@@ -17,6 +17,7 @@ main_function(
   targets.tiling = NULL,
   seed = NULL,
   restrict = NULL,
+  show.times = FALSE,
   debug = FALSE,
   gc = c(0.3, 0.5),
   verbose = FALSE
@@ -46,6 +47,8 @@ main_function(
 \item{seed}{A number to fix the randomization process, for reproducibility}
 
 \item{restrict}{A vector of chromosome names OR position numbers to which the analysis should be restricted.}
+
+\item{show.times}{Logical: Should time spent at each step be displayed?}
 
 \item{debug}{Logical: Should debug files be created?}
 

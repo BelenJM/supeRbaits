@@ -150,7 +150,7 @@ Rcpp::DataFrame getBaits(std::string db_path, Rcpp::DataFrame df) {
   Rcpp::StringVector df_names = df[DF_NAME_INDEX], df_types = df[DF_TYPE_INDEX];
   Rcpp::NumericVector df_starts = df[DF_START_INDEX], df_stops  = df[DF_STOP_INDEX];
 
-  for (size_t i = 0; i < df_names.size(); i++) {
+  for (size_t i = 0; i < (size_t) df_names.size(); i++) {
     baits.push_back(getBait(db,
 			    map,
 			    i,

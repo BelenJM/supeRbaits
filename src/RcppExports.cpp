@@ -18,7 +18,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // getChromLengths
-DataFrame getChromLengths(std::string path);
+Rcpp::DataFrame getChromLengths(std::string path);
 RcppExport SEXP _supeRbaits_getChromLengths(SEXP pathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -28,10 +28,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sampleBaits
+void sampleBaits(Rcpp::DataFrame chrom_lens, Rcpp::DataFrame exclusions, Rcpp::DataFrame regions, Rcpp::DataFrame targets, size_t n, size_t size, size_t regions_tiling, size_t targets_tiling, double regions_prop, double targets_prop);
+RcppExport SEXP _supeRbaits_sampleBaits(SEXP chrom_lensSEXP, SEXP exclusionsSEXP, SEXP regionsSEXP, SEXP targetsSEXP, SEXP nSEXP, SEXP sizeSEXP, SEXP regions_tilingSEXP, SEXP targets_tilingSEXP, SEXP regions_propSEXP, SEXP targets_propSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type chrom_lens(chrom_lensSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type exclusions(exclusionsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type regions(regionsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type targets(targetsSEXP);
+    Rcpp::traits::input_parameter< size_t >::type n(nSEXP);
+    Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< size_t >::type regions_tiling(regions_tilingSEXP);
+    Rcpp::traits::input_parameter< size_t >::type targets_tiling(targets_tilingSEXP);
+    Rcpp::traits::input_parameter< double >::type regions_prop(regions_propSEXP);
+    Rcpp::traits::input_parameter< double >::type targets_prop(targets_propSEXP);
+    sampleBaits(chrom_lens, exclusions, regions, targets, n, size, regions_tiling, targets_tiling, regions_prop, targets_prop);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_supeRbaits_getBaits", (DL_FUNC) &_supeRbaits_getBaits, 2},
     {"_supeRbaits_getChromLengths", (DL_FUNC) &_supeRbaits_getChromLengths, 1},
+    {"_supeRbaits_sampleBaits", (DL_FUNC) &_supeRbaits_sampleBaits, 10},
     {NULL, NULL, 0}
 };
 

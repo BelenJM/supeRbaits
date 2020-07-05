@@ -91,13 +91,15 @@ vec_pair trim_ranges(vec_pair ranges, vec_pair exclusions) {
 }
 
 vec filter_targets(vec targets, size_t len) {
+  if (!targets.size())
+    return vec(0);
+
   vec uniq_targets;
   std::sort(targets.begin(), targets.end());
 
-  if (targets[0] > len) {
+  if (targets[0] > len)
     return uniq_targets;
-  }
-  
+
   size_t prev = targets[0];
   uniq_targets.push_back(prev);
   
@@ -108,10 +110,14 @@ vec filter_targets(vec targets, size_t len) {
       uniq_targets.push_back(prev);
     }
   }
+
   return uniq_targets;
 }
 
 vec_pair filter_ranges(vec_pair ranges, size_t len) {
+  if (!ranges.size())
+    return vec_pair(0);
+  
   vec_pair uniq_ranges;
   std::sort(ranges.begin(), ranges.end());
 
@@ -145,8 +151,6 @@ vec subsample_targets(std::string name, size_t len, Rcpp::DataFrame df) {
 
   vec targets;
   Rcpp::NumericVector df_targets = df[DF_TARGET_INDEX];
-
-  Rcpp::Rcout << "targets size " << df.nrows() << "\n";
 
   for (size_t i = 0; i < (size_t) df_names.size(); i++)
     if (df_names[i] == name)
@@ -352,7 +356,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
     	Rcpp::Rcout << "M: No regions found for chromosome " << df_names[i] << "." << std::endl;
       }
     }
-    
+
     // target baits
     if (targets_prop > 0) {
       n_targets = std::floor(n * targets_prop);
@@ -398,6 +402,6 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 	all_baits.push_back(SampleBait {(std::string) df_names[i], "random", t.first.first, t.first.second});
     }
   }
-
+  
   return buildSamplesRdf(all_baits);
 }

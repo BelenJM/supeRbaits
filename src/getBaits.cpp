@@ -14,9 +14,9 @@ test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CMF", "CMF"),
 
 const int DF_NO_COLS = 4,
           DF_NAME_INDEX = 0,
-          DF_START_INDEX = 1,
-          DF_STOP_INDEX = 2,
-          DF_TYPE_INDEX = 3;
+          DF_TYPE_INDEX = 1,
+          DF_START_INDEX = 2,
+          DF_STOP_INDEX = 3;
 
 struct Bait {
   size_t no;

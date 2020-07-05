@@ -192,10 +192,10 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
       output_ranges.push_back(std::make_pair(std::make_pair(r.first, r.second), max_baits));
   }
   if (!output_ranges.size())
-    Rcpp::stop("All ranges in chromosome ", chrom, " are too small to fit the desired number of baits. Aborting.");
+    Rcpp::stop("All ranges in chromosome %s are too small to fit the desired number of baits. Aborting.", chrom);
 
   if (output_ranges.size() < ranges.size())
-    Rcpp::Rcout << ranges.size() - output_ranges.size() << " sub-ranges on chromosome " << chrom << " are too small to fit the desired number of baits and will be excluded." << std::endl;
+    Rcpp::Rcout << (ranges.size() - output_ranges.size()) << " sub-ranges on chromosome " << chrom << " are too small to fit the desired number of baits and will be excluded." << std::endl;
 
   if (n / tiling < output_ranges.size()) { // if there are too many ranges, randomly select needed
     Rcpp::Rcout << "Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in chromosome " << chrom << ". Choosing a random subset of ranges." << std::endl;
@@ -257,7 +257,7 @@ vec check_n(vec_pair_value ranges, size_t n, size_t tiling, std::string chrom, s
     size_t check_n_per_range = 0;
     for (auto r : n_per_range)
       check_n_per_range += r;
-    
+   
     if (check_n_per_range != n)
       Rcpp::stop("Unhadled error: contact developers :)");
   }

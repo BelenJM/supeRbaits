@@ -84,7 +84,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 			}, 
 			args = list(getChromLengths = getChromLengths,
 									path = database),
-			spinner = TRUE)
+			spinner = TRUE,
+			show = TRUE)
 	})
 
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
@@ -179,7 +180,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 									targets_tiling = targets.tiling, 
 									regions_prop = regions.prop, 
 									targets_prop = targets.prop),
-			spinner = TRUE)
+			spinner = TRUE,
+			show = TRUE)
 	})
 
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
@@ -198,7 +200,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 			args = list(getBaits = getBaits,
 									db = database,
 									df = bait.points), 
-			spinner = TRUE)
+			spinner = TRUE,
+			show = TRUE)
 	})
 
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])

@@ -15,8 +15,6 @@
 #' @param seed A number to fix the randomization process, for reproducibility
 #' @param restrict A vector of chromosome names OR position numbers to which the analysis should be restricted.
 #' @param gc A vector of two values between 0 and 1, specifying the minimum and maximmum GC percentage allowed in the output baits.
-#' @param show.times Logical: Should time spent at each step be displayed?
-#' @param debug Logical: Should debug files be created?
 #' @param verbose Logical: Should detailed bait processing messages be displayed per sequence?
 #' 
 #' @return A dataframe of baits
@@ -24,16 +22,16 @@
 #' @export
 #' 
 main_function <- function(n, size, database, exclusions = NULL, 
-	regions = NULL, regions.prop = NULL, regions.tiling = NULL,
-	targets = NULL, targets.prop = NULL, targets.tiling = NULL,
-	seed = NULL, restrict = NULL, show.times = FALSE, debug = FALSE, gc = c(0.3, 0.5),
+	regions = NULL, regions.prop = 0, regions.tiling = 1,
+	targets = NULL, targets.prop = 0, targets.tiling = 1,
+	seed = NULL, restrict = NULL, gc = c(0.3, 0.5),
 	verbose = FALSE){
 
-	if (debug) {
+	if (!is.null(options("supeRbaits_debug")[[1]]) && options("supeRbaits_debug")[[1]]) {
     message("!!!--- Debug mode has been activated ---!!!")
 		on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
 	} 
-	if (show.times)
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		message("Start time: ", Sys.time())
 	
 	flush.console()
@@ -49,24 +47,21 @@ main_function <- function(n, size, database, exclusions = NULL,
 		stop("'size' must be numeric.\n")
 	if (length(size) != 1)
 		stop("Length of 'size' must be 1.\n")
+	size <- as.integer(size)
 
-	if (!is.null(regions.prop) && (!is.numeric(regions.prop) | (regions.prop > 1 | regions.prop < 0)))
+	if (!is.numeric(regions.prop) | (regions.prop > 1 | regions.prop < 0))
 		stop("'regions.prop' must be numeric and between 0 and 1.\n")
 	if (!is.null(targets.prop) && (!is.numeric(targets.prop) | (targets.prop > 1 | targets.prop < 0)))
 		stop("'targets.prop' must be numeric and between 0 and 1.\n")
-	if (!is.null(regions.tiling) && !is.integer(regions.tiling))
-		stop("'regions.tiling' must be an integer.\n")
-	if (!is.null(targets.tiling) && !is.integer(targets.tiling))
-		stop("'targets.tiling' must be an integer.\n")
+	if (!is.numeric(regions.tiling))
+		stop("'regions.tiling' must be numeric.\n")
+	if (!is.numeric(targets.tiling))
+		stop("'targets.tiling' must be numeric.\n")
 
-	if (is.null(regions.prop) & !is.null(regions))
-		stop("Please include the desired percentage of regional baits in 'regions.prop'.\n")
-	if (!is.null(regions.tiling) & is.null(regions))
-		stop("'regions.tiling' is set but no regions were included.\n")
-	if (is.null(targets.prop) & !is.null(targets))
-		stop("Please include the desired percentage of targetted baits in 'targets.prop'.\n")
-	if (!is.null(targets.tiling) & is.null(targets))
-		stop("'targets.tiling' is set but no targets were included.\n")
+	if (regions.prop == 0 & !is.null(regions))
+		warning("Regions were included but regions.prop = 0. No region baits will be produced.\n")
+	if (targets.prop == 0 & !is.null(targets))
+		warning("Regions were included but targets.prop = 0. No region baits will be produced.\n")
 
 	if (sum(regions.prop, targets.prop) > 1)
 		stop("The sum of 'regions.prop' and 'targets.prop' must not be greated than one.\n")
@@ -80,21 +75,19 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (gc[1] > gc[2])
 		stop("The first value of 'gc' must be smaller or equal to the second value.\n")
 
-	if (is.null(regions.tiling))
-		regions.tiling <- 1
-	if (is.null(targets.tiling))
-		targets.tiling <- 1
-
-	# Reduce size to include the first bp
-	size <- size - 1
-
 	# Import data
 	message("M: Compiling the sequences' lengths. This process can take some seconds."); flush.console()
 	getlengths.time <- system.time({
-		the.lengths <- callr::r(function(path) {supeRbaits:::getChromLengths(path = path)}, args = list(path = database), spinner = TRUE)
+		the.lengths <- callr::r(function(getChromLengths, path) 
+			{
+				getChromLengths(path = path)
+			}, 
+			args = list(getChromLengths = getChromLengths,
+									path = database),
+			spinner = TRUE)
 	})
 
-	if (show.times)
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(getlengths.time)
 	
 	if (is.numeric(restrict)) {
@@ -129,14 +122,14 @@ main_function <- function(n, size, database, exclusions = NULL,
 		if(!is.null(targets))
 			targets <- load_targets(file = targets)
 	})
-	if (show.times)
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(load.extras.time)
 
 	# Compatibility checks
 	message("M: Checking exclusions/regions/targets quality (if any is present)."); flush.console()
 
 	check.input.time <- system.time({
-		if (any(size > the.lengths$size))
+		if (any((size - 1) > the.lengths$size))
 			stop("'size' is larger than at least one of the chromosome lengths.\n")
 		recipient <- check_chr_names(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
 		exclusions <- recipient$exclusions
@@ -146,101 +139,79 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 		check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
 	})
-	if (show.times)
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(check.input.time)
 
 	message("M: Finding bait positions for each sequence."); flush.console()
-	if (!verbose)
-  	pb <- txtProgressBar(min = 0, max = nrow(the.lengths), initial = 0, style = 3, width = 60)
 
 	sample.baits.time <- system.time({
-		bait.points <- lapply(1:nrow(the.lengths), function(i) {
-			# extract relevant parameters
-			params <- trim_parameters(chr = the.lengths$name[i], exclusions = exclusions, regions = regions, targets = targets)
-			# region baits
-			if(!is.null(regions.prop) && regions.prop > 0) {
-				n.regions = n * regions.prop
-				if (!is.null(params$regions)) {
-					temp.regions <- region_baits(chr.length = the.lengths$size[i], n = n.regions, size = size, tiling = regions.tiling,
-					regions = params$regions, exclusions = params$exclusions, chr = the.lengths$name[i], used.baits = NULL, verbose = verbose)
-					temp.regions$Type <- rep("region", nrow(temp.regions))
-					n.regions = nrow(temp.regions)
-					used.baits <- temp.regions$Start
-				} else {
-					if (verbose)
-						message("M: No regions found for chromosome ", the.lengths$name[i], ".")
-					temp.regions <- NULL
-					n.regions = 0
-					used.baits <- NULL
-				}
-			} else {
-				temp.regions <- NULL
-				n.regions = 0
-				used.baits <- NULL
-			}
-			# targetted baits
-			if(!is.null(targets.prop) && targets.prop > 0) {
-				n.targets = n * targets.prop
-				if (!is.null(params$targets)) {
-					temp.targets <- target_baits(chr.length = the.lengths$size[i], n = n.targets, size = size, tiling = targets.tiling,
-						targets = params$targets, exclusions = params$exclusions, chr = the.lengths$name[i], used.baits = used.baits, verbose = verbose)
-					temp.targets$Type <- rep("target", nrow(temp.targets))
-					n.targets = nrow(temp.targets)
-					used.baits <- c(used.baits, temp.targets$Start)
-				} else {
-					if (verbose)
-						message("M: No targets found for chromosome ", the.lengths$name[i], ".")
-					temp.targets <- NULL
-					n.targets = 0
-				}
-			} else {
-				temp.targets <- NULL
-				n.targets = 0
-			}
-			# random baits
-			n.random <- n - (n.regions + n.targets)
-			if (n.random > 0) {
-				temp.random <- random_baits(chr.length = the.lengths$size[i], n = n.random, size = size, 
-					exclusions = params$exclusions, chr = the.lengths$name[i], used.baits = used.baits, verbose = verbose)
-				temp.random$Type <- rep("random", nrow(temp.random))
-			} else {
-				temp.random <- NULL
-			}
-			# bring together the different parts
-			output <- rbind(temp.regions, temp.targets, temp.random)
-	    if (!verbose) {
-	    	setTxtProgressBar(pb, i) # Progress bar
-	    	flush.console()
-	    }
-			return(output)
-		})
-	  if (!verbose)
-			close(pb)
-		names(bait.points) <- as.character(the.lengths[, 1])
+		bait.points <- callr::r(function(sampleBaits,
+																		 chrom_lens, 
+																		 exclusions, 
+																		 regions, 
+																		 targets, 
+																		 n, 
+																		 size, 
+																		 regions_tiling, 
+																		 targets_tiling, 
+																		 regions_prop, 
+																		 targets_prop) 
+			{
+				sampleBaits(chrom_lens, 
+										exclusions, 
+										regions, 
+										targets, 
+										n, 
+										size, 
+										regions_tiling, 
+										targets_tiling, 
+										regions_prop, 
+										targets_prop)
+			},
+			args = list(sampleBaits = sampleBaits,
+									chrom_lens = the.lengths, 
+									exclusions = exclusions, 
+									regions = regions, 
+									targets = targets, 
+									n = n, 
+									size = size, 
+									regions_tiling = regions.tiling, 
+									targets_tiling = targets.tiling, 
+									regions_prop = regions.prop, 
+									targets_prop = targets.prop),
+			spinner = TRUE)
 	})
-	if (show.times)
+
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(sample.baits.time)
 
 	message("M: Retrieving bait base pairs. This operation can take some time."); flush.console()
 
-	message("Temp: Running getBaits for the whole content."); flush.console()
-	to.fetch <- data.table::rbindlist(bait.points, use.names = TRUE, idcol = "ChromName")
-
 	getbaits.time <- system.time({
-		baits <- getBaits(db = database, df = to.fetch)
+		baits <- callr::r(function(getBaits,
+															 db, 
+															 df)
+			{
+				getBaits(db = db, 
+								 df = df)
+			}, 
+			args = list(getBaits = getBaits,
+									db = database,
+									df = bait.points), 
+			spinner = TRUE)
 	})
 
-	if (show.times)
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(getbaits.time)
 
 	message("M: Calculating GC content in the baits"); flush.console()
 
 	calc.baits.time <- system.time({
-		baits$pGC <- baits$no_GC / (size + 1)
+		baits$pGC <- baits$no_GC / size
 		baits <- split(baits, baits$bait_chrom_name)
 	})
 
-	if (show.times)
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(calc.baits.time)
 
 	message("M: Examining GC content in the baits"); flush.console()
@@ -265,12 +236,12 @@ main_function <- function(n, size, database, exclusions = NULL,
 		names(good.baits) <- names(baits)
 	})
 
-	if (show.times)
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(assess.baits.time)
 
 	message("M: Analysis completed."); flush.console()
 
-	if (show.times)
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		return(list(baits = baits, good.baits = good.baits, chr.lengths = the.lengths, exclusions = exclusions, 
 			targets = targets, regions = regions, getlengths.time = getlengths.time["elapsed"], 
 			sample.baits.time = sample.baits.time["elapsed"], getbaits.time = getbaits.time["elapsed"]))

@@ -77,6 +77,14 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	# Import data
 	message("M: Compiling the sequences' lengths. This process can take some seconds."); flush.console()
+
+	# check line ending type
+	first_line <- readLines(database, n = 1)
+	len_first_line <- nchar(first_line)
+	if (grepl("\r$", readChar(database, len_first_line + 1)))
+		stop("The line endings of your database file are incompatible with supeRbaits. You can convert your database using convert_line_endings()\n", call. = FALSE)
+	# --
+
 	getlengths.time <- system.time({
 		the.lengths <- callr::r(function(getChromLengths, path) 
 			{

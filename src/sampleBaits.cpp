@@ -39,11 +39,11 @@ typedef std::vector<std::pair<size_t, size_t>> vec_pair;
 typedef std::vector<std::pair<std::pair<size_t, size_t>, size_t>> vec_pair_value;
 typedef std::vector<std::pair<std::pair<size_t, size_t>, std::string>> vec_pair_string;
 
-const int DF_NAME_INDEX = 0,
-  DF_LEN_INDEX    = 1,
-  DF_START_INDEX  = 1,
-  DF_STOP_INDEX   = 2,
-  DF_TARGET_INDEX = 1;
+const int DF_NAME_INDEX   = 0,
+          DF_LEN_INDEX    = 1,
+          DF_START_INDEX  = 1,
+          DF_STOP_INDEX   = 2,
+          DF_TARGET_INDEX = 1;
 
 struct SampleBait {
   std::string chrom;

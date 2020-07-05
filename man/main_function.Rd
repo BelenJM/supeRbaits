@@ -10,15 +10,13 @@ main_function(
   database,
   exclusions = NULL,
   regions = NULL,
-  regions.prop = NULL,
-  regions.tiling = NULL,
+  regions.prop = 0,
+  regions.tiling = 1,
   targets = NULL,
-  targets.prop = NULL,
-  targets.tiling = NULL,
+  targets.prop = 0,
+  targets.tiling = 1,
   seed = NULL,
   restrict = NULL,
-  show.times = FALSE,
-  debug = FALSE,
   gc = c(0.3, 0.5),
   verbose = FALSE
 )
@@ -47,10 +45,6 @@ main_function(
 \item{seed}{A number to fix the randomization process, for reproducibility}
 
 \item{restrict}{A vector of chromosome names OR position numbers to which the analysis should be restricted.}
-
-\item{show.times}{Logical: Should time spent at each step be displayed?}
-
-\item{debug}{Logical: Should debug files be created?}
 
 \item{gc}{A vector of two values between 0 and 1, specifying the minimum and maximmum GC percentage allowed in the output baits.}
 

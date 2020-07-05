@@ -125,7 +125,7 @@ check_chr_boundaries <- function(exclusions = NULL, regions = NULL, targets = NU
 	if (!is.null(regions)) {
 		capture <- lapply(unique(regions$chr), function(i) {
 			link <- match(i, the.lengths$name)
-			if (any(regions[regions[ ,1] == i, 2:3] > the.lengths[link]))
+			if (any(regions[regions[ ,1] == i, 2:3] > the.lengths$size[link]))
 				stop("Region data for sequence ", the.lengths$name[link], " is off-boundaries.\n", call = FALSE)
 		})
 	}

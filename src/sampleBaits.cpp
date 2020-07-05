@@ -138,11 +138,16 @@ vec_pair filter_ranges(vec_pair ranges, size_t len) {
 }
 
 vec subsample_targets(std::string name, size_t len, Rcpp::DataFrame df) {
+  if (!df.nrows())
+    return vec(0);
+  
   Rcpp::StringVector df_names = df[DF_NAME_INDEX];
 
   vec targets;
   Rcpp::NumericVector df_targets = df[DF_TARGET_INDEX];
-    
+
+  Rcpp::Rcout << "targets size " << df.nrows() << "\n";
+
   for (size_t i = 0; i < (size_t) df_names.size(); i++)
     if (df_names[i] == name)
       targets.push_back(df_targets[i]);
@@ -151,6 +156,9 @@ vec subsample_targets(std::string name, size_t len, Rcpp::DataFrame df) {
 }
 
 vec_pair subsample_ranges(std::string name, size_t len, Rcpp::DataFrame df) {
+  if (!df.nrows())
+      return vec_pair(0);
+
   Rcpp::StringVector df_names = df[DF_NAME_INDEX];
   
   vec_pair ranges;
@@ -327,8 +335,6 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
     if (regions_prop > 0) {
       n_regions = std::floor(n * regions_prop);
       if (regions_subsample.size() > 0) {
-	Rcpp::Rcout << "Trimmed region ranges for chromosome " << df_names[i] << "." << std::endl;
-
 	regions = trim_ranges(regions_subsample, exclusions_subsample);
 
 	vec_pair_value valid_regions = check_ranges(regions, n_regions, size, (std::string) df_names[i], regions_tiling, used_baits);
@@ -351,7 +357,6 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
     if (targets_prop > 0) {
       n_targets = std::floor(n * targets_prop);
       if (targets_subsample.size() > 0) {
-	Rcpp::Rcout << "Trimmed target ranges for chromosome " << df_names[i] << "." << std::endl;
 	vec_pair target_ranges;
 	for (auto t : targets_subsample) // create ranges from targets
 	  target_ranges.push_back(std::make_pair(std::max(t-(size-1), (size_t)1), std::min(t+size-1, (size_t)df_lens[i])));
@@ -378,8 +383,6 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
     // random baits
     if (n_regions + n_targets < n) {
       size_t n_random = n - (n_regions + n_targets);
-
-      Rcpp::Rcout << "Random ranges for chromosome " << df_names[i] << "." << std::endl;
 
       vec_pair random_ranges; random_ranges.push_back(std::make_pair(1, df_lens[i]));
 

@@ -7,9 +7,9 @@
 
 /*
 test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CMF", "CMF"),
- 		      "Start" = c(53, 56, 2, 1),
- 		      "Stop" = c(72, 75, 21, 20),
- 		      "Type" = c("region", "region", "random", "random"))
+ 		      "Type" = c("region", "region", "random", "random"),
+ 		      "Start" = c(53, 79, 2, 1),
+ 		      "Stop" = c(72, 88, 21, 20))
 */
 
 const int DF_NO_COLS = 4,
@@ -54,6 +54,9 @@ Bait getBait(std::ifstream &db,
   for (size_t i = 0; i <= stop-start && db.get(c); i++) {
     if (c == '>') {
       Rcpp::stop("Error: sequence stop overflow for '%s'. Exiting...", name);
+    }
+    if (c == '\n') {
+      i--;
     } else {
       switch(toupper(c)) {
       case 'A': no_A++; break;

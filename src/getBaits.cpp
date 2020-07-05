@@ -54,9 +54,6 @@ Bait getBait(std::ifstream &db,
   for (size_t i = 0; i <= stop-start && db.get(c); i++) {
     if (c == '>') {
       Rcpp::stop("Error: sequence stop overflow for '%s'. Exiting...", name);
-    }
-    if (c == '\n') {
-      i--;
     } else {
       switch(toupper(c)) {
       case 'A': no_A++; break;

@@ -6,10 +6,10 @@
 #include <unordered_map>
 
 /*
-test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CMF", "CMF"),
- 		      "Type" = c("region", "region", "random", "random"),
- 		      "Start" = c(53, 79, 2, 1),
- 		      "Stop" = c(72, 88, 21, 20))
+test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CM003279", "CM003279", "CM003279", "CMF"),
+ 		      "Type" = c("region", "region", "random", "random", "random", "random"),
+ 		      "Start" = c(53, 79, 81, 86, 162, 1),
+ 		      "Stop" = c(62, 88, 90, 95, 171, 10))
 */
 
 const int DF_NO_COLS = 4,
@@ -34,24 +34,33 @@ struct Bait {
   
 
 Bait getBait(std::ifstream &db,
-	     std::unordered_map<std::string,
-	     size_t> &map,
+	     std::unordered_map<std::string, std::pair<size_t,size_t>> &map,
 	     size_t no,
 	     std::string name,
 	     std::string type,
 	     size_t start,
 	     size_t stop) {
-  size_t fpos = map[name];
+  size_t fpos = map[name].first;
+
   if (fpos == 0) {
     Rcpp::stop("Error: '%s' not found. Exiting...", name);
   }
-
-  db.clear(); db.seekg(fpos+(start-1), std::ios::beg);
   
+  size_t nl_bef = 0;
+  if (map[name].second > 0) {
+    nl_bef = start/map[name].second;
+    if (!start % map[name].second) nl_bef--;
+  }
+  
+  db.clear(); db.seekg(fpos+(start-1+nl_bef), std::ios::beg);
+  
+  Rcpp::Rcout << "fpos=" << fpos+(start-1) << std::endl << "nl_bef=" << nl_bef << std::endl << "map[" << name << "].second = " << map[name].second << std::endl;
+
   char c;
   std::string seq = "";
   size_t no_A = 0, no_T = 0, no_C = 0, no_G = 0, no_UNK = 0;
   for (size_t i = 0; i <= stop-start && db.get(c); i++) {
+    //Rcpp::Rcout << "i=" << i << std::endl;
     if (c == '>') {
       Rcpp::stop("Error: sequence stop overflow for '%s'. Exiting...", name);
     }
@@ -68,6 +77,8 @@ Bait getBait(std::ifstream &db,
       seq += c;
     }
   }
+  Rcpp::Rcout << "seq: " << seq << std::endl << std::endl;
+  
   if (db.eof()) {
     Rcpp::stop("Error: sequence stop overflow for '%s'. Exiting...", name);
   }
@@ -76,17 +87,25 @@ Bait getBait(std::ifstream &db,
   return b;
 }
 
-std::unordered_map<std::string, size_t> preProcDB(std::ifstream &db) {
-  std::unordered_map<std::string, size_t> map;
-  
+std::unordered_map<std::string, std::pair<size_t, size_t>> preProcDB(std::ifstream &db) {
+  std::unordered_map<std::string, std::pair<size_t, size_t>> map;
+
+  size_t entry;
+  bool new_entry = false;
   std::string line, name;
   while(getline(db, line).good()) {
-    if(line[0] == '>') {
-      for (size_t i=1; line[i] != ' ' && i < line.size(); i++) {
-	name += line[i];
-      }
-      map[name] = db.tellg();
+    if (new_entry) {
+      new_entry = false;
+      map[name] = std::make_pair(entry, line.size());
+      Rcpp::Rcout << "map[" << name << "]=(" << map[name].first << ", " << map[name].second << ")\n";
       name.clear();
+    }
+    if (line[0] == '>') {
+      new_entry = true;
+      for (size_t i=1; line[i] != ' ' && i < line.size(); i++)
+	name += line[i];
+      Rcpp::Rcout << "next: " << name << std::endl;
+      entry = db.tellg();
     }
   }
 
@@ -141,7 +160,7 @@ Rcpp::DataFrame getBaits(std::string db_path, Rcpp::DataFrame df) {
     Rcpp::stop("Error opening file '%s'. Exiting...", db_path);
   }
   
-  std::unordered_map<std::string, size_t> map = preProcDB(db);
+  std::unordered_map<std::string, std::pair<size_t, size_t>> map = preProcDB(db);
 
   if (df.size() != DF_NO_COLS) {
     Rcpp::stop("Error: data frame has the wrong number of columns. Exiting...");

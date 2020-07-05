@@ -6,10 +6,12 @@
 #include <unordered_map>
 
 /*
-test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CM003279", "CM003279", "CM003279", "CMF"),
- 		      "Type" = c("region", "region", "random", "random", "random", "random"),
- 		      "Start" = c(53, 79, 81, 86, 162, 1),
- 		      "Stop" = c(62, 88, 90, 95, 171, 10))
+test_df <- data.frame("ChromName" = c("CM003279", "CM003279", "CM003279", "CM003279", "CM003279", "CMF", "CMF", "CMF"),
+          "Type" = c("region", "region", "random", "random", "random", "random", "random", "random"),
+          "Start" = c(1, 79, 81, 86, 162, 1, 2, 3),
+          "Stop" = c(20, 88, 90, 95, 171, 20, 21, 22))
+
+getBaits("chrom_salmon_chunk.fasta.txt", test_df, 2)
 */
 
 const int DF_NO_COLS = 4,
@@ -49,7 +51,7 @@ Bait getBait(std::ifstream &db,
   size_t nl_bef = 0;
   if (map[name].second > 0) {
     nl_bef = start/map[name].second;
-    if (!start % map[name].second) nl_bef--;
+    if (!(start % map[name].second)) nl_bef--;
   }
   
   db.clear(); db.seekg(fpos+(start-1+nl_bef), std::ios::beg);

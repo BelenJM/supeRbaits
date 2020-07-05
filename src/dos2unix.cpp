@@ -11,7 +11,7 @@ using namespace std;
 void dos2unix(std::string fin_path, std::string fout_path) {
   // only for converting CRLF to LF
   ifstream fin(fin_path.c_str());
-  ofstream fout(fout_path.c_str());
+  ofstream fout(fout_path.c_str(), std::ios::binary);
 
   if(!fin.good()) {
     Rcpp::stop("Error opening file '%s'. Exiting...", fin_path);

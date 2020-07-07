@@ -8,3 +8,5 @@ testdata/test_CMF.png
 src/*.o
 src/supeRbaits.so
 src/supeRbaits.dll
+src/RcppExports.cpp
+R/RcppExports.R

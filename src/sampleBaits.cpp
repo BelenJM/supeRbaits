@@ -175,7 +175,7 @@ vec_pair subsample_ranges(std::string name, size_t len, Rcpp::DataFrame df) {
   return filter_ranges(ranges, len);
 }
 
-vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string chrom, size_t tiling, vec used_baits) {
+vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string chrom, size_t tiling, std::unordered_set<size_t> used_baits) {
   vec_pair_value output_ranges;
   
   for (auto r : ranges) {
@@ -186,7 +186,7 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
       if (u >= r.first && u <= (r.second-(size-1)))
 	count_used += 1;
     
-    size_t max_baits = range - count_used - (size-1);
+    size_t max_baits = range-count_used-(size-1);
     
     if (max_baits >= tiling)
       output_ranges.push_back(std::make_pair(std::make_pair(r.first, r.second), max_baits));
@@ -265,25 +265,21 @@ vec check_n(vec_pair_value ranges, size_t n, size_t tiling, std::string chrom, s
   return n_per_range;
 }
 
-vec_pair_string get_bait_positions(vec_pair_value ranges, size_t size, vec n_per_range, vec used_baits, std::string type) {
+vec_pair_string get_bait_positions(vec_pair_value ranges, size_t size, vec n_per_range, std::unordered_set<size_t> used_baits, std::string type) {
   vec_pair bait_positions;
   for (size_t i = 0; i < ranges.size(); i++) {
-    vec seq;
-    for (size_t j = ranges[i].first.first; j <= ranges[i].first.second - (size-1); j++) {
-      bool add = true;
-      for (auto used : used_baits) {
-	if (j == used) {
-	  add = false; break;
-	}
-      }
-      if (add) seq.push_back(j);
+    std::set<size_t> rands;
+    while (rands.size() < n_per_range[i]) {
+      size_t max = ranges[i].first.second - (size - 1);
+      size_t min = ranges[i].first.first;
+      size_t rand_num = rand()%(max-min + 1) + min;
+      if (!used_baits.count(rand_num))
+	rands.insert(rand_num);
     }
-    std::random_shuffle(seq.begin(), seq.end());
 
-    for (size_t j = 0; j < n_per_range[i]; j++)
-      bait_positions.push_back(std::make_pair(seq[j], seq[j]+size-1));
+    for (size_t rand : rands)
+      bait_positions.push_back(std::make_pair(rand, rand + (size - 1)));
   }
-  sort(bait_positions.begin(), bait_positions.end());
 
   vec_pair_string bait_pos_type;
   for (auto bait_pos : bait_positions)
@@ -330,7 +326,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
     vec_pair exclusions_subsample = subsample_ranges(Rcpp::as<std::string>(df_names[i]), df_lens[i], exclusions);
     vec_pair regions_subsample = subsample_ranges(Rcpp::as<std::string>(df_names[i]), df_lens[i], regions);
 
-    vec used_baits;
+    std::unordered_set<size_t> used_baits;
     size_t n_regions = 0, n_targets = 0;
     vec_pair regions, targets, random;
     vec_pair_string region_bait_positions, target_bait_positions, random_bait_positions;
@@ -348,7 +344,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 
 	for (auto t : region_bait_positions) {
 	  all_baits.push_back(SampleBait {(std::string) df_names[i], "region", t.first.first, t.first.second});
-	  used_baits.push_back(t.first.first);
+	  used_baits.insert(t.first.first);
 	}
 	n_regions = region_bait_positions.size();
       } else {
@@ -374,7 +370,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 
 	for (auto t : target_bait_positions) {
 	  all_baits.push_back(SampleBait {(std::string) df_names[i], "target", t.first.first, t.first.second});
-	  used_baits.push_back(t.first.first);
+	  used_baits.insert(t.first.first);
 	}
 
 	n_targets = target_bait_positions.size();

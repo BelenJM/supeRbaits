@@ -56,13 +56,10 @@ Bait getBait(std::ifstream &db,
   
   db.clear(); db.seekg(fpos+(start-1+nl_bef), std::ios::beg);
   
-  Rcpp::Rcout << "fpos=" << fpos+(start-1) << std::endl << "nl_bef=" << nl_bef << std::endl << "map[" << name << "].second = " << map[name].second << std::endl;
-
   char c;
   std::string seq = "";
   size_t no_A = 0, no_T = 0, no_C = 0, no_G = 0, no_UNK = 0;
   for (size_t i = 0; i <= stop-start && db.get(c); i++) {
-    //Rcpp::Rcout << "i=" << i << std::endl;
     if (c == '>') {
       Rcpp::stop("Error: sequence stop overflow for '%s'. Exiting...", name);
     }
@@ -79,12 +76,11 @@ Bait getBait(std::ifstream &db,
       seq += c;
     }
   }
-  Rcpp::Rcout << "seq: " << seq << std::endl << std::endl;
   
   if (db.eof()) {
     Rcpp::stop("Error: sequence stop overflow for '%s'. Exiting...", name);
   }
-
+  
   Bait b {no, name, type, seq, start, stop, no_A, no_T, no_G, no_C, no_UNK};
   return b;
 }
@@ -99,14 +95,12 @@ std::unordered_map<std::string, std::pair<size_t, size_t>> preProcDB(std::ifstre
     if (new_entry) {
       new_entry = false;
       map[name] = std::make_pair(entry, line.size());
-      Rcpp::Rcout << "map[" << name << "]=(" << map[name].first << ", " << map[name].second << ")\n";
       name.clear();
     }
     if (line[0] == '>') {
       new_entry = true;
       for (size_t i=1; line[i] != ' ' && i < line.size(); i++)
 	name += line[i];
-      Rcpp::Rcout << "next: " << name << std::endl;
       entry = db.tellg();
     }
   }

@@ -24,7 +24,7 @@
 main_function <- function(n, size, database, exclusions = NULL, 
 	regions = NULL, regions.prop = 0, regions.tiling = 1,
 	targets = NULL, targets.prop = 0, targets.tiling = 1,
-	seed = NULL, restrict = NULL, gc = c(0.3, 0.5),
+	seed = NULL, restrict, gc = c(0.3, 0.5),
 	verbose = FALSE){
 
 	if (!is.null(options("supeRbaits_debug")[[1]]) && options("supeRbaits_debug")[[1]]) {

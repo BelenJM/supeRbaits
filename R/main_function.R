@@ -215,6 +215,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(getbaits.time)
 
+	if (nrow(baits) == 0)
+		stop("No baits could be generated for any of the sequences. Aborting.\n", call. = FALSE)
+
 	message("M: Calculating GC content in the baits"); flush.console()
 
 	calc.baits.time <- system.time({

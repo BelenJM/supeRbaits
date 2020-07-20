@@ -252,18 +252,20 @@ main_function <- function(n, size, database, exclusions = NULL,
 	input.summary <- list(chr.lengths = the.lengths, 
 												exclusions = exclusions, 
 												targets = targets, 
-												regions = regions)
+												regions = regions,
+												size = size)
 
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]]) {
 		times <- data.frame(
 			getLengths = getlengths.time["elapsed"],
 			sampleBaits = sample.baits.time["elapsed"],
 			getBaits = getbaits.time["elapsed"])
-
-		return(list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary, times = times))
+		output <- list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary, times = times)
 	}	else {
-		return(list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary))
+		output <- list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary)
 	}
+
+	return(output)
 }
 
 #' extract exclusions, regions, and targets relevant for the chromosome being analysed

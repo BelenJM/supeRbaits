@@ -116,7 +116,7 @@ check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, t
 check_chr_boundaries <- function(exclusions = NULL, regions = NULL, targets = NULL, the.lengths) {
 	if (!is.null(exclusions)) {
 		capture <- lapply(unique(exclusions$chr), function(i) {
-			cat(i)
+                        # cat(i)
 			link <- match(i, the.lengths$name)
 			if (any(exclusions[exclusions$chr == i, 2:3] > the.lengths$size[link]))
 				stop("Exclusion data for sequence ", the.lengths$name[link], " is off-boundaries.\n", call = FALSE)

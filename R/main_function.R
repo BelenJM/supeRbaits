@@ -230,8 +230,11 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	message("M: Examining GC content in the baits"); flush.console()
 
+	good.baits <- list()
+	bad.baits <- list()
+
 	assess.baits.time <- system.time({
-		good.baits <- lapply(seq_along(baits), function(i) {
+		capture <- lapply(seq_along(baits), function(i) {
 			link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
 			if (verbose) {
 				if (all(!link)) {
@@ -245,23 +248,39 @@ main_function <- function(n, size, database, exclusions = NULL,
 						message(paste0("M: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage."))
 				}
 			}
-			return(baits[[i]][link, ])
+			good.baits[[i]] <<- baits[[i]][link, ]
+			bad.baits[[i]] <<- baits[[i]][!link, ]
 		})
 		names(good.baits) <- names(baits)
+		names(bad.baits) <- names(baits)
 	})
 
+	remove.empty.good <- sapply(good.baits, nrow) > 0
+	good.baits <- good.baits[remove.empty.good]
+
+	remove.empty.bad <- sapply(bad.baits, nrow) > 0
+	bad.baits <- bad.baits[remove.empty.bad]
+	
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(assess.baits.time)
 
 	message("M: Analysis completed."); flush.console()
 
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
-		return(list(baits = baits, good.baits = good.baits, chr.lengths = the.lengths, exclusions = exclusions, 
-			targets = targets, regions = regions, getlengths.time = getlengths.time["elapsed"], 
-			sample.baits.time = sample.baits.time["elapsed"], getbaits.time = getbaits.time["elapsed"]))
-	else
-		return(list(baits = baits, good.baits = good.baits, chr.lengths = the.lengths, 
-			exclusions = exclusions, targets = targets, regions = regions))
+	input.summary <- list(chr.lengths = the.lengths, 
+												exclusions = exclusions, 
+												targets = targets, 
+												regions = regions)
+
+	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]]) {
+		times <- data.frame(
+			getLengths = getlengths.time["elapsed"],
+			sampleBaits = sample.baits.time["elapsed"],
+			getBaits = getbaits.time["elapsed"])
+
+		return(list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary, times = times))
+	}	else {
+		return(list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary))
+	}
 }
 
 #' extract exclusions, regions, and targets relevant for the chromosome being analysed

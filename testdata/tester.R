@@ -147,7 +147,7 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	# looking good
 
 	# try with larger n
-	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", exclusions = "exclusion_example.txt", 
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", exclusions = "exclusion_example.txt", 
 		targets = "targets_example.txt", targets.prop = 0.5, regions = "region_example.txt", regions.prop = 0.5)
 	# the first 12 should be regions
 	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:12] > r[3] & x[[1]][[1]]$Start_bp[1:12] < r[2])) # Should return false
@@ -171,12 +171,14 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 
 # Test print functions
 
-	gc_table(baits = x$good.baits)
-	gc_table(baits = x$good.baits, combine = TRUE)
+	gc_table(x)
+	gc_table(x, combine = TRUE)
 
-	# only works working on debug environment
-	print_coverage(chr.lengths = the.lengths, baits = good.baits, exclusions = exclusions, targets = targets)
-	coverage(chr.lengths = the.lengths, baits = good.baits, exclusions = exclusions)
+	coverage(x)
+	coverage(x, combine = FALSE)
+
+	print_coverage(x, "CMF")
+	print_coverage(x, "CM003279")
 
 # ----------------	
 

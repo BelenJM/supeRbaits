@@ -10,3 +10,4 @@ src/supeRbaits.so
 src/supeRbaits.dll
 src/RcppExports.cpp
 R/RcppExports.R
+src/supeRbaits.dll

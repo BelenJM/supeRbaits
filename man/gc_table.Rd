@@ -4,10 +4,10 @@
 \alias{gc_table}
 \title{Compile tables with min, mean and max GC contents per group of baits}
 \usage{
-gc_table(baits, combine = FALSE)
+gc_table(x, combine = FALSE)
 }
 \arguments{
-\item{baits}{A list of baits per chromosome}
+\item{x}{The output of main_function}
 
 \item{combine}{Logical: Should results be displayed per chromosome?}
 }

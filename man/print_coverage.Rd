@@ -2,20 +2,16 @@
 % Please edit documentation in R/print_functions.R
 \name{print_coverage}
 \alias{print_coverage}
-\title{Print graphics with coverage per chromosome}
+\title{Print graphics with coverage per sequence}
 \usage{
-print_coverage(chr.lengths, baits, size, exclusions = NULL, targets = NULL)
+print_coverage(x, seq.name)
 }
 \arguments{
-\item{chr.lengths}{The lengths of the chromosomes}
+\item{x}{The output of main_function.}
 
-\item{baits}{A list of baits per chromosome}
-
-\item{exclusions}{The exclusions table}
-
-\item{targets}{The targets table}
+\item{sequence}{the sequence to be printed.}
 }
 \description{
-Print graphics with coverage per chromosome
+Print graphics with coverage per sequence
 }
 \keyword{internal}

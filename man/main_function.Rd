@@ -16,7 +16,7 @@ main_function(
   targets.prop = 0,
   targets.tiling = 1,
   seed = NULL,
-  restrict = NULL,
+  restrict,
   gc = c(0.3, 0.5),
   verbose = FALSE
 )
@@ -46,7 +46,7 @@ main_function(
 
 \item{restrict}{A vector of chromosome names OR position numbers to which the analysis should be restricted.}
 
-\item{gc}{A vector of two values between 0 and 1, specifying the minimum and maximmum GC percentage allowed in the output baits.}
+\item{gc}{A vector of two values between 0 and 1, specifying the minimum and maximum GC percentage allowed in the output baits.}
 
 \item{verbose}{Logical: Should detailed bait processing messages be displayed per sequence?}
 }

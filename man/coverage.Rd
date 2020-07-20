@@ -4,14 +4,10 @@
 \alias{coverage}
 \title{Compile tables with coverage values per chromosome}
 \usage{
-coverage(chr.lengths, baits, exclusions = NULL, combined = TRUE)
+coverage(x, combined = TRUE)
 }
 \arguments{
-\item{chr.lengths}{The lengths of the chromosomes}
-
-\item{baits}{A list of baits per chromosome}
-
-\item{exclusions}{The exclusions table}
+\item{x}{The output of main_function}
 
 \item{combine}{Logical: Should results be displayed per type of bait?}
 }

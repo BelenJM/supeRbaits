@@ -14,7 +14,7 @@
 #' @param targets.tiling The minimum number of baits to distribute per target.
 #' @param seed A number to fix the randomization process, for reproducibility
 #' @param restrict A vector of chromosome names OR position numbers to which the analysis should be restricted.
-#' @param gc A vector of two values between 0 and 1, specifying the minimum and maximmum GC percentage allowed in the output baits.
+#' @param gc A vector of two values between 0 and 1, specifying the minimum and maximum GC percentage allowed in the output baits.
 #' @param verbose Logical: Should detailed bait processing messages be displayed per sequence?
 #' 
 #' @return A dataframe of baits

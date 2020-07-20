@@ -175,7 +175,7 @@ vec_pair subsample_ranges(std::string name, size_t len, Rcpp::DataFrame df) {
   return filter_ranges(ranges, len);
 }
 
-vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string chrom, size_t tiling, std::unordered_set<size_t> used_baits) {
+vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string chrom, size_t tiling, std::unordered_set<size_t> used_baits, std::string type) {
   vec_pair_value output_ranges;
   
   for (auto r : ranges) {
@@ -185,26 +185,31 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
     for (auto u : used_baits) // check if used_bait start is in range
       if (u >= r.first && u <= (r.second-(size-1)))
 	count_used += 1;
-    
-    size_t max_baits = range-count_used-(size-1);
+
+    size_t max_baits = 0;
+    if (range > count_used+(size-1)) {
+      max_baits = range-count_used-(size-1);
+    }
     
     if (max_baits >= tiling)
       output_ranges.push_back(std::make_pair(std::make_pair(r.first, r.second), max_baits));
   }
-  if (!output_ranges.size())
-    Rcpp::stop("All ranges in chromosome %s are too small to fit the desired number of baits. Aborting.", chrom);
 
-  if (output_ranges.size() < ranges.size())
-    Rcpp::Rcout << "Warning: " << (ranges.size() - output_ranges.size()) << " sub-ranges on chromosome " << chrom << " are too small to fit the desired number of baits and will be excluded." << std::endl;
+  if (output_ranges.size()) { // only perform checks if there are valid ranges
+    if (output_ranges.size() < ranges.size())
+      Rcpp::Rcout << "Warning: " << (ranges.size() - output_ranges.size()) << " sub-ranges on chromosome " << chrom << " are too small to fit the desired number of baits and will be excluded." << std::endl;
 
-  if (n / tiling < output_ranges.size()) { // if there are too many ranges, randomly select needed
-    Rcpp::Rcout << "Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in chromosome " << chrom << ". Choosing a random subset of ranges." << std::endl;
+    if (n / tiling < output_ranges.size()) { // if there are too many ranges, randomly select needed
+      Rcpp::Rcout << "Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in chromosome " << chrom << ". Choosing a random subset of ranges." << std::endl;
     
-    size_t max_ranges = std::floor((double)n / tiling);
-    std::random_shuffle(output_ranges.begin(), output_ranges.end());
+      size_t max_ranges = std::floor((double)n / tiling);
+      std::random_shuffle(output_ranges.begin(), output_ranges.end());
     
-    output_ranges.resize(max_ranges);
-    sort(output_ranges.begin(), output_ranges.end());
+      output_ranges.resize(max_ranges);
+      sort(output_ranges.begin(), output_ranges.end());
+    }
+  } else {
+   Rcpp::Rcout << "Warning: All " << type << " ranges in chromosome " << chrom << " are too small to fit the desired number of baits per range. Skipping..." << std::endl;
   }
   
   return output_ranges;
@@ -337,16 +342,21 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
       if (regions_subsample.size() > 0) {
 	regions = trim_ranges(regions_subsample, exclusions_subsample);
 
-	vec_pair_value valid_regions = check_ranges(regions, n_regions, size, (std::string) df_names[i], regions_tiling, used_baits);
-	vec n_per_range = check_n(valid_regions, n_regions, regions_tiling, (std::string) df_names[i], "region");
-	
-	region_bait_positions = get_bait_positions(valid_regions, size, n_per_range, used_baits, "region");
+	vec_pair_value valid_regions = check_ranges(regions, n_regions, size, (std::string) df_names[i], regions_tiling, used_baits, "region");
 
-	for (auto t : region_bait_positions) {
-	  all_baits.push_back(SampleBait {(std::string) df_names[i], "region", t.first.first, t.first.second});
-	  used_baits.insert(t.first.first);
+	if (valid_regions.size()) {
+	  vec n_per_range = check_n(valid_regions, n_regions, regions_tiling, (std::string) df_names[i], "region");
+	
+	  region_bait_positions = get_bait_positions(valid_regions, size, n_per_range, used_baits, "region");
+
+	  for (auto t : region_bait_positions) {
+	    all_baits.push_back(SampleBait {(std::string) df_names[i], "region", t.first.first, t.first.second});
+	    used_baits.insert(t.first.first);
+	  }
+	  n_regions = region_bait_positions.size();
+	} else {
+	  n_regions = 0;
 	}
-	n_regions = region_bait_positions.size();
       } else {
 	n_regions = 0;
     	Rcpp::Rcout << "M: No regions found for chromosome " << df_names[i] << "." << std::endl;
@@ -363,17 +373,22 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 
 	targets = trim_ranges(target_ranges, exclusions_subsample);
 
-	vec_pair_value valid_targets = check_ranges(targets, n_targets, size, (std::string) df_names[i], targets_tiling, used_baits);
-	vec n_per_range = check_n(valid_targets, n_targets, targets_tiling, (std::string) df_names[i], "target");
+	vec_pair_value valid_targets = check_ranges(targets, n_targets, size, (std::string) df_names[i], targets_tiling, used_baits, "target");
 
-	target_bait_positions = get_bait_positions(valid_targets, size, n_per_range, used_baits, "target");
+	if (valid_targets.size()) {
+	  vec n_per_range = check_n(valid_targets, n_targets, targets_tiling, (std::string) df_names[i], "target");
 
-	for (auto t : target_bait_positions) {
-	  all_baits.push_back(SampleBait {(std::string) df_names[i], "target", t.first.first, t.first.second});
-	  used_baits.insert(t.first.first);
+	  target_bait_positions = get_bait_positions(valid_targets, size, n_per_range, used_baits, "target");
+
+	  for (auto t : target_bait_positions) {
+	    all_baits.push_back(SampleBait {(std::string) df_names[i], "target", t.first.first, t.first.second});
+	    used_baits.insert(t.first.first);
+	  }
+
+	  n_targets = target_bait_positions.size();
+	} else {
+	  n_targets = 0;
 	}
-
-	n_targets = target_bait_positions.size();
       } else {
 	n_targets = 0;
     	Rcpp::Rcout << "M: No targets found for chromosome " << df_names[i] << "." << std::endl;
@@ -389,13 +404,16 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
       for (auto t : trim_ranges(random_ranges, exclusions_subsample))
 	random.push_back(std::make_pair(t.first, t.second));
       
-      vec_pair_value valid_random = check_ranges(random, n_random, size, (std::string) df_names[i], 1, used_baits);
-      vec n_per_range = check_n(valid_random, n_random, 1, (std::string) df_names[i], "random");
-	
-      random_bait_positions = get_bait_positions(valid_random, size, n_per_range, used_baits, "random");
+      vec_pair_value valid_random = check_ranges(random, n_random, size, (std::string) df_names[i], 1, used_baits, "random");
 
-      for (auto t : random_bait_positions)
-	all_baits.push_back(SampleBait {(std::string) df_names[i], "random", t.first.first, t.first.second});
+      if (valid_random.size()) {
+	vec n_per_range = check_n(valid_random, n_random, 1, (std::string) df_names[i], "random");
+	
+	random_bait_positions = get_bait_positions(valid_random, size, n_per_range, used_baits, "random");
+
+	for (auto t : random_bait_positions)
+	  all_baits.push_back(SampleBait {(std::string) df_names[i], "random", t.first.first, t.first.second});
+      }
     }
   }
   

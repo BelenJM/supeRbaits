@@ -99,28 +99,11 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(getlengths.time)
 	
-	if (is.numeric(restrict)) {
-		if (all(restrict > nrow(the.lengths)))
-			stop("'restrict' is set to numeric values, but ALL listed values are larger than the number of available sequences\nNumber of available sequences: ", nrow(the.lengths), "\nMin. index requested: ", min(restrict), "\nMax. index requested: ", max(restrict), "\n", call. = FALSE)
-		if (max(restrict) > nrow(the.lengths)) {
-			warning("'restrict' is set to numeric values, but some listed values are larger than the number of available sequences. Running analysis on matching sequences.\nDiscarded index values: ", paste(restrict[restrict > nrow(the.lengths)], collapse = " "), immediate. = TRUE, call. = FALSE)
-			restrict <- restrict[restrict <= nrow(the.lengths)]
-		}
+	if (!missing(restrict)) {
+		restrict <- check_restrict(restrict, sequences = the.lengths$names)
 		the.lengths <- the.lengths[restrict, ]
 	}
-
-	if (is.character(restrict)) {
-		link <- match(restrict, the.lengths$name)
-		if (all(is.na(link)))
-			stop("None of the sequence names listed in 'restrict' matches the available sequences.\n", call. = FALSE)
-		if (any(is.na(link))) {
-			warning("Some sequences listed in 'restrict' do not match the available sequences. Running analysis on matching sequences\nMissing sequences: '", paste(restrict[is.na(link)], collapse = "', '"), "'", immediate. = TRUE, call. = FALSE)
-			link <- link[!is.na(link)]
-		}
-		the.lengths <- the.lengths[link, ]
-		rm(link)
-	}
-
+	
 	message("M: Loading exclusions/regions/targets (if any is present)."); flush.console()
 
 	load.extras.time <- system.time({

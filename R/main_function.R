@@ -100,7 +100,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		print(getlengths.time)
 	
 	if (!missing(restrict)) {
-		restrict <- check_restrict(restrict, sequences = the.lengths$names)
+		restrict <- check_restrict(restrict, sequences = the.lengths$name)
 		the.lengths <- the.lengths[restrict, ]
 	}
 	

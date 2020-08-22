@@ -2,7 +2,6 @@
 
 export(convert_line_endings)
 export(main_function)
-export(roundDown)
 import(data.table)
 import(graphics)
 import(stats)

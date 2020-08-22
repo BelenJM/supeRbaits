@@ -197,10 +197,10 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
 
   if (output_ranges.size()) { // only perform checks if there are valid ranges
     if (output_ranges.size() < ranges.size())
-      Rcpp::Rcout << "Warning: " << (ranges.size() - output_ranges.size()) << " sub-ranges on chromosome " << chrom << " are too small to fit the desired number of baits and will be excluded." << std::endl;
+      Rcpp::Rcout << "Warning: " << (ranges.size() - output_ranges.size()) << " sub-ranges on sequence " << chrom << " are too small to fit the desired number of baits and will be excluded." << std::endl;
 
     if (n / tiling < output_ranges.size()) { // if there are too many ranges, randomly select needed
-      Rcpp::Rcout << "Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in chromosome " << chrom << ". Choosing a random subset of ranges." << std::endl;
+      Rcpp::Rcout << "Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in sequence " << chrom << ". Choosing a random subset of ranges." << std::endl;
     
       size_t max_ranges = std::floor((double)n / tiling);
       std::random_shuffle(output_ranges.begin(), output_ranges.end());
@@ -209,7 +209,7 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
       sort(output_ranges.begin(), output_ranges.end());
     }
   } else {
-   Rcpp::Rcout << "Warning: All " << type << " ranges in chromosome " << chrom << " are too small to fit the desired number of baits per range. Skipping..." << std::endl;
+   Rcpp::Rcout << "Warning: All " << type << " ranges in sequence " << chrom << " are too small to fit the desired number of baits per range. Skipping..." << std::endl;
   }
   
   return output_ranges;
@@ -224,7 +224,7 @@ vec check_n(vec_pair_value ranges, size_t n, size_t tiling, std::string chrom, s
   
   if (sum_max_baits <= n) {
     if (sum_max_baits < n) // not enough space for all baits
-      Rcpp::Rcout << "Warning: The maximum possible number of unique " << type << " baits (" << sum_max_baits << ") for chromosome " << chrom << " is lower than the desired n (" <<  n << ")." << std::endl;
+      Rcpp::Rcout << "Warning: The maximum possible number of unique " << type << " baits (" << sum_max_baits << ") for sequence " << chrom << " is lower than the desired n (" <<  n << ")." << std::endl;
 
     for (auto r : ranges)
       n_per_range.push_back(r.second);
@@ -336,6 +336,8 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
     vec_pair regions, targets, random;
     vec_pair_string region_bait_positions, target_bait_positions, random_bait_positions;
     
+    Rcpp::Rcout << "M: Sampling sequence " << df_names[i] << "." << std::endl;
+
     // region baits
     if (regions_prop > 0) {
       n_regions = std::floor(n * regions_prop);
@@ -359,7 +361,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 	}
       } else {
 	n_regions = 0;
-    	Rcpp::Rcout << "M: No regions found for chromosome " << df_names[i] << "." << std::endl;
+    	Rcpp::Rcout << "M: No regions found for sequence " << df_names[i] << "." << std::endl;
       }
     }
 
@@ -391,7 +393,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 	}
       } else {
 	n_targets = 0;
-    	Rcpp::Rcout << "M: No targets found for chromosome " << df_names[i] << "." << std::endl;
+    	Rcpp::Rcout << "M: No targets found for sequence " << df_names[i] << "." << std::endl;
       }
     }
 

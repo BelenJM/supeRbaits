@@ -11,3 +11,4 @@ src/supeRbaits.dll
 src/RcppExports.cpp
 R/RcppExports.R
 src/supeRbaits.dll
+testdata/exclusion_example.txt

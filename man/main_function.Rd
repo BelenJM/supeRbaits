@@ -17,7 +17,7 @@ main_function(
   targets.tiling = 1,
   seed = NULL,
   restrict,
-  gc = c(0.3, 0.5),
+  gc = c(0, 1),
   verbose = FALSE
 )
 }

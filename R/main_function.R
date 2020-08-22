@@ -80,6 +80,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	# check line ending type
 	first_line <- readLines(database, n = 1)
+	if (length(first_line) == 0)	
+		stop("The database file appears to be empty. Are you sure this is the correct file?", call. = FALSE)
+
 	len_first_line <- nchar(first_line)
 	if (grepl("\r$", readChar(database, len_first_line + 1)))
 		stop("The line endings of your database file are incompatible with supeRbaits. You can convert your database using convert_line_endings()\n", call. = FALSE)

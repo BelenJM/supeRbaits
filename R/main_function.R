@@ -76,7 +76,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		stop("The first value of 'gc' must be smaller or equal to the second value.\n")
 
 	# Import data
-	message("M: Compiling the sequences' lengths. This process can take some seconds."); flush.console()
+	message("M: Compiling the sequences' lengths. This operation can take some time."); flush.console()
 
 	# check line ending type
 	first_line <- readLines(database, n = 1)
@@ -107,7 +107,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 		the.lengths <- the.lengths[restrict, ]
 	}
 	
-	message("M: Loading exclusions/regions/targets (if any is present)."); flush.console()
+	if (any(!is.null(exclusions), !is.null(regions), !is.null(targets)))
+	message("M: Loading exclusions/regions/targets."); flush.console()
 
 	load.extras.time <- system.time({
 		if(!is.null(exclusions))
@@ -121,7 +122,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 		print(load.extras.time)
 
 	# Compatibility checks
-	message("M: Checking exclusions/regions/targets quality (if any is present)."); flush.console()
+	if (any(!is.null(exclusions), !is.null(regions), !is.null(targets)))
+	message("M: Checking exclusions/regions/targets quality."); flush.console()
 
 	check.input.time <- system.time({
 		if (any((size - 1) > the.lengths$size))
@@ -174,8 +176,8 @@ main_function <- function(n, size, database, exclusions = NULL,
 									targets_tiling = targets.tiling, 
 									regions_prop = regions.prop, 
 									targets_prop = targets.prop),
-			spinner = TRUE,
-			show = TRUE)
+			spinner = !verbose,
+			show = verbose)
 	})
 
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
@@ -204,7 +206,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (nrow(baits) == 0)
 		stop("No baits could be generated for any of the sequences. Aborting.\n", call. = FALSE)
 
-	message("M: Calculating GC content in the baits"); flush.console()
+	message("M: Calculating GC content in the baits."); flush.console()
 
 	calc.baits.time <- system.time({
 		baits$pGC <- baits$no_GC / size
@@ -214,7 +216,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(calc.baits.time)
 
-	message("M: Examining GC content in the baits"); flush.console()
+	message("M: Examining GC content in the baits."); flush.console()
 
 	good.baits <- list()
 	bad.baits <- list()
@@ -229,9 +231,9 @@ main_function <- function(n, size, database, exclusions = NULL,
 				}
 				if (any(!link)) {
 					if (sum(!link) == 1)
-						message(paste0("M: ", sum(!link), " bait was excluded from chr ", names(baits)[i], " due to its GC percentage."))
+						message(paste0("M: ", sum(!link), " bait was excluded from sequence ", names(baits)[i], " due to its GC percentage."))
 					else
-						message(paste0("M: ", sum(!link), " baits were excluded from chr ", names(baits)[i], " due to their GC percentage."))
+						message(paste0("M: ", sum(!link), " baits were excluded from sequence ", names(baits)[i], " due to their GC percentage."))
 				}
 			}
 			good.baits[[i]] <<- baits[[i]][link, ]

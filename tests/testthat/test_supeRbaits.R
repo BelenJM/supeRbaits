@@ -1,223 +1,271 @@
-aux <- system.file(package = "supeRbaits")[1]
+path.aux <- system.file(package = "supeRbaits")[1]
 
 # set up test directory
 home.wd <- getwd()
 setwd(tempdir())
 dir.create("test_supeRbaits")
 setwd("test_supeRbaits")
-file.copy(paste0(aux, "/", list.files(aux)), list.files(aux), overwrite = TRUE)
+file.copy(paste0(path.aux, "/", list.files(path.aux)), list.files(path.aux), overwrite = TRUE)
 
-convert_line_endings(paste0(aux, "/", "sequences.txt"), "sequences.txt")
+convert_line_endings(paste0(path.aux, "/", "sequences.txt"), "sequences.txt")
 # ---
 
 # all random test
 test_that("random extration is working", {
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions.prop = 0, targets.prop = 0)
+	x <- main_function(n = 10, size = 20, database = "sequences.txt")
 	expect_equal(names(x), c("baits", "excluded.baits", "input.summary"))
+	expect_equal(x$baits$CMF$bait_seq, c("GCATATCCCAAAATTTCFFF", "CATATCCCAAAATTTCFFFF", "ATATCCCAAAATTTCFFFFF"))
+})
+
+test_that("saturated results are equal to reference", {
+	x <- main_function(n = 200, size = 10, database = "sequences.txt")
+	## RUN THESE LINES ONLY TO RESET THE REFERENCE!
+	# saturated_simple_results <- x
+	# save(saturated_simple_results, file = paste0(home.wd, "/saturated_simple_results.RData"))
+	load(paste0(home.wd, "/saturated_simple_results.RData"))
+	expect_equal(x, saturated_simple_results)
 })
 
 # exclusions tests
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions_bad_name.txt")
-	# should fail due to wrong names in the exclusions file
+test_that("extraction with exclusions is working", {
+	expect_warning(main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = paste0(home.wd, "/exclusions_bad_name.txt")),
+			"Not all of the sequences' names in the exclusions match the names listed in the database. Removing orphan exclusions.", fixed = TRUE)
 
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions_bad_length.txt")
-	# should fail due to wrong lengths in the exclusions file
+	expect_error(main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = paste0(home.wd, "/exclusions_bad_length.txt")),
+		"Exclusion data for sequence CM003279 is off-boundaries.", fixed = TRUE)
 
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt")
 	test_exclusions <- read.table("exclusions.txt")
-	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
-	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
-	# Works nicely.
+	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
+	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 
 	# Try larger n
 	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt")
-	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
-	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
-	# Works nicely as well.
+	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
+	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
+})
 
 # regions tests
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt")
-	# Returns error, as expected
-	# Please include the desired percentage of regional baits in 'regions.prop'.
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		regions = "regions.txt", regions.prop = 1)
+test_that("extraction with regions is working", {
+	expect_warning(main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt"),
+	"Regions were included but regions.prop = 0. No region baits will be produced.", fixed = TRUE)
+
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt", regions.prop = 1)
 	test_regions <- read.table("regions.txt")
-	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp > r[3] & x[[1]][[1]]$Start_bp < r[2])) # Should return false
-	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp > r[3] & x[[1]][[1]]$End_bp   < r[2])) # Should return false
-	# Works nicely.
+	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp > r[3] & x$baits$CM003279$Start_bp < r[2])))
+	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp > r[3] & x$baits$CM003279$End_bp   < r[2])))
 
 	# Try larger n
 	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
 		regions = "regions.txt", regions.prop = 1)
 	# The first 32 baits should be region, the rest should be random
-	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:32] > r[3] & x[[1]][[1]]$Start_bp[1:32] < r[2])) # Should return false
-	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:32] > r[3] & x[[1]][[1]]$End_bp[1:32]   < r[2])) # Should return false
-	# Works nicely as well.
+	aux <- table(x$baits$CM003279$bait_type)
+	expect_equal(names(aux), c("random", "region"))
+	expect_equal(as.vector(aux), c(68, 32))
+	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:32] > r[3] & x$baits$CM003279$Start_bp[1:32] < r[2])))
+	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:32] > r[3] & x$baits$CM003279$End_bp[1:32]   < r[2])))
+})
 
 # region + exclusions test
+test_that("extraction with exclusions and regions is working", {
 	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
 		exclusions = "exclusions.txt", regions = "regions.txt", regions.prop = 1)
 	# The first 12 baits should be region, the rest should be random
-	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:12] > r[3] & x[[1]][[1]]$Start_bp[1:12] < r[2])) # Should return false
-	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:12] > r[3] & x[[1]][[1]]$End_bp[1:12]   < r[2])) # Should return false
+	aux <- table(x$baits$CM003279$bait_type)
+	expect_equal(names(aux), c("random", "region"))
+	expect_equal(as.vector(aux), c(68, 32))
+	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:12] > r[3] & x$baits$CM003279$Start_bp[1:12] < r[2])))
+	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:12] > r[3] & x$baits$CM003279$End_bp[1:12]   < r[2])))
 	# No baits should be within the exclusion zones
-	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
-	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
-	# all good.
+	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
+	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 
 	# random baits should not be duplicates of the region baits
-	any(duplicated(x[[1]][[1]]$Start_bp)) # should return false
+	expect_false(any(duplicated(x$baits$CM003279$Start_bp)))
+})
 
 # targets test
+test_that("extraction with targets is working", {
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		targets = "targetss.txt", targets.prop = 1)
-	test_targets <- read.table("targetss.txt")
-	!all(sapply(x[[1]][[1]]$Start_bp, function(x_i) {
-		any(sapply(test_targets[, 2], function(t) {
-			x_i[1] >= (t - 19) & x_i[1] <= t
+		targets = "targets.txt", targets.prop = 1)
+	test_targets <- read.table("targets.txt")
+	expect_true( # all baits should be within target range
+		all(sapply(x$baits$CM003279$Start_bp, function(x_i) {
+			any(sapply(test_targets[, 2], function(t) {
+				x_i[1] >= (t - 19) & x_i[1] <= t
+			}))
 		}))
-	})) # Should return false
+	)
+})
 
 # targets + exclusions test
+test_that("extraction with exclusions and targets is working", {
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		exclusions = "exclusions.txt", targets = "targetss.txt", targets.prop = 1)
-	!all(sapply(x[[1]][[1]]$Start_bp, function(x_i) {
-		any(sapply(test_targets[, 2], function(t) {
-			x_i[1] >= (t - 19) & x_i[1] <= t
+		exclusions = "exclusions.txt", targets = "targets.txt", targets.prop = 1)
+	expect_true( # all baits should be within target range
+		all(sapply(x$baits$CM003279$Start_bp, function(x_i) {
+			any(sapply(test_targets[, 2], function(t) {
+				x_i[1] >= (t - 19) & x_i[1] <= t
+			}))
 		}))
-	})) # Should return false
-	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
-	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
+	)
+	# no baits should be in the exclusion zones
+	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
+	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 	
 	#try larger n
 	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		exclusions = "exclusions.txt", targets = "targetss.txt", targets.prop = 1)
-	# only the first 24 are targetted
-	!all(sapply(x[[1]][[1]]$Start_bp[1:24], function(x_i) {
-		any(sapply(test_targets[, 2], function(t) {
-			x_i[1] >= (t - 19) & x_i[1] <= t
+		exclusions = "exclusions.txt", targets = "targets.txt", targets.prop = 1)
+	aux <- table(x$baits$CM003279$bait_type)
+	expect_equal(names(aux), c("random", "target"))
+	expect_equal(as.vector(aux), c(80, 20))
+
+	# only the first 20 are targetted
+	expect_true( # all target baits should contain the target
+		all(sapply(x$baits$CM003279$Start_bp[1:20], function(x_i) {
+			any(sapply(test_targets[, 2], function(t) {
+				x_i[1] >= (t - 19) & x_i[1] <= t
+			}))
 		}))
-	})) # Should return false
-	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
-	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
-	# all looking good
+	)
+	# no baits should be in the exclusion zones
+	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
+	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
+})
 
 # regions + targets test
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		targets = "targetss.txt", targets.prop = 1, regions = "regions.txt", regions.prop = 1)
-	# Returns error: The sum of 'regions.prop' and 'targets.prop' must not be greated than one.
+test_that("extraction with regions and targets is working", {
+	expect_error(main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		targets = "targets.txt", targets.prop = 1, regions = "regions.txt", regions.prop = 1),
+	"The sum of 'regions.prop' and 'targets.prop' must not be greater than one.", fixed = TRUE)
 
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		targets = "targetss.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+	aux <- table(x$baits$CM003279$bait_type)
+	expect_equal(names(aux), c("region", "target"))
+	expect_equal(as.vector(aux), c(5, 5))
+
 	# the first 5 should be regions
-	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:5] > r[3] & x[[1]][[1]]$Start_bp[1:5] < r[2])) # Should return false
-	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:5] > r[3] & x[[1]][[1]]$End_bp[1:5]   < r[2])) # Should return false
+	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:5] > r[3] & x$baits$CM003279$Start_bp[1:5] < r[2])))
+	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:5] > r[3] & x$baits$CM003279$End_bp[1:5]   < r[2])))
+
 	# the last 5 should be targets
-	!all(sapply(x[[1]][[1]]$Start_bp[6:10], function(x_i) {
-		any(sapply(test_targets[, 2], function(t) {
-			x_i[1] >= (t - 19) & x_i[1] <= t
+	expect_true( # all target baits should contain the target
+		all(sapply(x$baits$CM003279$Start_bp[6:10], function(x_i) {
+			any(sapply(test_targets[, 2], function(t) {
+				x_i[1] >= (t - 19) & x_i[1] <= t
+			}))
 		}))
-	})) # Should return false
+	)
 
 	# try with greater n
 	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		targets = "targetss.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+
+	aux <- table(x$baits$CM003279$bait_type)
+	expect_equal(names(aux), c("random", "region", "target"))
+	expect_equal(as.vector(aux), c(40, 28, 32))
+
 	# the first 32 should be regions
-	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:32] > r[3] & x[[1]][[1]]$Start_bp[1:32] < r[2])) # Should return false
-	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:32] > r[3] & x[[1]][[1]]$End_bp[1:32]   < r[2])) # Should return false
+	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:32] > r[3] & x$baits$CM003279$Start_bp[1:32] < r[2])))
+	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:32] > r[3] & x$baits$CM003279$End_bp[1:32]   < r[2])))
 	# the following 40 should be targets
-	!all(sapply(x[[1]][[1]]$Start_bp[33:72], function(x_i) {
-		any(sapply(test_targets[, 2], function(t) {
-			x_i[1] >= (t - 19) & x_i[1] <= t
+	expect_true(
+		all(sapply(x$baits$CM003279$Start_bp[33:72], function(x_i) {
+			any(sapply(test_targets[, 2], function(t) {
+				x_i[1] >= (t - 19) & x_i[1] <= t
+			}))
 		}))
-	})) # Should return false
+	)
 	# the rest should be random.
+})
 
 # regions + targets + exclusions test
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", exclusions = "exclusions.txt", 
-		targets = "targetss.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+test_that("extraction with exclusions, regions and targets is working", {
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt", 
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+
+	aux <- table(x$baits$CM003279$bait_type)
+	expect_equal(names(aux), c("region", "target"))
+	expect_equal(as.vector(aux), c(5, 5))
+
 	# the first 5 should be regions
-	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:5] > r[3] & x[[1]][[1]]$Start_bp[1:5] < r[2])) # Should return false
-	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:5] > r[3] & x[[1]][[1]]$End_bp[1:5]   < r[2])) # Should return false
+	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:5] > r[3] & x$baits$CM003279$Start_bp[1:5] < r[2])))
+	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:5] > r[3] & x$baits$CM003279$End_bp[1:5]   < r[2])))
 	# the last 5 should be targets
-	!all(sapply(x[[1]][[1]]$Start_bp[6:10], function(x_i) {
-		any(sapply(test_targets[, 2], function(t) {
-			x_i[1] >= (t - 19) & x_i[1] <= t
+	expect_true(
+		all(sapply(x$baits$CM003279$Start_bp[6:10], function(x_i) {
+			any(sapply(test_targets[, 2], function(t) {
+				x_i[1] >= (t - 19) & x_i[1] <= t
+			}))
 		}))
-	})) # Should return false
+	)
 	# and none should be in the exclusions
-	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
-	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
-	# looking good
-
-	# try with larger n
-	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", exclusions = "exclusions.txt", 
-		targets = "targetss.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
-	# the first 12 should be regions
-	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:12] > r[3] & x[[1]][[1]]$Start_bp[1:12] < r[2])) # Should return false
-	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:12] > r[3] & x[[1]][[1]]$End_bp[1:12]   < r[2])) # Should return false
-	# the following 24 should be targets
-	!all(sapply(x[[1]][[1]]$Start_bp[13:36], function(x_i) {
-		any(sapply(test_targets[, 2], function(t) {
-			x_i[1] >= (t - 19) & x_i[1] <= t
-		}))
-	})) # Should return false
-	# the rest should be random.
-	# None should be in the exclusions
-	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
-	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
-	# and finally none should be duplicated
-	any(duplicated(x[[1]][[1]]$Start_bp)) # should return false
+	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
+	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 	
-# All seems to be up and running.
+	# try with larger n
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt", 
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+
+	aux <- table(x$baits$CM003279$bait_type)
+	expect_equal(names(aux), c("random", "region", "target"))
+	expect_equal(as.vector(aux), c(64, 12, 24))
+
+	# the first 12 should be regions
+	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:12] > r[3] & x$baits$CM003279$Start_bp[1:12] < r[2])))
+	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:12] > r[3] & x$baits$CM003279$End_bp[1:12]   < r[2])))
+	
+	# the following 24 should be targets
+	expect_true(
+		all(sapply(x$baits$CM003279$Start_bp[13:36], function(x_i) {
+			any(sapply(test_targets[, 2], function(t) {
+				x_i[1] >= (t - 19) & x_i[1] <= t
+			}))
+		}))
+	)
+	# the rest should be random.
+
+	# None should be in the exclusions
+	expect_fale(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
+	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
+
+	# and finally none should be duplicated
+	expect_false(any(duplicated(x$baits$CM003279$Start_bp)))
+})
 
 
+results <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt", 
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
 
 # Test print functions
 
-	gc_table(x)
-	gc_table(x, combine = TRUE)
+test_that("gc_table is working", {
+	x <- gc_table(results)
+	expect_true(is.list(x))
+	expect_equal(names(x), c("CM003279", "CMF"))
+	expect_equal(x$CM003279$n, as.vector(table(results$baits$CM003279$bait_type)))
 
-	coverage(x)
-	coverage(x, combine = FALSE)
+	x <- gc_table(results, combine = TRUE)
+	expect_true(is.data.frame(x))
+	# need to expand this once the large n bug has been fixed
+})
 
-	print_coverage(x, "CMF")
-	print_coverage(x, "CM003279")
+test_that("coverage is working", {
+	x <- coverage(results)
+	expect_true(is.list(x))
+	expect_equal(names(x), c("CM003279", "CMF"))
+	expect_equal(x$CM003279$bait_type, "All")
 
-# ----------------	
-
-# tests to the subsample function's fail-safes
-	input <- data.frame(name = c("A", "A"), Start = c(2, 4))
-	subsample(input, "A") # all good
-	#   name Start
-	# 1    A     2
-	# 2    A     4
-	input <- data.frame(name = c("A", "A"), Start = c(2, 2))
-	subsample(input, "A") # error - duplicated start
-	# Error in subsample(input, "A") : 
-	#   There are duplicated starting points/targets for one of the trimming elements of chromosome A.
-	input <- data.frame(name = c("A", "A"), Start = c(3, 2))
-	subsample(input, "A") # Should reorder rows
-	#   name Start
-	# 2    A     2
-	# 1    A     3
-	input <- data.frame(name = c("A", "A"), Start = c(1, 4), stop = c(2, 5))
-	subsample(input, "A") # all good
-	#   name Start stop
-	# 1    A     1    2
-	# 2    A     4    5
-	input <- data.frame(name = c("A", "A"), Start = c(1, 4), stop = c(5, 5))
-	subsample(input, "A") # error - duplicated end
-	# Error in subsample(input, "A") : 
-	#  There are duplicated ending points for one of the trimming elements for chromosome A.
-	input <- data.frame(name = c("A", "A"), Start = c(1, 4), stop = c(3, 5))
-	subsample(input, "A") # error - contiguous
-	# Error in subsample(input, "A") : 
-	#   There are contiguous regions to include or exclude for chromosome A. Please list these as a single region.
-	input <- data.frame(name = c("A", "A"), Start = c(1, 3), stop = c(3, 5))
-	subsample(input, "A") # error - overlapping
-	# Error in subsample(input, "A") : 
-	#   The regions to include or exclude overlap for chromosome A.
+	x <- coverage(results, combine = FALSE)
+	expect_true(is.list(x))
+	expect_equal(names(x), c("CM003279", "CMF"))
+	# expand once the large n bug has been fixed
+})
 
 
-	x <- main_function(n = 20, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", targets = "targetss.txt", targets.prop = 1)
+	# print_coverage(results, "CMF")
+	# print_coverage(results, "CM003279")
+
+setwd(home.wd)
+rm(list = ls())

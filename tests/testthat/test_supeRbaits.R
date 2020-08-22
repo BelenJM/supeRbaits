@@ -1,58 +1,62 @@
-# Start by moving to the main repository folder (i.e. GitHub\supeRbaits)
+aux <- system.file(package = "supeRbaits")[1]
 
-library("supeRbaits")
+# set up test directory
+home.wd <- getwd()
+setwd(tempdir())
+dir.create("test_supeRbaits")
+setwd("test_supeRbaits")
+file.copy(paste0(aux, "/", list.files(aux)), list.files(aux), overwrite = TRUE)
 
-cd(".."); Rcpp::compileAttributes(); devtools::document(); cd("testdata/")
-
-dos2unix("chrom_salmon_chunk.fasta.txt", "test_dos2unix2.txt")
-
-readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
+convert_line_endings(paste0(aux, "/", "sequences.txt"), "sequences.txt")
+# ---
 
 # all random test
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", regions.prop = 0, targets.prop = 0)
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", regions.prop = 0, targets.prop = 0)
+test_that("random extration is working", {
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions.prop = 0, targets.prop = 0)
+	expect_equal(names(x), c("baits", "excluded.baits", "input.summary"))
+})
 
 # exclusions tests
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", exclusions = "exclusion_example-bad_name.txt")
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions_bad_name.txt")
 	# should fail due to wrong names in the exclusions file
 
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", exclusions = "exclusion_example-bad_length.txt")
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions_bad_length.txt")
 	# should fail due to wrong lengths in the exclusions file
 
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", exclusions = "exclusion_example.txt")
-	test_exclusions <- read.table("exclusion_example.txt")
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt")
+	test_exclusions <- read.table("exclusions.txt")
 	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
 	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
 	# Works nicely.
 
 	# Try larger n
-	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", exclusions = "exclusion_example.txt")
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt")
 	any(apply(test_exclusions, 1, function(e) x[[1]][[1]]$Start_bp >= e[2] & x[[1]][[1]]$Start_bp <= e[3])) # Should return false
 	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
 	# Works nicely as well.
 
 # regions tests
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", regions = "region_example.txt")
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt")
 	# Returns error, as expected
 	# Please include the desired percentage of regional baits in 'regions.prop'.
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		regions = "region_example.txt", regions.prop = 1)
-	test_regions <- read.table("region_example.txt")
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		regions = "regions.txt", regions.prop = 1)
+	test_regions <- read.table("regions.txt")
 	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp > r[3] & x[[1]][[1]]$Start_bp < r[2])) # Should return false
 	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp > r[3] & x[[1]][[1]]$End_bp   < r[2])) # Should return false
 	# Works nicely.
 
 	# Try larger n
-	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		regions = "region_example.txt", regions.prop = 1)
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		regions = "regions.txt", regions.prop = 1)
 	# The first 32 baits should be region, the rest should be random
 	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:32] > r[3] & x[[1]][[1]]$Start_bp[1:32] < r[2])) # Should return false
 	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:32] > r[3] & x[[1]][[1]]$End_bp[1:32]   < r[2])) # Should return false
 	# Works nicely as well.
 
 # region + exclusions test
-	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		exclusions = "exclusion_example.txt", regions = "region_example.txt", regions.prop = 1)
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		exclusions = "exclusions.txt", regions = "regions.txt", regions.prop = 1)
 	# The first 12 baits should be region, the rest should be random
 	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:12] > r[3] & x[[1]][[1]]$Start_bp[1:12] < r[2])) # Should return false
 	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:12] > r[3] & x[[1]][[1]]$End_bp[1:12]   < r[2])) # Should return false
@@ -65,9 +69,9 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	any(duplicated(x[[1]][[1]]$Start_bp)) # should return false
 
 # targets test
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		targets = "targets_example.txt", targets.prop = 1)
-	test_targets <- read.table("targets_example.txt")
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		targets = "targetss.txt", targets.prop = 1)
+	test_targets <- read.table("targetss.txt")
 	!all(sapply(x[[1]][[1]]$Start_bp, function(x_i) {
 		any(sapply(test_targets[, 2], function(t) {
 			x_i[1] >= (t - 19) & x_i[1] <= t
@@ -75,8 +79,8 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	})) # Should return false
 
 # targets + exclusions test
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		exclusions = "exclusion_example.txt", targets = "targets_example.txt", targets.prop = 1)
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		exclusions = "exclusions.txt", targets = "targetss.txt", targets.prop = 1)
 	!all(sapply(x[[1]][[1]]$Start_bp, function(x_i) {
 		any(sapply(test_targets[, 2], function(t) {
 			x_i[1] >= (t - 19) & x_i[1] <= t
@@ -86,8 +90,8 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	any(apply(test_exclusions, 1, function(e)   x[[1]][[1]]$End_bp >= e[2] & x[[1]][[1]]$End_bp   <= e[3])) # Should return false
 	
 	#try larger n
-	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		exclusions = "exclusion_example.txt", targets = "targets_example.txt", targets.prop = 1)
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		exclusions = "exclusions.txt", targets = "targetss.txt", targets.prop = 1)
 	# only the first 24 are targetted
 	!all(sapply(x[[1]][[1]]$Start_bp[1:24], function(x_i) {
 		any(sapply(test_targets[, 2], function(t) {
@@ -99,12 +103,12 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	# all looking good
 
 # regions + targets test
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		targets = "targets_example.txt", targets.prop = 1, regions = "region_example.txt", regions.prop = 1)
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		targets = "targetss.txt", targets.prop = 1, regions = "regions.txt", regions.prop = 1)
 	# Returns error: The sum of 'regions.prop' and 'targets.prop' must not be greated than one.
 
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		targets = "targets_example.txt", targets.prop = 0.5, regions = "region_example.txt", regions.prop = 0.5)
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		targets = "targetss.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
 	# the first 5 should be regions
 	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:5] > r[3] & x[[1]][[1]]$Start_bp[1:5] < r[2])) # Should return false
 	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:5] > r[3] & x[[1]][[1]]$End_bp[1:5]   < r[2])) # Should return false
@@ -116,8 +120,8 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	})) # Should return false
 
 	# try with greater n
-	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "chrom_salmon_chunk.fasta.txt", 
-		targets = "targets_example.txt", targets.prop = 0.5, regions = "region_example.txt", regions.prop = 0.5)
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		targets = "targetss.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
 	# the first 32 should be regions
 	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:32] > r[3] & x[[1]][[1]]$Start_bp[1:32] < r[2])) # Should return false
 	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:32] > r[3] & x[[1]][[1]]$End_bp[1:32]   < r[2])) # Should return false
@@ -130,8 +134,8 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	# the rest should be random.
 
 # regions + targets + exclusions test
-	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", exclusions = "exclusion_example.txt", 
-		targets = "targets_example.txt", targets.prop = 0.5, regions = "region_example.txt", regions.prop = 0.5)
+	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", exclusions = "exclusions.txt", 
+		targets = "targetss.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
 	# the first 5 should be regions
 	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:5] > r[3] & x[[1]][[1]]$Start_bp[1:5] < r[2])) # Should return false
 	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:5] > r[3] & x[[1]][[1]]$End_bp[1:5]   < r[2])) # Should return false
@@ -147,8 +151,8 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	# looking good
 
 	# try with larger n
-	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", exclusions = "exclusion_example.txt", 
-		targets = "targets_example.txt", targets.prop = 0.5, regions = "region_example.txt", regions.prop = 0.5)
+	x <- main_function(n = 100, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", exclusions = "exclusions.txt", 
+		targets = "targetss.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
 	# the first 12 should be regions
 	any(apply(test_regions, 1, function(r) x[[1]][[1]]$Start_bp[1:12] > r[3] & x[[1]][[1]]$Start_bp[1:12] < r[2])) # Should return false
 	any(apply(test_regions, 1, function(r)   x[[1]][[1]]$End_bp[1:12] > r[3] & x[[1]][[1]]$End_bp[1:12]   < r[2])) # Should return false
@@ -216,4 +220,4 @@ readChar("test_dos2unix2.txt", file.info("test_dos2unix2.txt")$size)
 	#   The regions to include or exclude overlap for chromosome A.
 
 
-	x <- main_function(n = 20, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", targets = "targets_example.txt", targets.prop = 1)
+	x <- main_function(n = 20, size = 20, gc = c(0.2, 0.8), database = "test_dos2unix2.txt", targets = "targetss.txt", targets.prop = 1)

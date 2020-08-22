@@ -59,15 +59,15 @@ main_function <- function(n, size, database, exclusions = NULL,
 		stop("'targets.tiling' must be numeric.\n")
 
 	if (regions.prop == 0 & !is.null(regions))
-		warning("Regions were included but regions.prop = 0. No region baits will be produced.\n")
+		warning("Regions were included but regions.prop = 0. No region baits will be produced.", call. = FALSE, immediate. = TRUE)
 	if (targets.prop == 0 & !is.null(targets))
-		warning("Regions were included but targets.prop = 0. No region baits will be produced.\n")
+		warning("Regions were included but targets.prop = 0. No region baits will be produced.", call. = FALSE, immediate. = TRUE)
 
 	if (sum(regions.prop, targets.prop) > 1)
-		stop("The sum of 'regions.prop' and 'targets.prop' must not be greated than one.\n")
+		stop("The sum of 'regions.prop' and 'targets.prop' must not be greater than one.\n", call. = FALSE)
 	
 	if (length(gc) != 2)
-		stop("Please provide two values in 'gc' (minimum and maximum percentage).\n")
+		stop("Please provide two values in 'gc' (minimum and maximum percentage).\n", call. = FALSE)
 	if (!is.numeric(gc))
 		stop("'gc' must be numeric and contain two values between 0 and 1.\n")
 	if (any(gc > 1) | any(gc < 0))

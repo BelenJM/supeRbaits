@@ -216,41 +216,46 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
 		print(calc.baits.time)
 
-	message("M: Examining GC content in the baits."); flush.console()
+	if (gc[1] > 0 | gc[2] < 1) {
+		message("M: Examining GC content in the baits."); flush.console()
 
-	good.baits <- list()
-	bad.baits <- list()
+		good.baits <- list()
+		bad.baits <- list()
 
-	assess.baits.time <- system.time({
-		capture <- lapply(seq_along(baits), function(i) {
-			link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
-			if (verbose) {
-				if (all(!link)) {
-					message(paste0("M: No baits passed the GC percentage test for chromosome ", names(baits)[i], "."))
-					return(NULL)
+		assess.baits.time <- system.time({
+			capture <- lapply(seq_along(baits), function(i) {
+				link <- baits[[i]]$pGC > gc[1] & baits[[i]]$pGC < gc[2]
+				if (verbose) {
+					if (all(!link)) {
+						message(paste0("M: No baits passed the GC percentage test for sequence ", names(baits)[i], "."))
+						return(NULL)
+					}
+					if (any(!link)) {
+						if (sum(!link) == 1)
+							message(paste0("M: ", sum(!link), " bait was excluded from sequence ", names(baits)[i], " due to its GC percentage."))
+						else
+							message(paste0("M: ", sum(!link), " baits were excluded from sequence ", names(baits)[i], " due to their GC percentage."))
+					}
 				}
-				if (any(!link)) {
-					if (sum(!link) == 1)
-						message(paste0("M: ", sum(!link), " bait was excluded from sequence ", names(baits)[i], " due to its GC percentage."))
-					else
-						message(paste0("M: ", sum(!link), " baits were excluded from sequence ", names(baits)[i], " due to their GC percentage."))
-				}
-			}
-			good.baits[[i]] <<- baits[[i]][link, ]
-			bad.baits[[i]] <<- baits[[i]][!link, ]
+				good.baits[[i]] <<- baits[[i]][link, ]
+				bad.baits[[i]] <<- baits[[i]][!link, ]
+			})
+			names(good.baits) <- names(baits)
+			names(bad.baits) <- names(baits)
 		})
-		names(good.baits) <- names(baits)
-		names(bad.baits) <- names(baits)
-	})
 
-	remove.empty.good <- sapply(good.baits, nrow) > 0
-	good.baits <- good.baits[remove.empty.good]
+		remove.empty.good <- sapply(good.baits, nrow) > 0
+		good.baits <- good.baits[remove.empty.good]
 
-	remove.empty.bad <- sapply(bad.baits, nrow) > 0
-	bad.baits <- bad.baits[remove.empty.bad]
-	
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
-		print(assess.baits.time)
+		remove.empty.bad <- sapply(bad.baits, nrow) > 0
+		bad.baits <- bad.baits[remove.empty.bad]
+		
+		if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+			print(assess.baits.time)
+	} else {
+		good.baits <- baits
+		bad.baits <- NULL
+	}
 
 	message("M: Analysis completed."); flush.console()
 

@@ -172,35 +172,42 @@ print_coverage <- function(x, seq.name) {
 }
 
 
+print_report <- function(gc.table) {
+	 inst.ver <- utils::packageVersion("supeRbaits")
+  inst.ver.short <- substr(inst.ver, start = 1, stop = nchar(as.character(inst.ver)) - 5) 
+  if (file.exists(reportname <- "Report/supeRbaits_report.Rmd")) {
+    continue <- TRUE
+    index <- 1
+    while (continue) {
+      if(file.exists(reportname <- paste0("Report/supeRbaits_report.", index, ".Rmd"))) {
+        index <- index + 1
+      } else {
+        continue <- FALSE
       }
-      plotdata <- rbind(plotdata, aux)
     }
+    message("M: A superBaits report is already present in the current directory.\n   Saving new report as 'supeRbaits_report.", index, ".html'.")
+    rm(continue,index)
+  } else {
+    appendTo("Screen", "M: Saving supeRbaits report as 'supeRbaits_report.html'.")
+  }
+  report <- readr::read_file("temp_log.txt")
+  sink(reportname)
+  cat(paste0(
+'---
+title: "Summary of generated baits"
+author: "supeRbaits R package (', inst.ver.short, ')"
+output: 
+  html_document:
+    includes:
+      after_body: toc_menu.html
+---
 
-    plotdata$bait_type <- factor(plotdata$bait_type, levels = c("random", "target", "region", i))
-    used.levels <- levels(droplevels(plotdata$bait_type))
-    baitpoints$bait_type <- factor(baitpoints$bait_type, levels = c("random", "target", "region", i))
-    plotdata$Colour <- factor(plotdata$Colour, levels = c("chromosome", "excluded zones", "covered zones"))
+### GC content
 
-    p <- ggplot2::ggplot()
-    if (size / chr.lengths$size[chr.lengths$name == i] > 0.003) {
-      p <- p + ggplot2::geom_line(data = plotdata, ggplot2::aes(x = value, y = bait_type, group = bait_no, colour = Colour), size = 2)
-    } else {
-      p <- p + ggplot2::geom_line(data = plotdata[plotdata$bait_no < 0, ], ggplot2::aes(x = value, y = bait_type, group = bait_no, colour = Colour), size = 2)
-      p <- p + ggplot2::geom_point(data = baitpoints, ggplot2::aes(x = X, y = bait_type, colour = Colour), shape = "I", size = 2)
-    }
-    p <- p + ggplot2::scale_colour_manual(values = c("chromosome" = "#56B4E9", "excluded zones" = "grey", "covered zones" = "#009E73"))
-    p <- p + ggplot2::scale_y_discrete(limits = used.levels)
-    p <- p + ggplot2::labs(x = "bp", y = "")
-    if (any(targets$chr == i)) {
-      aux <- targets[targets$chr == i, ]
-      aux$bait_type <- "target"
-      p <- p + ggplot2::geom_point(data = aux, ggplot2::aes(x = target, y = bait_type), colour = "#E69F00", shape = "I", size = 5)
-    }
-    p <- p + ggplot2::theme(legend.position = "none")
-    p
-    ggplot2::ggsave(paste0("test_", i, ".png"), width = 10, height = 1.2)
-    return(p)
-  })
-  names(capture) <- names(baits)
-  return(capture)
+', paste(knitr::kable(gc.table, row.names = FALSE), collapse = "\n"),' 
+
+}
+
+'))
+ sink()
 }

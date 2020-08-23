@@ -8,6 +8,10 @@ setwd("test_supeRbaits")
 file.copy(paste0(path.aux, "/", list.files(path.aux)), list.files(path.aux), overwrite = TRUE)
 
 convert_line_endings(paste0(path.aux, "/", "sequences.txt"), "sequences.txt")
+
+test_exclusions <- read.table("exclusions.txt")
+test_regions <- read.table("regions.txt")
+test_targets <- read.table("targets.txt")
 # ---
 
 # all random test
@@ -35,7 +39,6 @@ test_that("extraction with exclusions is working", {
 		"Exclusion data for sequence CM003279 is off-boundaries.", fixed = TRUE)
 
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt")
-	test_exclusions <- read.table("exclusions.txt")
 	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
 	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 
@@ -51,7 +54,6 @@ test_that("extraction with regions is working", {
 	"Regions were included but regions.prop = 0. No region baits will be produced.", fixed = TRUE)
 
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt", regions.prop = 1)
-	test_regions <- read.table("regions.txt")
 	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp > r[3] & x$baits$CM003279$Start_bp < r[2])))
 	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp > r[3] & x$baits$CM003279$End_bp   < r[2])))
 
@@ -88,7 +90,6 @@ test_that("extraction with exclusions and regions is working", {
 test_that("extraction with targets is working", {
 	x <- main_function(n = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
 		targets = "targets.txt", targets.prop = 1)
-	test_targets <- read.table("targets.txt")
 	expect_true( # all baits should be within target range
 		all(sapply(x$baits$CM003279$Start_bp, function(x_i) {
 			any(sapply(test_targets[, 2], function(t) {
@@ -227,7 +228,7 @@ test_that("extraction with exclusions, regions and targets is working", {
 	# the rest should be random.
 
 	# None should be in the exclusions
-	expect_fale(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
+	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
 	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 
 	# and finally none should be duplicated

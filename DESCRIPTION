@@ -26,11 +26,17 @@ LinkingTo: Rcpp
 Language: en-GB
 Depends: R (>= 3.6)
 Imports: 
-    Rcpp,
+    callr,
     data.table,
-    utils,
+    ggplot2,
     graphics,
-    stats
+    knitr,
+    Rcpp,
+    readr,
+    reshape2,
+    stats,
+    testthat,
+    utils
 VignetteBuilder: knitr
 URL: https://github.com/BelenJM/supeRbaits
 BugReports: https://github.com/BelenJM/supeRbaits/issues

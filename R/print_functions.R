@@ -93,6 +93,13 @@ coverage <- function(x, combined = TRUE) {
 #' @keywords internal
 #' 
 print_coverage <- function(x, seq.name) {
+  value <- NULL
+  bait_type <- NULL
+  bait_no <- NULL
+  Colour <- NULL
+  X <- NULL
+  target <- NULL
+  
   if (!is.list(x) || is.null(x$baits))
     stop("could not recognise x as the output of main_function\n", call. = FALSE)
 
@@ -188,7 +195,7 @@ print_report <- function(gc.table) {
     message("M: A superBaits report is already present in the current directory.\n   Saving new report as 'supeRbaits_report.", index, ".html'.")
     rm(continue,index)
   } else {
-    appendTo("Screen", "M: Saving supeRbaits report as 'supeRbaits_report.html'.")
+    message("M: Saving supeRbaits report as 'supeRbaits_report.html'.")
   }
   report <- readr::read_file("temp_log.txt")
   sink(reportname)

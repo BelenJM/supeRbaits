@@ -8,8 +8,22 @@
 \description{
 A description of the package
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/BelenJM/supeRbaits}
+  \item Report bugs at \url{https://github.com/BelenJM/supeRbaits/issues}
+}
+
+}
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Hugo Flávio \email{hdmfla@aqua.dtu.dk} (\href{https://orcid.org/0000-0002-5174-1197}{ORCID})
+
+Authors:
+\itemize{
+  \item Miguel Ramos \email{jmiguelsramos@gmail.com}
+  \item Belén Mena \email{bmen@aqua.dtu.dk} (\href{https://orcid.org/0000-0001-8458-5533}{ORCID})
+}
 
 }
 \keyword{internal}

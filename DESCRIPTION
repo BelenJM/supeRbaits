@@ -1,21 +1,36 @@
 Package: supeRbaits
-Title: What the Package Does (One Line, Title Case)
+Title: Sample Baits From Sequences
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
+Authors@R: c(
+    person(given = "Hugo",
+           family = "Flávio",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "hdmfla@aqua.dtu.dk",
+           comment = c(ORCID = "0000-0002-5174-1197")),
+    person(given = "Miguel",
+           family = "Ramos",
+           role = c("aut"),
+           email = "jmiguelsramos@gmail.com"),
+    person(given = "Belén",
+           family = "Mena",
+           role = c("aut"),
+           email = "bmen@aqua.dtu.dk",
+           comment = c(ORCID = "0000-0001-8458-5533"))
+  )
+Description: Provided with a database of sequences, samples short bait sequences, taking into account potential exlusion or region zones, as well as specific targets.
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
 LinkingTo: Rcpp
+Language: en-GB
+Depends: R (>= 3.6)
 Imports: 
     Rcpp,
     data.table,
     utils,
     graphics,
     stats
+VignetteBuilder: knitr
+URL: https://github.com/BelenJM/supeRbaits
+BugReports: https://github.com/BelenJM/supeRbaits/issues

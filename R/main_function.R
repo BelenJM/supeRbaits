@@ -36,8 +36,10 @@ main_function <- function(n, size, database, exclusions = NULL,
 	
 	flush.console()
 
-	if(!is.null(seed))
+	if(!is.null(seed)) {
 		set.seed(seed)
+		on.exit(set.seed(NULL))
+	}
 
 	if (!is.numeric(n))
 		stop("'n' must be numeric.\n")

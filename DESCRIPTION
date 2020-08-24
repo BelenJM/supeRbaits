@@ -35,8 +35,9 @@ Imports:
     readr,
     reshape2,
     stats,
-    testthat,
     utils
+Suggests:
+    testthat
 VignetteBuilder: knitr
 URL: https://github.com/BelenJM/supeRbaits
 BugReports: https://github.com/BelenJM/supeRbaits/issues

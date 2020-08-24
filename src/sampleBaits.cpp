@@ -44,6 +44,15 @@ struct SampleBait {
   size_t stop;
 };
 
+template<class RandomIt> void my_random_shuffle(RandomIt first, RandomIt last) {
+    typename std::iterator_traits<RandomIt>::difference_type i, n;
+    n = last - first;
+    for (i = n-1; i > 0; --i) {
+        using std::swap;
+        swap(first[i], first[R::runif(0, i)]);
+    }
+}
+
 vec_pair trim_ranges(vec_pair ranges, vec_pair exclusions) {
   vec_pair trimmed_ranges;
   
@@ -195,7 +204,7 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
       Rcpp::Rcout << "Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in sequence " << chrom << ". Choosing a random subset of ranges." << std::endl;
     
       size_t max_ranges = std::floor((double)n / tiling);
-      std::random_shuffle(output_ranges.begin(), output_ranges.end());
+      my_random_shuffle(output_ranges.begin(), output_ranges.end());
     
       output_ranges.resize(max_ranges);
       sort(output_ranges.begin(), output_ranges.end());
@@ -246,7 +255,7 @@ vec check_n(vec_pair_value ranges, size_t n, size_t tiling, std::string chrom, s
 	if ((ranges[i].second+tiling) > n_per_range[i])
 	  seq.push_back(i);
 
-      std::random_shuffle(seq.begin(), seq.end());
+      my_random_shuffle(seq.begin(), seq.end());
       for (size_t i = 0; i < remaining_n; i++)
 	n_per_range[seq[i]] += 1;
     }

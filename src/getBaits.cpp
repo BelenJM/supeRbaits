@@ -168,7 +168,7 @@ Rcpp::DataFrame getBaits(std::string db_path, Rcpp::DataFrame df) {
   for (size_t i = 0; i < (size_t) df_names.size(); i++) {
     baits.push_back(getBait(db,
 			    map,
-			    i,
+			    i+1,
 			    Rcpp::as<std::string>(df_names[i]),
 			    Rcpp::as<std::string>(df_types[i]),
 			    df_starts[i],

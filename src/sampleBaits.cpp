@@ -6,15 +6,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <stdlib.h>
-
-/* 
-   TODO
-   -------------------------------------------------------------------------------
-   >>> LOOKOUT FOR THIS ERROR: <<<
-
-   Error in sampleBaits(test_df_chrom_lens, test_df_exclusions, test_df_regions,  : 
-   tinyformat: Not enough conversion specifiers in format string
-*/
+#include <math.h>
 
 /*
   test_df_chrom_lens <- data.frame("ChromName" = c("CM003279", "CMF"),
@@ -277,13 +269,13 @@ vec_pair_string get_bait_positions(vec_pair_value ranges, size_t size, vec n_per
     while (rands.size() < n_per_range[i]) {
       size_t max = ranges[i].first.second - (size - 1);
       size_t min = ranges[i].first.first;
-      size_t rand_num = rand()%(max-min + 1) + min;
+      size_t rand_num = std::ceil(R::runif(min, max));
       if (!used_baits.count(rand_num))
 	rands.insert(rand_num);
     }
 
-    for (size_t rand : rands)
-      bait_positions.push_back(std::make_pair(rand, rand + (size - 1)));
+    for (size_t myrand : rands)
+      bait_positions.push_back(std::make_pair(myrand, myrand + (size - 1)));
   }
 
   vec_pair_string bait_pos_type;

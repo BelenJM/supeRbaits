@@ -165,14 +165,14 @@ test_that("extraction with regions and targets is working", {
 
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("random", "region", "target"))
-	expect_equal(as.vector(aux), c(40, 28, 32))
+	expect_equal(as.vector(aux), c(48, 32, 20))
 
 	# the first 32 should be regions
 	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:32] > r[3] & x$baits$CM003279$Start_bp[1:32] < r[2])))
 	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:32] > r[3] & x$baits$CM003279$End_bp[1:32]   < r[2])))
-	# the following 40 should be targets
+	# the following 20 should be targets
 	expect_true(
-		all(sapply(x$baits$CM003279$Start_bp[33:72], function(x_i) {
+		all(sapply(x$baits$CM003279$Start_bp[33:52], function(x_i) {
 			any(sapply(test_targets[, 2], function(t) {
 				x_i[1] >= (t - 19) & x_i[1] <= t
 			}))
@@ -211,15 +211,15 @@ test_that("extraction with exclusions, regions and targets is working", {
 
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("random", "region", "target"))
-	expect_equal(as.vector(aux), c(64, 12, 24))
+	expect_equal(as.vector(aux), c(48, 32, 20))
 
-	# the first 12 should be regions
-	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:12] > r[3] & x$baits$CM003279$Start_bp[1:12] < r[2])))
-	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:12] > r[3] & x$baits$CM003279$End_bp[1:12]   < r[2])))
+	# the first 32 should be regions
+	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp[1:32] > r[3] & x$baits$CM003279$Start_bp[1:12] < r[2])))
+	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp[1:32] > r[3] & x$baits$CM003279$End_bp[1:12]   < r[2])))
 	
 	# the following 24 should be targets
 	expect_true(
-		all(sapply(x$baits$CM003279$Start_bp[13:36], function(x_i) {
+		all(sapply(x$baits$CM003279$Start_bp[33:52], function(x_i) {
 			any(sapply(test_targets[, 2], function(t) {
 				x_i[1] >= (t - 19) & x_i[1] <= t
 			}))

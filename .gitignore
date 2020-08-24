@@ -1,14 +1,2 @@
-testdata/*.RData
-testdata/*.Rhistory
-supeRbaits_debug.RData
-testdata/temp_folder_for_supeRbaits/bait_positions.txt
-testdata/test_chr.png
-testdata/test_CM003279.png
-testdata/test_CMF.png
 src/*.o
-src/supeRbaits.so
 src/supeRbaits.dll
-src/RcppExports.cpp
-R/RcppExports.R
-src/supeRbaits.dll
-testdata/exclusion_example.txt

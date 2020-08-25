@@ -27,11 +27,11 @@ main_function <- function(n, size, database, exclusions = NULL,
 	seed = NULL, restrict, gc = c(0, 1),
 	verbose = FALSE){
 
-	if (!is.null(options("supeRbaits_debug")[[1]]) && options("supeRbaits_debug")[[1]]) {
+	if (getOption("supeRbaits_debug", default = FALSE)) {
     message("!!!--- Debug mode has been activated ---!!!")
 		on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
-	} 
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+	}
+	if (getOption("supeRbaits_show_times", default = FALSE))
 		message("Start time: ", Sys.time())
 	
 	flush.console()
@@ -101,7 +101,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 			show = TRUE)
 	})
 
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(getlengths.time)
 	
 	if (!missing(restrict)) {
@@ -120,7 +120,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		if(!is.null(targets))
 			targets <- load_targets(file = targets)
 	})
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(load.extras.time)
 
 	# Compatibility checks
@@ -138,7 +138,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 		check_chr_boundaries(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
 	})
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(check.input.time)
 
 	message("M: Finding bait positions for each sequence."); flush.console()
@@ -182,7 +182,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 			show = verbose)
 	})
 
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(sample.baits.time)
 
 	message("M: Retrieving bait base pairs. This operation can take some time."); flush.console()
@@ -202,7 +202,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 			show = TRUE)
 	})
 
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(getbaits.time)
 
 	if (nrow(baits) == 0)
@@ -215,7 +215,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		baits <- split(baits, baits$bait_chrom_name)
 	})
 
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(calc.baits.time)
 
 	if (gc[1] > 0 | gc[2] < 1) {
@@ -252,7 +252,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		remove.empty.bad <- sapply(bad.baits, nrow) > 0
 		bad.baits <- bad.baits[remove.empty.bad]
 		
-		if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]])
+		if (getOption("supeRbaits_show_times", default = FALSE))
 			print(assess.baits.time)
 	} else {
 		good.baits <- baits
@@ -267,7 +267,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 												regions = regions,
 												size = size)
 
-	if (!is.null(options("supeRbaits_show_times")[[1]]) && options("supeRbaits_show_times")[[1]]) {
+	if (getOption("supeRbaits_show_times", default = FALSE)) {
 		times <- data.frame(
 			getLengths = getlengths.time["elapsed"],
 			sampleBaits = sample.baits.time["elapsed"],

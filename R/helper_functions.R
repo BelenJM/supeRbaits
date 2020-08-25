@@ -10,5 +10,11 @@
 #' @export
 #' 
 convert_line_endings <- function(input, output = input) {
-	dos2unix(input, output)
+	if (input == output) {
+		aux <- tempfile()
+		dos2unix(input, aux)
+		file.rename(aux, output)
+	} else {
+		dos2unix(input, aux)
+	}
 }

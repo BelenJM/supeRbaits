@@ -48,8 +48,7 @@ template<class RandomIt> void my_random_shuffle(RandomIt first, RandomIt last) {
     typename std::iterator_traits<RandomIt>::difference_type i, n;
     n = last - first;
     for (i = n-1; i > 0; --i) {
-        using std::swap;
-        swap(first[i], first[R::runif(0, i)]);
+	std::swap(first[i], first[R::runif(-1.00001, i)]); // use -1.00001 so that ceil can return 0
     }
 }
 
@@ -278,7 +277,7 @@ vec_pair_string get_bait_positions(vec_pair_value ranges, size_t size, vec n_per
     while (rands.size() < n_per_range[i]) {
       size_t max = ranges[i].first.second - (size - 1);
       size_t min = ranges[i].first.first;
-      size_t rand_num = std::ceil(R::runif(min, max));
+      size_t rand_num = std::ceil(R::runif(min-0.99999, max)); // use -0.99999 so that ceil can return min
       if (!used_baits.count(rand_num))
 	rands.insert(rand_num);
     }

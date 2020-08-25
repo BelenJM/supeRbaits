@@ -1,4 +1,4 @@
-path.aux <- system.file(package = "supeRbaits")[1]
+path.aux <- paste0(system.file(package = "supeRbaits")[1], "/example_data")
 
 # set up test directory
 home.wd <- getwd()
@@ -7,7 +7,7 @@ dir.create("test_supeRbaits")
 setwd("test_supeRbaits")
 file.copy(paste0(path.aux, "/", list.files(path.aux)), list.files(path.aux), overwrite = TRUE)
 
-convert_line_endings(paste0(path.aux, "/", "sequences.txt"), "sequences.txt")
+convert_line_endings("sequences.txt")
 
 test_exclusions <- read.table("exclusions.txt")
 test_regions <- read.table("regions.txt")

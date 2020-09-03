@@ -265,8 +265,8 @@ test_that("coverage is working", {
 })
 
 
-	# print_coverage(results, "CMF")
-	# print_coverage(results, "CM003279")
+	print_coverage(results, "CMF")
+	print_coverage(results, "CM003279")
 
 setwd(home.wd)
 rm(list = ls())

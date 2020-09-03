@@ -2,7 +2,8 @@
 #'
 #' Function inspired by this comment in StackOverflow: https://stackoverflow.com/questions/49149839/simulate-random-positions-from-a-list-of-intervals
 #'
-#' @param n number of baits to generate
+#' @param n number of baits to generate (distributed across the various sequences).
+#' @param n.per.seq number of baits to generate per sequence. Ignored if n is set.
 #' @param size The size of each bait
 #' @param database A database of chromosomes
 #' @param exclusions A file containing regions to exclude
@@ -21,10 +22,10 @@
 #' 
 #' @export
 #' 
-main_function <- function(n, size, database, exclusions = NULL, 
+main_function <- function(n, n.per.seq, size, database, exclusions = NULL, 
 	regions = NULL, regions.prop = 0, regions.tiling = 1,
 	targets = NULL, targets.prop = 0, targets.tiling = 1,
-	seed = NULL, restrict, gc = c(0, 1),
+	seed = NULL, restrict, gc = c(0, 1), min.per.seq = 1,
 	verbose = FALSE){
 
 	if (getOption("supeRbaits_debug", default = FALSE)) {
@@ -41,24 +42,41 @@ main_function <- function(n, size, database, exclusions = NULL,
 		on.exit(set.seed(NULL))
 	}
 
-	if (!is.numeric(n))
-		stop("'n' must be numeric.\n")
-	if (length(n) != 1)
-		stop("Length of 'n' must be 1.\n")
+	if (missing(n) & missing(n.per.seq))
+		stop("One of 'n' or 'n.per.seq' must be set.", call. = FALSE)
+
+	if (!missing(n) & !missing(n.per.seq))
+		warning("Both 'n' and 'n.per.seq' were set. Ignoring 'n.per.seq'.", immediate. = TRUE, call. = FALSE)
+
+	if (!missing(n) && !is.numeric(n))
+		stop("'n' must be numeric.", call. = FALSE)
+	if (!missing(n) && length(n) != 1)
+		stop("Length of 'n' must be 1.", call. = FALSE)
+	if (!missing(n) && n < min.per.seq)
+		stop("'n' cannot be lower than min.per.seq.", call. = FALSE)
+
+	if ((missing(n) & !missing(n.per.seq)) && !is.numeric(n.per.seq))
+		stop("'n.per.seq' must be numeric.", call. = FALSE)
+	if ((missing(n) & !missing(n.per.seq)) && length(n.per.seq) != 1)
+		stop("Length of 'n.per.seq' must be 1.", call. = FALSE)
+	if ((missing(n) & !missing(n.per.seq)) && n.per.seq < min.per.seq)
+		stop("'n.per.seq' cannot be lower than min.per.seq.", call. = FALSE)
+
+
 	if (!is.numeric(size))
-		stop("'size' must be numeric.\n")
+		stop("'size' must be numeric.", call. = FALSE)
 	if (length(size) != 1)
-		stop("Length of 'size' must be 1.\n")
+		stop("Length of 'size' must be 1.", call. = FALSE)
 	size <- as.integer(size)
 
 	if (!is.numeric(regions.prop) | (regions.prop > 1 | regions.prop < 0))
-		stop("'regions.prop' must be numeric and between 0 and 1.\n")
+		stop("'regions.prop' must be numeric and between 0 and 1.", call. = FALSE)
 	if (!is.null(targets.prop) && (!is.numeric(targets.prop) | (targets.prop > 1 | targets.prop < 0)))
-		stop("'targets.prop' must be numeric and between 0 and 1.\n")
+		stop("'targets.prop' must be numeric and between 0 and 1.", call. = FALSE)
 	if (!is.numeric(regions.tiling))
-		stop("'regions.tiling' must be numeric.\n")
+		stop("'regions.tiling' must be numeric.", call. = FALSE)
 	if (!is.numeric(targets.tiling))
-		stop("'targets.tiling' must be numeric.\n")
+		stop("'targets.tiling' must be numeric.", call. = FALSE)
 
 	if (regions.prop == 0 & !is.null(regions))
 		warning("Regions were included but regions.prop = 0. No region baits will be produced.", call. = FALSE, immediate. = TRUE)
@@ -71,11 +89,11 @@ main_function <- function(n, size, database, exclusions = NULL,
 	if (length(gc) != 2)
 		stop("Please provide two values in 'gc' (minimum and maximum percentage).\n", call. = FALSE)
 	if (!is.numeric(gc))
-		stop("'gc' must be numeric and contain two values between 0 and 1.\n")
+		stop("'gc' must be numeric and contain two values between 0 and 1.", call. = FALSE)
 	if (any(gc > 1) | any(gc < 0))
-		stop("'gc' ranges must be between 0 and 1.\n")
+		stop("'gc' ranges must be between 0 and 1.", call. = FALSE)
 	if (gc[1] > gc[2])
-		stop("The first value of 'gc' must be smaller or equal to the second value.\n")
+		stop("The first value of 'gc' must be smaller or equal to the second value.", call. = FALSE)
 
 	# Import data
 	message("M: Compiling the sequences' lengths. This operation can take some time."); flush.console()
@@ -90,6 +108,7 @@ main_function <- function(n, size, database, exclusions = NULL,
 		stop("The line endings of your database file are incompatible with supeRbaits. You can convert your database using convert_line_endings()\n", call. = FALSE)
 	# --
 
+	# extract sequence lengths
 	getlengths.time <- system.time({
 		the.lengths <- callr::r(function(getChromLengths, path) 
 			{
@@ -100,15 +119,38 @@ main_function <- function(n, size, database, exclusions = NULL,
 			spinner = TRUE,
 			show = TRUE)
 	})
-
 	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(getlengths.time)
 	
+	# apply restrictions, if present
 	if (!missing(restrict)) {
 		restrict <- check_restrict(restrict, sequences = the.lengths$name)
 		the.lengths <- the.lengths[restrict, ]
 	}
+
+	# Remove sequences that are too small
+	link <- the.lengths$size >= (min.per.seq + size - 1)
+	if (all(!link))
+		stop("No sequences have enough space to fit the minimum desired number of baits.", call. = FALSE)
+	if (verbose & any(link))
+		warning(sum(!link), " sequence", ifelse(sum(!link) > 1, "s are", " is"), " too small to fit the minimum desired number of baits and will be discarded.", immediate. = TRUE, call. = FALSE)
+
+	# prepare to allocate n's
+	the.lengths <- the.lengths[link, ]
+	the.lengths$prop <- the.lengths$size / sum(the.lengths$size)
+	the.lengths$n <- 0
 	
+	# allocate n's
+	if (!missing(n)) {
+		the.lengths <- assign_n_per_seq(the.lengths, n, min.per.seq)
+	} else {
+		the.lengths$n <- n.per.seq
+		the.lengths$n[the.lengths$size - (size - 1) < n.per.seq] <- the.lengths$size[the.lengths$size - (size - 1) < n.per.seq] - (size - 1)
+		if (sum(the.lengths$n) < n.per.seq * nrow(the.lengths))
+			warning("Some sequences are not long enough to allocate the desired number of baits.", immediate. = TRUE, call. = FALSE)
+	}
+
+	# load additional parameters
 	if (any(!is.null(exclusions), !is.null(regions), !is.null(targets)))
 	message("M: Loading exclusions/regions/targets."); flush.console()
 
@@ -128,8 +170,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 	message("M: Checking exclusions/regions/targets quality."); flush.console()
 
 	check.input.time <- system.time({
-		if (any((size - 1) > the.lengths$size))
-			stop("'size' is larger than at least one of the chromosome lengths.\n")
 		recipient <- check_chr_names(exclusions = exclusions, regions = regions, targets = targets, the.lengths = the.lengths)
 		exclusions <- recipient$exclusions
 		regions <- recipient$regions
@@ -149,7 +189,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 																		 exclusions, 
 																		 regions, 
 																		 targets, 
-																		 n, 
 																		 size, 
 																		 regions_tiling, 
 																		 targets_tiling, 
@@ -160,7 +199,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 										exclusions, 
 										regions, 
 										targets, 
-										n, 
 										size, 
 										regions_tiling, 
 										targets_tiling, 
@@ -172,7 +210,6 @@ main_function <- function(n, size, database, exclusions = NULL,
 									exclusions = exclusions, 
 									regions = regions, 
 									targets = targets, 
-									n = n, 
 									size = size, 
 									regions_tiling = regions.tiling, 
 									targets_tiling = targets.tiling, 
@@ -261,11 +298,11 @@ main_function <- function(n, size, database, exclusions = NULL,
 
 	message("M: Analysis completed."); flush.console()
 
-	input.summary <- list(chr.lengths = the.lengths, 
-												exclusions = exclusions, 
-												targets = targets, 
-												regions = regions,
-												size = size)
+	input.summary <- list(chr.lengths = data.table::as.data.table(the.lengths), 
+												exclusions  = data.table::as.data.table(exclusions), 
+												targets     = data.table::as.data.table(targets), 
+												regions     = data.table::as.data.table(regions),
+												size        = size)
 
 	if (getOption("supeRbaits_show_times", default = FALSE)) {
 		times <- data.frame(
@@ -278,4 +315,54 @@ main_function <- function(n, size, database, exclusions = NULL,
 	}
 
 	return(output)
+}
+
+
+assign_n_per_seq <- function(the.lengths, n, min.per.seq) {
+	# if the number of baits to distribute is lower than the number of sequences
+	if (n < (nrow(the.lengths) * min.per.seq)) {
+		warning("The desired n is smaller than the number of sequences times min.per.seq. Only a subset of the sequences will be used.", immediate. = TRUE, call. = FALSE)
+		# decide how many sequences we can pick
+		n.seqs <- floor(n / min.per.seq)
+		# pick sequences
+		which.seqs <- sample(1:nrow(the.lengths), n.seqs, prob = the.lengths$prob)
+		# distribute min.per.seq for the chosen sequences
+		the.lengths$n[which.seqs] <- min.per.seq
+		# if there are baits missing
+		if (sum(the.lengths$n) < n) {
+			# find out which sequences still have space
+			seqs.with.space <- which(the.lengths$size[which.seqs] - min.per.seq - size > 0)
+			# choose which from the above will receive + 1
+			add.here <- sample(which.seqs[seqs.with.space], n - sum(the.lengths$n))
+			# add one bait on the above
+			the.lengths$n[add.here] <- the.lengths$n[add.here] + 1
+		}
+	# if the number of baits to assign is bigger than the number of sequences
+	} else {
+		# start by assigning the minimum necessary (sequences that are too small have already been excluded)
+		the.lengths$n <- min.per.seq
+		# distribute the rest of the baits
+		while (sum(the.lengths$n) < n) {
+			n.to.distribute <- n - sum(the.lengths$n)
+			# find which sequences have space
+			seqs.with.space <- which(the.lengths$size - the.lengths$n - (size - 1) > 0)
+			if (length(seqs.with.space) == 0) {
+				warning("Ran out of space in the sequences where to allocate baits. Could not allocate ", n.to.distribute, " baits.", immediate. = TRUE, call. = FALSE)
+				break()
+			}
+			# recalculate weights
+			free.space <- the.lengths$size - the.lengths$n - (size - 1)
+			the.lengths$prop <- free.space / sum(free.space)
+			# draw new places where to add baits based on new weights
+			add.here <- sample(seqs.with.space, n.to.distribute, replace = TRUE, prob = the.lengths$prop)
+			sort.results <- table(add.here)
+			# add new baits in their respective places
+			the.lengths$n[as.numeric(names(sort.results))] <- the.lengths$n[as.numeric(names(sort.results))] + sort.results
+			# if any of the sequences went over the limit, drop extra baits to be redistributed
+			the.lengths$n <- sapply(1:nrow(the.lengths), function(i) min(the.lengths$size[i] - (size - 1), the.lengths$n[i]))
+			# If the last line changed anything, then the while will be triggered again
+		}
+	}
+	the.lengths$prop <- NULL
+	return(the.lengths)
 }

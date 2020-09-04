@@ -10,7 +10,7 @@
 #include <math.h>
 
 /*
-  test_df_chrom_lens <- data.frame("ChromName" = c("CM003279", "CMF"),
+  test_df_chrom_info <- data.frame("ChromName" = c("CM003279", "CMF"),
   "Length" = c(250, 150))
 
   test_df_targets <- data.frame("ChromName" = c("CM003279", "CMF", "CMF", "CMF", "CMF"),
@@ -24,7 +24,7 @@
   "Start" = c(40, 80),
   "Stop" = c(70, 200))
 
-  sampleBaits(test_df_chrom_lens, test_df_exclusions, test_df_regions, test_df_targets, 2, 2, 1, 1, 1, 0)
+  sampleBaits(test_df_chrom_info, test_df_exclusions, test_df_regions, test_df_targets, 2, 2, 1, 1, 1, 0)
 */
 
 typedef std::vector<size_t> vec;
@@ -34,6 +34,7 @@ typedef std::vector<std::pair<std::pair<size_t, size_t>, std::string>> vec_pair_
 
 const int DF_NAME_INDEX   = 0,
           DF_LEN_INDEX    = 1,
+          DF_N_INDEX      = 2,
           DF_START_INDEX  = 1,
           DF_STOP_INDEX   = 2,
           DF_TARGET_INDEX = 1;
@@ -197,11 +198,12 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
   }
 
   if (output_ranges.size()) { // only perform checks if there are valid ranges
-    if (output_ranges.size() < ranges.size())
-      Rcpp::Rcout << "Warning: " << (ranges.size() - output_ranges.size()) << " sub-ranges on sequence " << chrom << " are too small to fit the desired number of baits and will be excluded." << std::endl;
+    if (output_ranges.size() < ranges.size()) {
+      Rcpp::warning((ranges.size() - output_ranges.size()) + " sub-ranges on sequence " + chrom + " are too small to fit the desired number of baits and will be excluded.");
+    }
 
     if (n / tiling < output_ranges.size()) { // if there are too many ranges, randomly select needed
-      Rcpp::Rcout << "Warning: The desired n/tiling combination is not high enough to produce baits in all valid ranges in sequence " << chrom << ". Choosing a random subset of ranges." << std::endl;
+      Rcpp::warning("The desired n/tiling combination is not high enough to produce baits in all valid ranges in sequence " + chrom + ". Choosing a random subset of ranges.");
     
       size_t max_ranges = std::floor((double)n / tiling);
       my_random_shuffle(output_ranges.begin(), output_ranges.end());
@@ -210,7 +212,7 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
       sort(output_ranges.begin(), output_ranges.end());
     }
   } else {
-   Rcpp::Rcout << "Warning: All " << type << " ranges in sequence " << chrom << " are too small to fit the desired number of baits per range. Skipping..." << std::endl;
+    Rcpp::warning("All " + type + " ranges in sequence " + chrom + " are too small to fit the desired number of baits per range. Skipping...");
   }
   
   return output_ranges;
@@ -224,8 +226,9 @@ vec check_n(vec_pair_value ranges, size_t n, size_t tiling, std::string chrom, s
     sum_max_baits += r.second;
   
   if (sum_max_baits <= n) {
-    if (sum_max_baits < n) // not enough space for all baits
-      Rcpp::Rcout << "Warning: The maximum possible number of unique " << type << " baits (" << sum_max_baits << ") for sequence " << chrom << " is lower than the desired n (" <<  n << ")." << std::endl;
+    if (sum_max_baits < n) { // not enough space for all baits
+      Rcpp::warning("The maximum possible number of unique " + type + " baits (" + std::to_string(sum_max_baits) + ") for sequence " + chrom + " is lower than the desired n (" + std::to_string(n) + ").");
+    }
 
     for (auto r : ranges)
       n_per_range.push_back(r.second);
@@ -341,21 +344,21 @@ Rcpp::DataFrame buildSamplesRdf(std::vector<SampleBait> &baits) {
 }
 
 // [[Rcpp::export]]
-Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
+Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_info,
 			    Rcpp::DataFrame exclusions,
 			    Rcpp::DataFrame regions,
 			    Rcpp::DataFrame targets,
-			    size_t n, 
 			    size_t size,
 			    size_t regions_tiling,
 			    size_t targets_tiling,
 			    double regions_prop,
 			    double targets_prop) {
-  Rcpp::StringVector df_names = chrom_lens[DF_NAME_INDEX];
-  Rcpp::NumericVector df_lens = chrom_lens[DF_LEN_INDEX];
+  Rcpp::StringVector df_names = chrom_info[DF_NAME_INDEX];
+  Rcpp::NumericVector df_lens = chrom_info[DF_LEN_INDEX];
+  Rcpp::NumericVector df_ns   = chrom_info[DF_N_INDEX];
 
   std::vector<SampleBait> all_baits;
-  for (size_t i = 0; i < (size_t) df_names.size(); i++) { // for each chrom/len in chrom_lens
+  for (size_t i = 0; i < (size_t) df_names.size(); i++) { // for each chrom/len in chrom_info
     vec targets_subsample = subsample_targets(Rcpp::as<std::string>(df_names[i]), df_lens[i], targets);
     vec_pair exclusions_subsample = subsample_ranges(Rcpp::as<std::string>(df_names[i]), df_lens[i], exclusions);
     vec_pair regions_subsample = subsample_ranges(Rcpp::as<std::string>(df_names[i]), df_lens[i], regions);
@@ -369,7 +372,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 
     // region baits
     if (regions_prop > 0) {
-      n_regions = std::floor(n * regions_prop);
+      n_regions = std::floor(df_ns[i] * regions_prop);
       if (regions_subsample.size() > 0) {
 	regions = trim_ranges(regions_subsample, exclusions_subsample);
 
@@ -381,7 +384,11 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 	  region_bait_positions = get_bait_positions(valid_regions, size, n_per_range, used_baits, "region");
 
 	  for (auto t : region_bait_positions) {
-	    all_baits.push_back(SampleBait {(std::string) df_names[i], "region", t.first.first, t.first.second});
+	    try {
+	      all_baits.push_back(SampleBait {(std::string) df_names[i], "region", t.first.first, t.first.second});
+	    } catch (std::bad_alloc& ba) {
+	      Rcpp::stop("Not enough available memory to contain all sequences' samples. Use the 'restrict' argument to sample a subset of the sequences at a time.\n");
+	    }
 	    used_baits.insert(t.first.first);
 	  }
 	  n_regions = region_bait_positions.size();
@@ -396,7 +403,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 
     // target baits
     if (targets_prop > 0) {
-      n_targets = std::floor(n * targets_prop);
+      n_targets = std::floor(df_ns[i] * targets_prop);
       if (targets_subsample.size() > 0) {
 	vec_pair target_ranges;
 	for (auto t : targets_subsample) // create ranges from targets
@@ -412,7 +419,11 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 	  target_bait_positions = get_bait_positions(valid_targets, size, n_per_range, used_baits, "target");
 
 	  for (auto t : target_bait_positions) {
-	    all_baits.push_back(SampleBait {(std::string) df_names[i], "target", t.first.first, t.first.second});
+	    try {
+	      all_baits.push_back(SampleBait {(std::string) df_names[i], "target", t.first.first, t.first.second});
+	    } catch (std::bad_alloc& ba) {
+	      Rcpp::stop("Not enough available memory to contain all sequences' samples. Use the 'restrict' argument to sample a subset of the sequences at a time.\n");
+	    }
 	    used_baits.insert(t.first.first);
 	  }
 
@@ -427,8 +438,8 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
     }
 
     // random baits
-    if (n_regions + n_targets < n) {
-      size_t n_random = n - (n_regions + n_targets);
+    if (n_regions + n_targets < df_ns[i]) {
+      size_t n_random = df_ns[i] - (n_regions + n_targets);
 
       vec_pair random_ranges; random_ranges.push_back(std::make_pair(1, df_lens[i]));
 
@@ -442,8 +453,13 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens,
 	
 	random_bait_positions = get_bait_positions(valid_random, size, n_per_range, used_baits, "random");
 
-	for (auto t : random_bait_positions)
-	  all_baits.push_back(SampleBait {(std::string) df_names[i], "random", t.first.first, t.first.second});
+	for (auto t : random_bait_positions) {
+	  try {
+	    all_baits.push_back(SampleBait {(std::string) df_names[i], "random", t.first.first, t.first.second});
+	  } catch (std::bad_alloc& ba) {
+	    Rcpp::stop("Not enough available memory to contain all sequences' samples. Use the 'restrict' argument to sample a subset of the sequences at a time.\n");
+	  }
+	}
       }
     }
   }

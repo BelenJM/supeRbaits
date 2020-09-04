@@ -16,6 +16,31 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// fixLineLengths
+void fixLineLengths(std::string fin_path, std::string fout_path);
+RcppExport SEXP _supeRbaits_fixLineLengths(SEXP fin_pathSEXP, SEXP fout_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type fin_path(fin_pathSEXP);
+    Rcpp::traits::input_parameter< std::string >::type fout_path(fout_pathSEXP);
+    fixLineLengths(fin_path, fout_path);
+    return R_NilValue;
+END_RCPP
+}
+// extractNucleotides
+std::string extractNucleotides(std::string db_path, std::string chrom_name, size_t start, size_t stop);
+RcppExport SEXP _supeRbaits_extractNucleotides(SEXP db_pathSEXP, SEXP chrom_nameSEXP, SEXP startSEXP, SEXP stopSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type db_path(db_pathSEXP);
+    Rcpp::traits::input_parameter< std::string >::type chrom_name(chrom_nameSEXP);
+    Rcpp::traits::input_parameter< size_t >::type start(startSEXP);
+    Rcpp::traits::input_parameter< size_t >::type stop(stopSEXP);
+    rcpp_result_gen = Rcpp::wrap(extractNucleotides(db_path, chrom_name, start, stop));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getBaits
 Rcpp::DataFrame getBaits(std::string db_path, Rcpp::DataFrame df);
 RcppExport SEXP _supeRbaits_getBaits(SEXP db_pathSEXP, SEXP dfSEXP) {
@@ -51,32 +76,33 @@ BEGIN_RCPP
 END_RCPP
 }
 // sampleBaits
-Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_lens, Rcpp::DataFrame exclusions, Rcpp::DataFrame regions, Rcpp::DataFrame targets, size_t n, size_t size, size_t regions_tiling, size_t targets_tiling, double regions_prop, double targets_prop);
-RcppExport SEXP _supeRbaits_sampleBaits(SEXP chrom_lensSEXP, SEXP exclusionsSEXP, SEXP regionsSEXP, SEXP targetsSEXP, SEXP nSEXP, SEXP sizeSEXP, SEXP regions_tilingSEXP, SEXP targets_tilingSEXP, SEXP regions_propSEXP, SEXP targets_propSEXP) {
+Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_info, Rcpp::DataFrame exclusions, Rcpp::DataFrame regions, Rcpp::DataFrame targets, size_t size, size_t regions_tiling, size_t targets_tiling, double regions_prop, double targets_prop);
+RcppExport SEXP _supeRbaits_sampleBaits(SEXP chrom_infoSEXP, SEXP exclusionsSEXP, SEXP regionsSEXP, SEXP targetsSEXP, SEXP sizeSEXP, SEXP regions_tilingSEXP, SEXP targets_tilingSEXP, SEXP regions_propSEXP, SEXP targets_propSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type chrom_lens(chrom_lensSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type chrom_info(chrom_infoSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type exclusions(exclusionsSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type regions(regionsSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type targets(targetsSEXP);
-    Rcpp::traits::input_parameter< size_t >::type n(nSEXP);
     Rcpp::traits::input_parameter< size_t >::type size(sizeSEXP);
     Rcpp::traits::input_parameter< size_t >::type regions_tiling(regions_tilingSEXP);
     Rcpp::traits::input_parameter< size_t >::type targets_tiling(targets_tilingSEXP);
     Rcpp::traits::input_parameter< double >::type regions_prop(regions_propSEXP);
     Rcpp::traits::input_parameter< double >::type targets_prop(targets_propSEXP);
-    rcpp_result_gen = Rcpp::wrap(sampleBaits(chrom_lens, exclusions, regions, targets, n, size, regions_tiling, targets_tiling, regions_prop, targets_prop));
+    rcpp_result_gen = Rcpp::wrap(sampleBaits(chrom_info, exclusions, regions, targets, size, regions_tiling, targets_tiling, regions_prop, targets_prop));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_supeRbaits_dos2unix", (DL_FUNC) &_supeRbaits_dos2unix, 2},
+    {"_supeRbaits_fixLineLengths", (DL_FUNC) &_supeRbaits_fixLineLengths, 2},
+    {"_supeRbaits_extractNucleotides", (DL_FUNC) &_supeRbaits_extractNucleotides, 4},
     {"_supeRbaits_getBaits", (DL_FUNC) &_supeRbaits_getBaits, 2},
     {"_supeRbaits_getChromLengths", (DL_FUNC) &_supeRbaits_getChromLengths, 1},
     {"_supeRbaits_removeNLs", (DL_FUNC) &_supeRbaits_removeNLs, 2},
-    {"_supeRbaits_sampleBaits", (DL_FUNC) &_supeRbaits_sampleBaits, 10},
+    {"_supeRbaits_sampleBaits", (DL_FUNC) &_supeRbaits_sampleBaits, 9},
     {NULL, NULL, 0}
 };
 

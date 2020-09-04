@@ -6,6 +6,7 @@
 \usage{
 main_function(
   n,
+  n.per.seq,
   size,
   database,
   exclusions = NULL,
@@ -18,11 +19,14 @@ main_function(
   seed = NULL,
   restrict,
   gc = c(0, 1),
+  min.per.seq = 1,
   verbose = FALSE
 )
 }
 \arguments{
-\item{n}{number of baits to generate}
+\item{n}{Number of baits to generate (distributed across the various sequences).}
+
+\item{n.per.seq}{Number of baits to generate per sequence. Ignored if n is set.}
 
 \item{size}{The size of each bait}
 
@@ -47,6 +51,8 @@ main_function(
 \item{restrict}{A vector of chromosome names OR position numbers to which the analysis should be restricted.}
 
 \item{gc}{A vector of two values between 0 and 1, specifying the minimum and maximum GC percentage allowed in the output baits.}
+
+\item{min.per.seq}{Minimum number of baits per sequence. Defaults to 1.}
 
 \item{verbose}{Logical: Should detailed bait processing messages be displayed per sequence?}
 }

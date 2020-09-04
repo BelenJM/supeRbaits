@@ -15,5 +15,5 @@ convert_line_endings(input, output = input)
 No return value. Called for side effects.
 }
 \description{
-database files must have UNIX line endings for supeRbaits to work.
+Database files must have UNIX line endings for supeRbaits to work.
 }

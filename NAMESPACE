@@ -3,6 +3,7 @@
 export(convert_line_endings)
 export(extract_nucleotides)
 export(main_function)
+export(standardize_lines)
 import(data.table)
 import(graphics)
 import(stats)

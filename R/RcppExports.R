@@ -25,7 +25,7 @@ removeNLs <- function(fin_path, fout_path) {
     invisible(.Call('_supeRbaits_removeNLs', PACKAGE = 'supeRbaits', fin_path, fout_path))
 }
 
-sampleBaits <- function(chrom_lens, exclusions, regions, targets, n, size, regions_tiling, targets_tiling, regions_prop, targets_prop) {
-    .Call('_supeRbaits_sampleBaits', PACKAGE = 'supeRbaits', chrom_lens, exclusions, regions, targets, n, size, regions_tiling, targets_tiling, regions_prop, targets_prop)
+sampleBaits <- function(chrom_info, exclusions, regions, targets, size, regions_tiling, targets_tiling, regions_prop, targets_prop) {
+    .Call('_supeRbaits_sampleBaits', PACKAGE = 'supeRbaits', chrom_info, exclusions, regions, targets, size, regions_tiling, targets_tiling, regions_prop, targets_prop)
 }
 

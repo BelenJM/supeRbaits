@@ -39,14 +39,14 @@ std::string extractNucleotides(std::string db_path, std::string chrom_name, size
     try {
       subseq = seq.substr(start-1, stop-start+1);
     } catch (const std::out_of_range& oor) {
-      Rcpp::stop("The selected nucleotide subsequence (%d, %d) starts after the selected chromosome ends.", start, stop);
+      Rcpp::stop("The selected nucleotide subsequence (%d, %d) starts after the selected sequence ends.", start, stop);
     }
   } else {
     Rcpp::stop("Chromosome %s was not found.", chrom_name);
   }
 
   if (subseq.size() < stop-start+1) {
-    Rcpp::warning("The selected nucleotide subsequence (%d, %d) ends after the selected chromosome ends. Ending subsequence at the end of the selected chromosome...", start, stop);
+    Rcpp::warning("The selected nucleotide subsequence (%d, %d) ends after the selected sequence ends. Ending subsequence at the end of the selected sequence...", start, stop);
   }
 
   return subseq;

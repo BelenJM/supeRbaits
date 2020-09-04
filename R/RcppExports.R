@@ -5,12 +5,12 @@ dos2unix <- function(fin_path, fout_path) {
     invisible(.Call('_supeRbaits_dos2unix', PACKAGE = 'supeRbaits', fin_path, fout_path))
 }
 
-fixLineLengths <- function(fin_path, fout_path) {
-    invisible(.Call('_supeRbaits_fixLineLengths', PACKAGE = 'supeRbaits', fin_path, fout_path))
-}
-
 extractNucleotides <- function(db_path, chrom_name, start, stop) {
     .Call('_supeRbaits_extractNucleotides', PACKAGE = 'supeRbaits', db_path, chrom_name, start, stop)
+}
+
+fixLineLengths <- function(fin_path, fout_path) {
+    invisible(.Call('_supeRbaits_fixLineLengths', PACKAGE = 'supeRbaits', fin_path, fout_path))
 }
 
 getBaits <- function(db_path, df) {

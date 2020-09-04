@@ -16,17 +16,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// fixLineLengths
-void fixLineLengths(std::string fin_path, std::string fout_path);
-RcppExport SEXP _supeRbaits_fixLineLengths(SEXP fin_pathSEXP, SEXP fout_pathSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fin_path(fin_pathSEXP);
-    Rcpp::traits::input_parameter< std::string >::type fout_path(fout_pathSEXP);
-    fixLineLengths(fin_path, fout_path);
-    return R_NilValue;
-END_RCPP
-}
 // extractNucleotides
 std::string extractNucleotides(std::string db_path, std::string chrom_name, size_t start, size_t stop);
 RcppExport SEXP _supeRbaits_extractNucleotides(SEXP db_pathSEXP, SEXP chrom_nameSEXP, SEXP startSEXP, SEXP stopSEXP) {
@@ -39,6 +28,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< size_t >::type stop(stopSEXP);
     rcpp_result_gen = Rcpp::wrap(extractNucleotides(db_path, chrom_name, start, stop));
     return rcpp_result_gen;
+END_RCPP
+}
+// fixLineLengths
+void fixLineLengths(std::string fin_path, std::string fout_path);
+RcppExport SEXP _supeRbaits_fixLineLengths(SEXP fin_pathSEXP, SEXP fout_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type fin_path(fin_pathSEXP);
+    Rcpp::traits::input_parameter< std::string >::type fout_path(fout_pathSEXP);
+    fixLineLengths(fin_path, fout_path);
+    return R_NilValue;
 END_RCPP
 }
 // getBaits
@@ -97,8 +97,8 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_supeRbaits_dos2unix", (DL_FUNC) &_supeRbaits_dos2unix, 2},
-    {"_supeRbaits_fixLineLengths", (DL_FUNC) &_supeRbaits_fixLineLengths, 2},
     {"_supeRbaits_extractNucleotides", (DL_FUNC) &_supeRbaits_extractNucleotides, 4},
+    {"_supeRbaits_fixLineLengths", (DL_FUNC) &_supeRbaits_fixLineLengths, 2},
     {"_supeRbaits_getBaits", (DL_FUNC) &_supeRbaits_getBaits, 2},
     {"_supeRbaits_getChromLengths", (DL_FUNC) &_supeRbaits_getChromLengths, 1},
     {"_supeRbaits_removeNLs", (DL_FUNC) &_supeRbaits_removeNLs, 2},

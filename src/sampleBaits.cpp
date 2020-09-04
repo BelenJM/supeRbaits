@@ -355,7 +355,11 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_info,
 	  region_bait_positions = get_bait_positions(valid_regions, size, n_per_range, used_baits, "region");
 
 	  for (auto t : region_bait_positions) {
-	    all_baits.push_back(SampleBait {(std::string) df_names[i], "region", t.first.first, t.first.second});
+	    try {
+	      all_baits.push_back(SampleBait {(std::string) df_names[i], "region", t.first.first, t.first.second});
+	    } catch (std::bad_alloc& ba) {
+	      Rcpp::stop("Not enough available memory to contain all sequences' samples. Use the 'restrict' argument to sample a subset of the sequences at a time.\n");
+	    }
 	    used_baits.insert(t.first.first);
 	  }
 	  n_regions = region_bait_positions.size();
@@ -386,7 +390,11 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_info,
 	  target_bait_positions = get_bait_positions(valid_targets, size, n_per_range, used_baits, "target");
 
 	  for (auto t : target_bait_positions) {
-	    all_baits.push_back(SampleBait {(std::string) df_names[i], "target", t.first.first, t.first.second});
+	    try {
+	      all_baits.push_back(SampleBait {(std::string) df_names[i], "target", t.first.first, t.first.second});
+	    } catch (std::bad_alloc& ba) {
+	      Rcpp::stop("Not enough available memory to contain all sequences' samples. Use the 'restrict' argument to sample a subset of the sequences at a time.\n");
+	    }
 	    used_baits.insert(t.first.first);
 	  }
 
@@ -416,8 +424,13 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_info,
 	
 	random_bait_positions = get_bait_positions(valid_random, size, n_per_range, used_baits, "random");
 
-	for (auto t : random_bait_positions)
-	  all_baits.push_back(SampleBait {(std::string) df_names[i], "random", t.first.first, t.first.second});
+	for (auto t : random_bait_positions) {
+	  try {
+	    all_baits.push_back(SampleBait {(std::string) df_names[i], "random", t.first.first, t.first.second});
+	  } catch (std::bad_alloc& ba) {
+	    Rcpp::stop("Not enough available memory to contain all sequences' samples. Use the 'restrict' argument to sample a subset of the sequences at a time.\n");
+	  }
+	}
       }
     }
   }

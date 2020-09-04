@@ -5,6 +5,10 @@ dos2unix <- function(fin_path, fout_path) {
     invisible(.Call('_supeRbaits_dos2unix', PACKAGE = 'supeRbaits', fin_path, fout_path))
 }
 
+fixLineLengths <- function(fin_path, fout_path) {
+    invisible(.Call('_supeRbaits_fixLineLengths', PACKAGE = 'supeRbaits', fin_path, fout_path))
+}
+
 getBaits <- function(db_path, df) {
     .Call('_supeRbaits_getBaits', PACKAGE = 'supeRbaits', db_path, df)
 }

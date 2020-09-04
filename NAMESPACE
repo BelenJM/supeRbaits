@@ -2,6 +2,7 @@
 
 export(convert_line_endings)
 export(main_function)
+export(standardize_lines)
 import(data.table)
 import(graphics)
 import(stats)

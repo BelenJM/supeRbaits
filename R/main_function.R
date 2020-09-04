@@ -2,8 +2,8 @@
 #'
 #' Function inspired by this comment in StackOverflow: https://stackoverflow.com/questions/49149839/simulate-random-positions-from-a-list-of-intervals
 #'
-#' @param n number of baits to generate (distributed across the various sequences).
-#' @param n.per.seq number of baits to generate per sequence. Ignored if n is set.
+#' @param n Number of baits to generate (distributed across the various sequences).
+#' @param n.per.seq Number of baits to generate per sequence. Ignored if n is set.
 #' @param size The size of each bait
 #' @param database A database of chromosomes
 #' @param exclusions A file containing regions to exclude
@@ -16,6 +16,7 @@
 #' @param seed A number to fix the randomization process, for reproducibility
 #' @param restrict A vector of chromosome names OR position numbers to which the analysis should be restricted.
 #' @param gc A vector of two values between 0 and 1, specifying the minimum and maximum GC percentage allowed in the output baits.
+#' @param min.per.seq Minimum number of baits per sequence. Defaults to 1.
 #' @param verbose Logical: Should detailed bait processing messages be displayed per sequence?
 #' 
 #' @return A dataframe of baits
@@ -320,8 +321,16 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 	return(output)
 }
 
-
-assign_n_per_seq <- function(the.lengths, n, min.per.seq) {
+#' Distribute the overall number of baits by the multiple sequences
+#' 
+#' @param the.lengths a dataframe with the length of each sequence, and the respective proportion of the overall size.
+#' @inheritParams main_function
+#' 
+#' @return An updated the.lengths dataframe, with the number of baits to be extracted per sequence.
+#' 
+#' @keywords internal
+#' 
+assign_n_per_seq <- function(the.lengths, n, min.per.seq, size) {
 	# if the number of baits to distribute is lower than the number of sequences
 	if (n < (nrow(the.lengths) * min.per.seq)) {
 		warning("The desired n is smaller than the number of sequences times min.per.seq. Only a subset of the sequences will be used.", immediate. = TRUE, call. = FALSE)

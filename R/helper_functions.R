@@ -31,7 +31,26 @@ convert_line_endings <- function(input, output = input) {
 #' @export
 #' 
 extract_nucleotides <- function(database, seq, from, to) {
+	if (length(database) > 1)
+		stop("Please select only one database.")
+	
+	if (length(seq) > 1)
+		stop("Please select only one sequence.")
+
+	if (from <= 0)
+		stop("'from' must be positive.")
+	
+	if (to <= 0)
+		stop("'to' must be positive.")
+
+	if (length(from) > 1)
+		stop("Please select only one starting point.")
+
+	if (length(from) > 1)
+		stop("Please select only one ending point.")
+
 	if (to < from)
 		stop("'to' should not be lower than 'from'.")
+	
 	extractNucleotides(database, seq, from, to)
 }

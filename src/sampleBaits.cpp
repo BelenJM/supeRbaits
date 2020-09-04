@@ -199,11 +199,11 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
 
   if (output_ranges.size()) { // only perform checks if there are valid ranges
     if (output_ranges.size() < ranges.size()) {
-      Rcpp::warning((ranges.size() - output_ranges.size()) + " sub-ranges on sequence " + chrom + " are too small to fit the desired number of baits and will be excluded.");
+      Rcpp::Rcout << "'- " << (ranges.size() - output_ranges.size()) << " sub-ranges on sequence " << chrom << " are too small to fit the desired number of baits and will be excluded." << std::endl;
     }
 
     if (n / tiling < output_ranges.size()) { // if there are too many ranges, randomly select needed
-      Rcpp::warning("The desired n/tiling combination is not high enough to produce baits in all valid ranges in sequence " + chrom + ". Choosing a random subset of ranges.");
+      Rcpp::Rcout << "'- The desired n/tiling combination is not high enough to produce baits in all valid ranges in sequence " << chrom << ". Choosing a random subset of ranges." << std::endl;
     
       size_t max_ranges = std::floor((double)n / tiling);
       my_random_shuffle(output_ranges.begin(), output_ranges.end());
@@ -212,7 +212,7 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
       sort(output_ranges.begin(), output_ranges.end());
     }
   } else {
-    Rcpp::warning("All " + type + " ranges in sequence " + chrom + " are too small to fit the desired number of baits per range. Skipping...");
+    Rcpp::Rcout << "'- All " << type << " ranges in sequence " << chrom << " are too small to fit the desired number of baits per range. Skipping..." << std::endl;
   }
   
   return output_ranges;
@@ -227,7 +227,7 @@ vec check_n(vec_pair_value ranges, size_t n, size_t tiling, std::string chrom, s
   
   if (sum_max_baits <= n) {
     if (sum_max_baits < n) { // not enough space for all baits
-      Rcpp::warning("The maximum possible number of unique " + type + " baits (" + std::to_string(sum_max_baits) + ") for sequence " + chrom + " is lower than the desired n (" + std::to_string(n) + ").");
+      Rcpp::Rcout << "'- The maximum possible number of unique " << type << " baits (" << std::to_string(sum_max_baits) << ") for sequence " << chrom << " is lower than the desired n (" << std::to_string(n) << ")." << std::endl;
     }
 
     for (auto r : ranges)
@@ -397,7 +397,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_info,
 	}
       } else {
 	n_regions = 0;
-    	Rcpp::Rcout << "M: No regions found for sequence " << df_names[i] << "." << std::endl;
+    	Rcpp::Rcout << "'- No regions found for sequence " << df_names[i] << "." << std::endl;
       }
     }
 
@@ -433,7 +433,7 @@ Rcpp::DataFrame sampleBaits(Rcpp::DataFrame chrom_info,
 	}
       } else {
 	n_targets = 0;
-    	Rcpp::Rcout << "M: No targets found for sequence " << df_names[i] << "." << std::endl;
+    	Rcpp::Rcout << "'- No targets found for sequence " << df_names[i] << "." << std::endl;
       }
     }
 

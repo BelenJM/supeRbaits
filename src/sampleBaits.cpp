@@ -198,11 +198,11 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
 
   if (output_ranges.size()) { // only perform checks if there are valid ranges
     if (output_ranges.size() < ranges.size()) {
-      Rcpp::warning((ranges.size() - output_ranges.size()) + " sub-ranges on sequence " + chrom + " are too small to fit the desired number of baits and will be excluded.\n");
+      Rcpp::warning((ranges.size() - output_ranges.size()) + " sub-ranges on sequence " + chrom + " are too small to fit the desired number of baits and will be excluded.");
     }
 
     if (n / tiling < output_ranges.size()) { // if there are too many ranges, randomly select needed
-      Rcpp::warning("The desired n/tiling combination is not high enough to produce baits in all valid ranges in sequence " + chrom + ". Choosing a random subset of ranges.\n");
+      Rcpp::warning("The desired n/tiling combination is not high enough to produce baits in all valid ranges in sequence " + chrom + ". Choosing a random subset of ranges.");
     
       size_t max_ranges = std::floor((double)n / tiling);
       my_random_shuffle(output_ranges.begin(), output_ranges.end());
@@ -211,7 +211,7 @@ vec_pair_value check_ranges(vec_pair ranges, size_t n, size_t size, std::string 
       sort(output_ranges.begin(), output_ranges.end());
     }
   } else {
-    Rcpp::warning("All " + type + " ranges in sequence " + chrom + " are too small to fit the desired number of baits per range. Skipping...\n");
+    Rcpp::warning("All " + type + " ranges in sequence " + chrom + " are too small to fit the desired number of baits per range. Skipping...");
   }
   
   return output_ranges;
@@ -226,7 +226,7 @@ vec check_n(vec_pair_value ranges, size_t n, size_t tiling, std::string chrom, s
   
   if (sum_max_baits <= n) {
     if (sum_max_baits < n) { // not enough space for all baits
-      Rcpp::warning("The maximum possible number of unique " + type + " baits (" + std::to_string(sum_max_baits) + ") for sequence " + chrom + " is lower than the desired n (" + std::to_string(n) + ")\n.");
+      Rcpp::warning("The maximum possible number of unique " + type + " baits (" + std::to_string(sum_max_baits) + ") for sequence " + chrom + " is lower than the desired n (" + std::to_string(n) + ").");
     }
 
     for (auto r : ranges)

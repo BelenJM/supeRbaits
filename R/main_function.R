@@ -133,7 +133,7 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 	link <- the.lengths$size >= (min.per.seq + size - 1)
 	if (all(!link))
 		stop("No sequences have enough space to fit the minimum desired number of baits.", call. = FALSE)
-	if (verbose & any(link))
+	if (verbose & any(!link))
 		warning(sum(!link), " sequence", ifelse(sum(!link) > 1, "s are", " is"), " too small to fit the minimum desired number of baits and will be discarded.", immediate. = TRUE, call. = FALSE)
 
 	# prepare to allocate n's
@@ -143,7 +143,7 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 	
 	# allocate n's
 	if (!missing(n)) {
-		the.lengths <- assign_n_per_seq(the.lengths, n, min.per.seq)
+		the.lengths <- assign_n_per_seq(the.lengths, n, min.per.seq, size)
 	} else {
 		the.lengths$n <- n.per.seq
 		the.lengths$n[the.lengths$size - (size - 1) < n.per.seq] <- the.lengths$size[the.lengths$size - (size - 1) < n.per.seq] - (size - 1)

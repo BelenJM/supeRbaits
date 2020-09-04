@@ -150,6 +150,9 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 			warning("Some sequences are not long enough to allocate the desired number of baits.", immediate. = TRUE, call. = FALSE)
 	}
 
+	# remove unneeded prop column from the lengths
+	the.lengths$prop <- NULL
+
 	# load additional parameters
 	if (any(!is.null(exclusions), !is.null(regions), !is.null(targets)))
 	message("M: Loading exclusions/regions/targets."); flush.console()
@@ -325,7 +328,7 @@ assign_n_per_seq <- function(the.lengths, n, min.per.seq) {
 		# decide how many sequences we can pick
 		n.seqs <- floor(n / min.per.seq)
 		# pick sequences
-		which.seqs <- sample(1:nrow(the.lengths), n.seqs, prob = the.lengths$prob)
+		which.seqs <- sample(1:nrow(the.lengths), n.seqs, prob = the.lengths$prop)
 		# distribute min.per.seq for the chosen sequences
 		the.lengths$n[which.seqs] <- min.per.seq
 		# if there are baits missing
@@ -363,6 +366,5 @@ assign_n_per_seq <- function(the.lengths, n, min.per.seq) {
 			# If the last line changed anything, then the while will be triggered again
 		}
 	}
-	the.lengths$prop <- NULL
 	return(the.lengths)
 }

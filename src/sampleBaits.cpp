@@ -1,5 +1,6 @@
 // [[Rcpp::plugins("cpp11")]]
 #include <Rcpp.h>
+#include <algorithm>
 #include <limits>
 #include <vector>
 #include <fstream>
@@ -46,11 +47,11 @@ struct SampleBait {
 };
 
 template<class RandomIt> void my_random_shuffle(RandomIt first, RandomIt last) {
-    typename std::iterator_traits<RandomIt>::difference_type i, n;
-    n = last - first;
-    for (i = n-1; i > 0; --i) {
-	std::swap(first[i], first[R::runif(-1.00001, i)]); // use -1.00001 so that ceil can return 0
-    }
+  typename std::iterator_traits<RandomIt>::difference_type i, n;
+  n = last - first;
+  for (i = n-1; i > 0; --i) {
+    std::swap(first[i], first[std::ceil(R::runif(-0.99999, i))]);
+  }
 }
 
 vec_pair trim_ranges(vec_pair ranges, vec_pair exclusions) {
@@ -273,22 +274,50 @@ vec check_n(vec_pair_value ranges, size_t n, size_t tiling, std::string chrom, s
   return n_per_range;
 }
 
+std::set<size_t> get_rands(size_t n, size_t min, size_t max, std::unordered_set<size_t> used_baits) {
+  vec excluded; // contains values not eligible as new random bait positions
+  excluded.push_back(min-1);
+  excluded.push_back(max+1);
+  for (auto used : used_baits) {
+    excluded.push_back(used);
+  }
+  sort(excluded.begin(), excluded.end());
+  vec_pair valid_ranges; // valid ranges for generating new random bait positions
+  valid_ranges.reserve(2*(n+used_baits.size()));
+  for (size_t i = 0; i < excluded.size()-1; i++) {
+    valid_ranges.push_back(std::make_pair(excluded[i], excluded[i+1]));
+  }
+  std::set<size_t> rands;
+  while (rands.size() < n) {
+    size_t rand_index = std::ceil(R::runif(-0.99999, valid_ranges.size()-1));
+    // choose random valid range for generate a new random bait position
+    std::pair<size_t, size_t> rand_range = valid_ranges[rand_index];
+    if (rand_range.first+1 != rand_range.second) { // only generate new random bait position if there are still positions left in the range
+      // generate new random bait position
+      size_t new_rand = std::ceil(R::runif(rand_range.first+1-0.99999, rand_range.second-1)); 
+      rands.insert(new_rand);
+      // update valid ranges according to the new reandom bait position
+      valid_ranges.push_back(std::make_pair(rand_range.first, new_rand)); 
+      valid_ranges.push_back(std::make_pair(new_rand, rand_range.second));
+    }
+    // remove outdated valid range in constant time
+    std::iter_swap(valid_ranges.begin()+rand_index, valid_ranges.begin()+(valid_ranges.size()-1)); // swap outdated range with the range at the end in constant time
+    valid_ranges.erase(valid_ranges.begin()+(valid_ranges.size()-1)); // remove range at the end (now outdated range) in constant time
+  }
+  
+  return rands;
+} 
+
 vec_pair_string get_bait_positions(vec_pair_value ranges, size_t size, vec n_per_range, std::unordered_set<size_t> used_baits, std::string type) {
   vec_pair bait_positions;
   for (size_t i = 0; i < ranges.size(); i++) {
-    std::set<size_t> rands;
-    while (rands.size() < n_per_range[i]) {
-      size_t max = ranges[i].first.second - (size - 1);
-      size_t min = ranges[i].first.first;
-      size_t rand_num = std::ceil(R::runif(min-0.99999, max)); // use -0.99999 so that ceil can return min
-      if (!used_baits.count(rand_num))
-	rands.insert(rand_num);
-    }
+    size_t max = ranges[i].first.second - (size - 1);
+    size_t min = ranges[i].first.first;
+    std::set<size_t> rands = get_rands(n_per_range[i], min, max, used_baits);
 
-    for (size_t myrand : rands)
-      bait_positions.push_back(std::make_pair(myrand, myrand + (size - 1)));
+    for (size_t rand : rands)
+      bait_positions.push_back(std::make_pair(rand, rand + (size - 1)));
   }
-
   vec_pair_string bait_pos_type;
   for (auto bait_pos : bait_positions)
     bait_pos_type.push_back(std::make_pair(bait_pos, type));

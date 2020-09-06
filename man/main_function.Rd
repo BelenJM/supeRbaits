@@ -20,7 +20,8 @@ main_function(
   restrict,
   gc = c(0, 1),
   min.per.seq = 1,
-  verbose = FALSE
+  verbose = FALSE,
+  force = FALSE
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ main_function(
 \item{min.per.seq}{Minimum number of baits per sequence. Defaults to 1.}
 
 \item{verbose}{Logical: Should detailed bait processing messages be displayed per sequence?}
+
+\item{force}{Logical: Proceed even if the number of baits requested is very large?}
 }
 \value{
 A dataframe of baits

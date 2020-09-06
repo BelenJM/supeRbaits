@@ -18,6 +18,7 @@
 #' @param gc A vector of two values between 0 and 1, specifying the minimum and maximum GC percentage allowed in the output baits.
 #' @param min.per.seq Minimum number of baits per sequence. Defaults to 1.
 #' @param verbose Logical: Should detailed bait processing messages be displayed per sequence?
+#' @param force Logical: Proceed even if the number of baits requested is very large?
 #' 
 #' @return A dataframe of baits
 #' 
@@ -27,7 +28,7 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 	regions = NULL, regions.prop = 0, regions.tiling = 1,
 	targets = NULL, targets.prop = 0, targets.tiling = 1,
 	seed = NULL, restrict, gc = c(0, 1), min.per.seq = 1,
-	verbose = FALSE){
+	verbose = FALSE, force = FALSE){
 
 	if (getOption("supeRbaits_debug", default = FALSE)) {
     message("!!!--- Debug mode has been activated ---!!!")
@@ -55,6 +56,12 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 		stop("Length of 'n' must be 1.", call. = FALSE)
 	if (!missing(n) && n < min.per.seq)
 		stop("'n' cannot be lower than min.per.seq.", call. = FALSE)
+	if (!missing(n) && n > 100000) {
+		if (force)
+			warning("You have requested a rather large number of baits to be extracted (", n, ").\n         Your machine may run ouf of memory attempting to extract this many baits.\n         Attempting to continue because force = TRUE.", immediate. = TRUE, call. = FALSE)
+		else
+			stop("You have requested a rather large number of baits to be extracted (", n, ").\n       Your machine may run ouf of memory attempting to extract this many baits.\n       If you are sure you want to proceed, restart the function with 'force = TRUE'.", call. = FALSE)
+	}
 
 	if ((missing(n) & !missing(n.per.seq)) && !is.numeric(n.per.seq))
 		stop("'n.per.seq' must be numeric.", call. = FALSE)
@@ -62,7 +69,6 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 		stop("Length of 'n.per.seq' must be 1.", call. = FALSE)
 	if ((missing(n) & !missing(n.per.seq)) && n.per.seq < min.per.seq)
 		stop("'n.per.seq' cannot be lower than min.per.seq.", call. = FALSE)
-
 
 	if (!is.numeric(size))
 		stop("'size' must be numeric.", call. = FALSE)
@@ -149,6 +155,12 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 		the.lengths$n[the.lengths$size - (size - 1) < n.per.seq] <- the.lengths$size[the.lengths$size - (size - 1) < n.per.seq] - (size - 1)
 		if (sum(the.lengths$n) < n.per.seq * nrow(the.lengths))
 			warning("Some sequences are not long enough to allocate the desired number of baits.", immediate. = TRUE, call. = FALSE)
+		if (sum(the.lengths$n) > 100000) {
+			if (force)
+				warning("You have requested a rather large number of baits to be extracted (", sum(the.lengths$n), ").\n         Your machine may run ouf of memory attempting to extract this many baits.\n         Attempting to continue because force = TRUE.", immediate. = TRUE, call. = FALSE)
+			else
+				stop("You have requested a rather large number of baits to be extracted (", sum(the.lengths$n), ").\n       Your machine may run ouf of memory attempting to extract this many baits.\n       If you are sure you want to proceed, restart the function with 'force = TRUE'.", call. = FALSE)
+		}
 	}
 
 	# remove unneeded prop column from the lengths
@@ -188,39 +200,38 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 	message("M: Finding bait positions for each sequence."); flush.console()
 
 	sample.baits.time <- system.time({
-		bait.points <- callr::r(function(sampleBaits,
-																		 chrom_lens, 
-																		 exclusions, 
-																		 regions, 
-																		 targets, 
-																		 size, 
-																		 regions_tiling, 
-																		 targets_tiling, 
-																		 regions_prop, 
-																		 targets_prop) 
-			{
-				sampleBaits(chrom_lens, 
-										exclusions, 
-										regions, 
-										targets, 
-										size, 
-										regions_tiling, 
-										targets_tiling, 
-										regions_prop, 
-										targets_prop)
-			},
-			args = list(sampleBaits = sampleBaits,
-									chrom_lens = the.lengths, 
-									exclusions = exclusions, 
-									regions = regions, 
-									targets = targets, 
-									size = size, 
-									regions_tiling = regions.tiling, 
-									targets_tiling = targets.tiling, 
-									regions_prop = regions.prop, 
-									targets_prop = targets.prop),
-			spinner = !verbose,
-			show = verbose)
+		bait.points <- tryCatch(
+			callr::r(function(sampleBaits, chrom_lens, exclusions, regions, 
+							 					targets, size, regions_tiling, targets_tiling, 
+							 					regions_prop, targets_prop) 
+				{
+					sampleBaits(chrom_lens, exclusions, regions, 
+											targets, size, regions_tiling, targets_tiling, 
+											regions_prop, targets_prop)
+				},
+				args = list(sampleBaits = sampleBaits,
+										chrom_lens = the.lengths, 
+										exclusions = exclusions, 
+										regions = regions, 
+										targets = targets, 
+										size = size, 
+										regions_tiling = regions.tiling, 
+										targets_tiling = targets.tiling, 
+										regions_prop = regions.prop, 
+										targets_prop = targets.prop),
+				spinner = !verbose,
+				show = verbose),
+			error = function(e, missing_n = missing(n)) {
+				if (grepl("Ran out of memory", e)) {
+					if (missing_n)
+						stop("Not enough available memory to contain all sequences' samples.\n       If your database has many sequences, consider using 'n', rather than 'n.per.seq'.\n       Alternatively, you can use 'restrict' to select a subset of sequences to be analysed.", call. = FALSE)
+					else
+						stop("Not enough available memory to contain all sequences' samples. Consider lowering 'n'.", call. = FALSE)
+				} else {
+					stop(e)
+				}
+			}
+		)
 	})
 
 	if (getOption("supeRbaits_show_times", default = FALSE))
@@ -229,18 +240,25 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 	message("M: Retrieving bait base pairs. This operation can take some time."); flush.console()
 
 	getbaits.time <- system.time({
-		baits <- callr::r(function(getBaits,
-															 db, 
-															 df)
-			{
-				getBaits(db = db, 
-								 df = df)
-			}, 
+		baits <- tryCatch(
+			callr::r(function(getBaits, db, df)
+			{ getBaits(db = db, df = df) }, 
 			args = list(getBaits = getBaits,
 									db = database,
 									df = bait.points), 
 			spinner = TRUE,
-			show = TRUE)
+			show = TRUE),
+			error = function(e, missing_n = missing(n)) {
+				if (grepl("Ran out of memory", e)) {
+					if (missing_n)
+						stop("Not enough available memory to contain all sequences' samples.\n       If your database has many sequences, consider using 'n', rather than 'n.per.seq'.\n       Alternatively, you can use 'restrict' to select a subset of sequences to be analysed.", call. = FALSE)
+					else
+						stop("Not enough available memory to contain all sequences' samples. Consider lowering 'n'.", call. = FALSE)
+				} else {
+					stop(e)
+				}
+			}
+		)			
 	})
 
 	if (getOption("supeRbaits_show_times", default = FALSE))

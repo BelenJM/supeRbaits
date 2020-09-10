@@ -4,7 +4,7 @@ Version: 0.0.0.9000
 Authors@R: c(
     person(given = "Hugo",
            family = "Flávio",
-           role = c("aut", "cre"),
+           role = "aut",
            email = "hdmfla@aqua.dtu.dk",
            comment = c(ORCID = "0000-0002-5174-1197")),
     person(given = "Miguel",
@@ -13,11 +13,11 @@ Authors@R: c(
            email = "jmiguelsramos@gmail.com"),
     person(given = "Belén",
            family = "Mena",
-           role = c("aut"),
+           role = c("aut", "cre"),
            email = "bmen@aqua.dtu.dk",
            comment = c(ORCID = "0000-0001-8458-5533"))
   )
-Description: Provided with a database of sequences, samples short bait sequences, taking into account potential exlusion or region zones, as well as specific targets.
+Description: Provided with a database of sequences, samples short bait sequences, taking into account potential exclusion or region zones, as well as specific targets.
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true

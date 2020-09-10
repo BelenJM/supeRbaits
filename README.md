@@ -54,7 +54,7 @@ Specific areas where you don't want your baits to fall over.
 
 **9.GC content (gc)**
 
-Specific range of % of the nucleotides Guasine and Citonine (GC) within your bait area where you want the baits to fall within. An example is to limit the GC content of your baits between 35 to 55% within the bait area, as having a lower/higher content may make your bait not to work well during the experiment.
+Specific range of % of the nucleotides Guanine and Cytosine (GC) within your bait area where you want the baits to fall within. An example is to limit the GC content of your baits between 35 to 55% within the bait area, as having a lower/higher content may make your bait not to work well during the experiment.
 
 **10.Debug mode (debug)**
 

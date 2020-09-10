@@ -17,12 +17,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Hugo Flávio \email{hdmfla@aqua.dtu.dk} (\href{https://orcid.org/0000-0002-5174-1197}{ORCID})
+\strong{Maintainer}: Belén Mena \email{bmen@aqua.dtu.dk} (\href{https://orcid.org/0000-0001-8458-5533}{ORCID})
 
 Authors:
 \itemize{
+  \item Hugo Flávio \email{hdmfla@aqua.dtu.dk} (\href{https://orcid.org/0000-0002-5174-1197}{ORCID})
   \item Miguel Ramos \email{jmiguelsramos@gmail.com}
-  \item Belén Mena \email{bmen@aqua.dtu.dk} (\href{https://orcid.org/0000-0001-8458-5533}{ORCID})
 }
 
 }

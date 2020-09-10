@@ -64,7 +64,7 @@ check_chr_names <- function(exclusions = NULL, regions = NULL, targets = NULL, t
 	return(list(exclusions = exclusions, regions = regions, targets = targets))
 }
 
-#' Check that start and end points fall whithin chromosome boundaries
+#' Check that start and end points fall within chromosome boundaries
 #' 
 #' @inheritParams check_chr_names
 #' 

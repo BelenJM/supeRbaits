@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_functions.R
 \name{check_chr_boundaries}
 \alias{check_chr_boundaries}
-\title{Check that start and end points fall whithin chromosome boundaries}
+\title{Check that start and end points fall within chromosome boundaries}
 \usage{
 check_chr_boundaries(
   exclusions = NULL,
@@ -24,6 +24,6 @@ check_chr_boundaries(
 The lengths dataframe
 }
 \description{
-Check that start and end points fall whithin chromosome boundaries
+Check that start and end points fall within chromosome boundaries
 }
 \keyword{internal}

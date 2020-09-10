@@ -1,4 +1,4 @@
-# supeRbaits<img src="vignettes/mb_arrays.svg" alt="drawing" width="870"/>
+# supeRbaits<img src="supeRbaits.png" align="right" width="120" />
 ## An R-package to design baits for capture sequencing experiments 
 
 ## What can supeRbaits help you with?

@@ -3,7 +3,7 @@
 ## An R-package to design baits for capture sequencing experiments 
 
 ## What can supeRbaits help you with?
-You are a researcher/lab manager wanting to carry out a capture sequencing experiment, where you want to design your own set of baits from a genome sequence of your species of interest. The R-package supeRbaits, written in C++ and implemented in R, can help you with this task.
+You are a researcher/lab manager wanting to carry out a capture sequencing experiment, where you want to design your own set of baits from a genome sequence of your species of interest. The R-package supeRbaits, written in R and C++ and implemented in R, can help you with this task.
 
 ### How to start:
 **Installation:**

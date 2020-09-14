@@ -31,7 +31,7 @@ Imports:
     ggplot2,
     graphics,
     knitr,
-    Rcpp,
+    Rcpp (>= 0.10.3),
     readr,
     reshape2,
     stats,

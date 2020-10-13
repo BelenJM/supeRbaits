@@ -8,13 +8,13 @@ You are a researcher/lab manager wanting to carry out a capture sequencing exper
 ### How to start:
 **Installation:**
 ```
-## install the package
-setwd("C:/Users/bmen/Documents/GitHub/supeRbaits/")
+## install and load devtools, the package to allow you 
+## to install packages hosted in github
+install.packages("devtools")
 require("devtools")
-install()
-
-setwd("C:\\Users\\bmen\\Documents\\GitHub\\supeRbaits\\testdata")
-# devtools::load_all()
+## install and load the package from the GitHub repo
+install_github("BelenJM/supeRbaits")
+require(supeRbaits)
 ```
 
 ### Main function and its options:

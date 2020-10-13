@@ -8,11 +8,12 @@ You are a researcher/lab manager wanting to carry out a capture sequencing exper
 ### How to start:
 **Installation:**
 ```
-## install and load devtools, the package to allow you 
-## to install packages hosted in github
+# install and load devtools, the package to allow you 
+# to install packages hosted in github
 install.packages("devtools")
 require("devtools")
-## install and load the package from the GitHub repo
+
+# install and load the package from the GitHub repo
 install_github("BelenJM/supeRbaits")
 require(supeRbaits)
 ```
@@ -56,8 +57,4 @@ Specific areas where you don't want your baits to fall over.
 
 Specific range of % of the nucleotides Guanine and Cytosine (GC) within your bait area where you want the baits to fall within. An example is to limit the GC content of your baits between 35 to 55% within the bait area, as having a lower/higher content may make your bait not to work well during the experiment.
 
-**10.Debug mode (debug)**
-
-If set up as TRUE, you have the option to debug the script. Default set to FALSE.
-
-**11.Verbose option (verbose)**
+**10.Verbose option (verbose)**

@@ -28,6 +28,10 @@ This package was designed to help researchers/lab managers wanting to cary out c
 
 install.packages("remotes")
 library("remotes")
+
+# install and load supeRbaits from the GitHub repo
+install_github("BelenJM/supeRbaits")
+library(supeRbaits)
 ```
 
 ####supeRbaits' main concepts for bait design

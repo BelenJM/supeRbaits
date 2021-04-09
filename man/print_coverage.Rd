@@ -7,7 +7,7 @@
 print_coverage(x, seq.name)
 }
 \arguments{
-\item{x}{The output of main_function.}
+\item{x}{The output of do_baits.}
 
 \item{sequence}{the sequence to be printed.}
 }

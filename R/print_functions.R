@@ -1,13 +1,13 @@
 #' Compile tables with min, mean and max GC contents per group of baits
 #' 
-#' @param x The output of main_function
+#' @param x The output of do_baits
 #' @param combine Logical: Should results be displayed per chromosome?
 #' 
 #' @keywords internal
 #' 
 gc_table <- function(x, combine = FALSE) {
   if (!is.list(x) || is.null(x$baits))
-    stop("could not recognise x as the output of main_function\n", call. = FALSE)
+    stop("could not recognise x as the output of do_baits\n", call. = FALSE)
 
   baits <- x$baits
 
@@ -33,14 +33,14 @@ gc_table <- function(x, combine = FALSE) {
 
 #' Compile tables with coverage values per chromosome
 #' 
-#' @param x The output of main_function
+#' @param x The output of do_baits
 #' @param combine Logical: Should results be displayed per type of bait?
 #' 
 #' @keywords internal
 #' 
 coverage <- function(x, combined = TRUE) {
   if (!is.list(x) || is.null(x$baits))
-    stop("could not recognise x as the output of main_function\n", call. = FALSE)
+    stop("could not recognise x as the output of do_baits\n", call. = FALSE)
 
   chr.lengths <- x$input.summary$chr.lengths
   baits <- x$baits
@@ -87,7 +87,7 @@ coverage <- function(x, combined = TRUE) {
 
 #' Print graphics with coverage per sequence
 #' 
-#' @param x The output of main_function.
+#' @param x The output of do_baits.
 #' @param sequence the sequence to be printed.
 #' 
 #' @keywords internal
@@ -101,7 +101,7 @@ print_coverage <- function(x, seq.name) {
   target <- NULL
   
   if (!is.list(x) || is.null(x$baits))
-    stop("could not recognise x as the output of main_function\n", call. = FALSE)
+    stop("could not recognise x as the output of do_baits\n", call. = FALSE)
 
   if (is.na(match(seq.name, names(x$baits))))
     stop("Could not find sequence '", seq.name, "' in the input data\n", call. = FALSE)

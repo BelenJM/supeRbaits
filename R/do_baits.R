@@ -24,7 +24,7 @@
 #' 
 #' @export
 #' 
-main_function <- function(n, n.per.seq, size, database, exclusions = NULL, 
+do_baits <- function(n, n.per.seq, size, database, exclusions = NULL, 
 	regions = NULL, regions.prop = 0, regions.tiling = 1,
 	targets = NULL, targets.prop = 0, targets.tiling = 1,
 	seed = NULL, restrict, gc = c(0, 1), min.per.seq = 1,
@@ -342,7 +342,7 @@ main_function <- function(n, n.per.seq, size, database, exclusions = NULL,
 #' Distribute the overall number of baits by the multiple sequences
 #' 
 #' @param the.lengths a dataframe with the length of each sequence, and the respective proportion of the overall size.
-#' @inheritParams main_function
+#' @inheritParams do_baits
 #' 
 #' @return An updated the.lengths dataframe, with the number of baits to be extracted per sequence.
 #' 

@@ -1,6 +1,6 @@
 #' Check if restrict is compatible with the number of sequences present
 #' 
-#' @inheritParams main_function
+#' @inheritParams do_baits
 #' @param sequences A vector with the names of the sequences in the current data.
 #' 
 #' @keywords internal

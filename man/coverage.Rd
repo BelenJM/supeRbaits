@@ -7,7 +7,7 @@
 coverage(x, combined = TRUE)
 }
 \arguments{
-\item{x}{The output of main_function}
+\item{x}{The output of do_baits}
 
 \item{combine}{Logical: Should results be displayed per type of bait?}
 }

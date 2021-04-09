@@ -7,7 +7,7 @@
 gc_table(x, combine = FALSE)
 }
 \arguments{
-\item{x}{The output of main_function}
+\item{x}{The output of do_baits}
 
 \item{combine}{Logical: Should results be displayed per chromosome?}
 }

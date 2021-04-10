@@ -166,13 +166,17 @@ Rcpp::DataFrame getBaits(std::string db_path, Rcpp::DataFrame df) {
   Rcpp::NumericVector df_starts = df[DF_START_INDEX], df_stops  = df[DF_STOP_INDEX];
 
   for (size_t i = 0; i < (size_t) df_names.size(); i++) {
-    baits.push_back(getBait(db,
-			    map,
-			    i+1,
-			    Rcpp::as<std::string>(df_names[i]),
-			    Rcpp::as<std::string>(df_types[i]),
-			    df_starts[i],
-			    df_stops[i]));
+    try {
+      baits.push_back(getBait(db,
+			      map,
+			      i+1,
+			      Rcpp::as<std::string>(df_names[i]),
+			      Rcpp::as<std::string>(df_types[i]),
+			      df_starts[i],
+			      df_stops[i]));
+    } catch (std::bad_alloc& ba) {
+      Rcpp::stop("Ran out of memory.");
+    }
   }
 
   return buildRdf(baits);

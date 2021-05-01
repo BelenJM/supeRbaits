@@ -1,5 +1,12 @@
 path.aux <- paste0(system.file(package = "supeRbaits")[1], "/example_data")
 
+if (getOption("stringsAsFactors")) {
+	reset.stringsAsFactors <- TRUE
+	options("stringsAsFactors" = FALSE)
+} else {
+	reset.stringsAsFactors <- FALSE
+}
+
 # set up test directory
 home.wd <- getwd()
 setwd(tempdir())
@@ -236,37 +243,9 @@ test_that("extraction with exclusions, regions and targets is working", {
 })
 
 
-# results <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt", 
-# 		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
-
-# # Test print functions
-
-# test_that("gc_table is working", {
-# 	x <- gc_table(results)
-# 	expect_true(is.list(x))
-# 	expect_equal(names(x), c("CM003279", "CMF"))
-# 	expect_equal(x$CM003279$n, as.vector(table(results$baits$CM003279$bait_type)))
-
-# 	x <- gc_table(results, combine = TRUE)
-# 	expect_true(is.data.frame(x))
-# 	# need to expand this once the large n bug has been fixed
-# })
-
-# test_that("coverage is working", {
-# 	x <- coverage(results)
-# 	expect_true(is.list(x))
-# 	expect_equal(names(x), c("CM003279", "CMF"))
-# 	expect_equal(x$CM003279$bait_type, "All")
-
-# 	x <- coverage(results, combine = FALSE)
-# 	expect_true(is.list(x))
-# 	expect_equal(names(x), c("CM003279", "CMF"))
-# 	# expand once the large n bug has been fixed
-# })
-
-
-# 	print_coverage(results, "CMF")
-# 	print_coverage(results, "CM003279")
+if (reset.stringsAsFactors)
+	options("stringsAsFactors" = TRUE)
 
 setwd(home.wd)
 rm(list = ls())
+

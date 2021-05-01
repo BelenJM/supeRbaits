@@ -1,3 +1,30 @@
+#' Check if the lengths dataframe follows the expected standards
+#' 
+#' @param lengths the lengths dataframe
+#' 
+#' @keywords internal
+#' 
+#' @return an instruction to recompile lengths or not.
+#' 
+check_lengths <- function(lengths) {
+	recompile <- FALSE
+	if (!is.data.frame(lengths)) {
+		warning("Could not recognize 'lengths' as a dataframe. Attempting to recompile from database.", call. = FALSE, immediate. = TRUE)
+		recompile <- TRUE
+	}
+	if (ncol(lengths) != 2) {
+		warning("Unexpected columns found in 'lengths'. Attempting to recompile from database.", call. = FALSE, immediate. = TRUE)
+		recompile <- TRUE
+	}
+	if (any(is.na(match(c("name", "size"), colnames(lengths))))) {
+		warning("Column names in 'lengths' are not as expected. Attempting to recompile from database.", call. = FALSE, immediate. = TRUE)
+		recompile <- TRUE
+	}
+
+	return(recompile)
+}
+
+
 #' Check if restrict is compatible with the number of sequences present
 #' 
 #' @inheritParams do_baits

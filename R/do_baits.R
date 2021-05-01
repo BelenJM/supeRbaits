@@ -5,7 +5,8 @@
 #' @param n Number of baits to generate (distributed across the various sequences).
 #' @param n.per.seq Number of baits to generate per sequence. Ignored if n is set.
 #' @param size The size of each bait
-#' @param database A database of chromosomes
+#' @param database A database of sequences
+#' @param lengths Optional: the lengths of the sequences, compiled through \code{\link{load_lengths}}. If missing, lengths will be compiled from the database on-the-fly.
 #' @param exclusions A file containing regions to exclude
 #' @param regions A file containing regions of interest.
 #' @param regions.prop The proportion of baits that should overlap the regions of interest.
@@ -24,7 +25,7 @@
 #' 
 #' @export
 #' 
-do_baits <- function(n, n.per.seq, size, database, exclusions = NULL, 
+do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL, 
 	regions = NULL, regions.prop = 0, regions.tiling = 1,
 	targets = NULL, targets.prop = 0, targets.tiling = 1,
 	seed = NULL, restrict, gc = c(0, 1), min.per.seq = 1,
@@ -102,32 +103,22 @@ do_baits <- function(n, n.per.seq, size, database, exclusions = NULL,
 	if (gc[1] > gc[2])
 		stop("The first value of 'gc' must be smaller or equal to the second value.", call. = FALSE)
 
-	# Import data
-	message("M: Compiling the sequences' lengths. This operation can take some time."); flush.console()
 
-	# check line ending type
-	first_line <- readLines(database, n = 1)
-	if (length(first_line) == 0)	
-		stop("The database file appears to be empty. Are you sure this is the correct file?", call. = FALSE)
-
-	len_first_line <- nchar(first_line)
-	if (grepl("\r$", readChar(database, len_first_line + 1)))
-		stop("The line endings of your database file are incompatible with supeRbaits. You can convert your database using convert_line_endings()\n", call. = FALSE)
-	# --
-
-	# extract sequence lengths
-	getlengths.time <- system.time({
-		the.lengths <- callr::r(function(getChromLengths, path) 
-			{
-				getChromLengths(path = path)
-			}, 
-			args = list(getChromLengths = getChromLengths,
-									path = database),
-			spinner = TRUE,
-			show = TRUE)
-	})
-	if (getOption("supeRbaits_show_times", default = FALSE))
-		print(getlengths.time)
+	# figure out lengths
+	if (missing(lengths)) {
+		message("M: Compiling the sequences' lengths. This operation can take some time."); flush.console()
+		the.lengths <- load_lengths(database)
+	}	else {
+		if (check_lengths(lengths)) {
+			message("M: Compiling the sequences' lengths. This operation can take some time."); flush.console()
+			the.lengths <- load_lengths(database)
+		}
+		else {
+			the.lengths <- lengths
+			getlengths.time <- 0
+			names(getlengths.time) <- "elapsed"
+		}
+	}
 	
 	# apply restrictions, if present
 	if (!missing(restrict)) {

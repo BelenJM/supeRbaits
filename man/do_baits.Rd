@@ -9,6 +9,7 @@ do_baits(
   n.per.seq,
   size,
   database,
+  lengths,
   exclusions = NULL,
   regions = NULL,
   regions.prop = 0,
@@ -31,7 +32,9 @@ do_baits(
 
 \item{size}{The size of each bait}
 
-\item{database}{A database of chromosomes}
+\item{database}{A database of sequences}
+
+\item{lengths}{Optional: the lengths of the sequences, compiled through \code{\link{load_lengths}}. If missing, lengths will be compiled from the database on-the-fly.}
 
 \item{exclusions}{A file containing regions to exclude}
 

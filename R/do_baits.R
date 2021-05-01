@@ -31,6 +31,11 @@ do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL,
 	seed = NULL, restrict, gc = c(0, 1), min.per.seq = 1,
 	verbose = FALSE, force = FALSE){
 
+	if (getOption("stringsAsFactors")) {
+		options("stringsAsFactors" = FALSE)
+		on.exit(options("stringsAsFactors" = TRUE))
+	}
+
 	if (getOption("supeRbaits_debug", default = FALSE)) {
     message("!!!--- Debug mode has been activated ---!!!")
 		on.exit(save(list = ls(), file = "supeRbaits_debug.RData"), add = TRUE)
@@ -225,9 +230,6 @@ do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL,
 		)
 	})
 
-	# failsafe for r-oldrel
-	bait.points <- data.frame(bait.points, stringsAsFactors = FALSE)
-
 	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(sample.baits.time)
 
@@ -254,9 +256,6 @@ do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL,
 			}
 		)			
 	})
-
-	# failsafe for r-oldrel
-	baits <- data.frame(baits, stringsAsFactors = FALSE)
 
 	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(getbaits.time)

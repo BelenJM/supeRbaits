@@ -1,2 +1,4 @@
 src/*.o
 src/supeRbaits.dll
+/doc/
+/Meta/

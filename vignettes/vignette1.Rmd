@@ -1,6 +1,6 @@
 ---
 title: "supeRbaits: manual"
-author: "Belen Jimenez-Mena, Hugo Flavio & Miguel Ramos"
+author: "Belen Jimenez-Mena, Hugo Flávio & Miguel Ramos"
 date: "6 apr 2021"
 output: rmarkdown::html_vignette
 vignette: >

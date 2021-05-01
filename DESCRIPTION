@@ -35,7 +35,8 @@ Imports:
     readr,
     reshape2,
     stats,
-    utils
+    utils,
+    rmarkdown
 Suggests:
     testthat
 VignetteBuilder: knitr

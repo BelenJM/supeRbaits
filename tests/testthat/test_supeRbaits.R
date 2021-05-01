@@ -1,12 +1,5 @@
 path.aux <- paste0(system.file(package = "supeRbaits")[1], "/example_data")
 
-if (getOption("stringsAsFactors")) {
-	reset.stringsAsFactors <- TRUE
-	options("stringsAsFactors" = FALSE)
-} else {
-	reset.stringsAsFactors <- FALSE
-}
-
 # set up test directory
 home.wd <- getwd()
 setwd(tempdir())
@@ -241,10 +234,6 @@ test_that("extraction with exclusions, regions and targets is working", {
 	# and finally none should be duplicated
 	expect_false(any(duplicated(x$baits$CM003279$Start_bp)))
 })
-
-
-if (reset.stringsAsFactors)
-	options("stringsAsFactors" = TRUE)
 
 setwd(home.wd)
 rm(list = ls())

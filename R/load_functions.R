@@ -31,6 +31,17 @@ load_lengths <- function(file) {
 		attributes(the.lengths)$time_elapsed <- getlengths.time["elapsed"]
 		print(getlengths.time)
 	}
+
+	# failsafe for r-oldrel
+	to.convert <- which(unlist(lapply(the.lengths, class)) == "factor")
+
+	if (length(to.convert) > 0) {
+		for (i in to.convert) {
+			the.lengths[, i] <- as.character(the.lengths[, i])
+		}
+	}
+	# ---
+
 	return(the.lengths)
 }
 

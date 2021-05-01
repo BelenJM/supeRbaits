@@ -225,6 +225,9 @@ do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL,
 		)
 	})
 
+	# failsafe for r-oldrel
+	bait.points <- data.frame(bait.points, stringsAsFactors = FALSE)
+
 	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(sample.baits.time)
 
@@ -242,15 +245,18 @@ do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL,
 			error = function(e, missing_n = missing(n)) {
 				if (grepl("Ran out of memory", e)) {
 					if (missing_n)
-						stop("Not enough available memory to contain all sequences' samples.\n       If your database has many sequences, consider using 'n', rather than 'n.per.seq'.\n       Alternatively, you can use 'restrict' to select a subset of sequences to be analysed.", call. = FALSE)
+						stop("Not enough available memory to contain all the sampled baits.\n       If your database has many sequences, consider using 'n', rather than 'n.per.seq'.\n       Alternatively, you can use 'restrict' to select a subset of sequences to be analysed.", call. = FALSE)
 					else
-						stop("Not enough available memory to contain all sequences' samples. Consider lowering 'n'.", call. = FALSE)
+						stop("Not enough available memory to contain all the sampled baits. Consider lowering 'n'.", call. = FALSE)
 				} else {
 					stop(e)
 				}
 			}
 		)			
 	})
+
+	# failsafe for r-oldrel
+	baits <- data.frame(baits, stringsAsFactors = FALSE)
 
 	if (getOption("supeRbaits_show_times", default = FALSE))
 		print(getbaits.time)
@@ -321,7 +327,8 @@ do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL,
 		times <- data.frame(
 			getLengths = getlengths.time["elapsed"],
 			sampleBaits = sample.baits.time["elapsed"],
-			getBaits = getbaits.time["elapsed"])
+			getBaits = getbaits.time["elapsed"],
+			stringsAsFactors = FALSE)
 		output <- list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary, times = times)
 	}	else {
 		output <- list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary)

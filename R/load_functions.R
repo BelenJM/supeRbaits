@@ -43,7 +43,7 @@ load_lengths <- function(file) {
 #' @return The exclusions dataframe
 #' 
 load_exclusions <- function(file){
-	output <- as.data.frame(data.table::fread(file, showProgress = FALSE))
+	output <- as.data.frame(data.table::fread(file, showProgress = FALSE), stringsAsFactors = FALSE)
 	if (ncol(output) != 3)
 		stop("The exclusions file does not appear to contain exactly three columns\n", call. = FALSE)
 	colnames(output) <- c("chr", "start", "stop")
@@ -69,7 +69,7 @@ load_exclusions <- function(file){
 #' @return The regions dataframe
 #' 
 load_regions <- function(file){
-	output <- as.data.frame(data.table::fread(file, showProgress = FALSE))
+	output <- as.data.frame(data.table::fread(file, showProgress = FALSE), stringsAsFactors = FALSE)
 	if (ncol(output) != 3)
 		stop("The regions file does not appear to contain exactly three columns\n", call. = FALSE)
 	colnames(output) <- c("chr", "start", "stop")
@@ -95,7 +95,7 @@ load_regions <- function(file){
 #' @return The targets dataframe
 #' 
 load_targets <- function(file){
-	output <- as.data.frame(data.table::fread(file, showProgress = FALSE))
+	output <- as.data.frame(data.table::fread(file, showProgress = FALSE), stringsAsFactors = FALSE)
 	if (ncol(output) != 2)
 		stop("The exclusions file does not appear to contain exactly two columns\n", call. = FALSE)
 	colnames(output) <- c("chr", "target")

@@ -17,7 +17,7 @@ gc_table <- function(x, combine = FALSE) {
     input <- baits
   
 	output <- lapply(input, function(i) {
-    aux <- as.data.frame(with(i, table(bait_type)))
+    aux <- as.data.frame(with(i, table(bait_type)), stringsAsFactors = FALSE)
     colnames(aux)[2] <- "n"
     aux$min_GC <-  with(i, aggregate(pGC, list(bait_type), min))$x
     aux$mean_GC <- with(i, aggregate(pGC, list(bait_type), mean))$x
@@ -26,7 +26,7 @@ gc_table <- function(x, combine = FALSE) {
   })
 
   if (combine)
-    return(as.data.frame(output))
+    return(as.data.frame(output, stringsAsFactors = FALSE))
   else
     return(output)
 }
@@ -76,7 +76,8 @@ coverage <- function(x, combined = TRUE) {
       output <- data.frame(bait_type = x, 
                            bp = bp_covered, 
                            valid_coverage = bp_covered/valid_length,
-                           total_coverage = bp_covered/total_length)
+                           total_coverage = bp_covered/total_length,
+                           stringsAsFactors = FALSE)
       return(output)
     })
     return(data.table::rbindlist(capture))
@@ -140,7 +141,8 @@ print_coverage <- function(x, seq.name) {
     bait_no = rep(-999, 2), 
     variable = c("bait_start", "bait_stop"), 
     value = c(1, chr.length),
-    Colour = rep("chromosome", 2))
+    Colour = rep("chromosome", 2),
+    stringsAsFactors = FALSE)
   plotdata <- rbind(plotdata, aux)
   # ---
 

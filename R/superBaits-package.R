@@ -1,6 +1,9 @@
-#' supeRbaits: A package that does things
+#' supeRbaits: Sample Baits From Sequences
 #' 
-#' A description of the package
+#' Provided with a database of sequences, samples short bait sequences, 
+#' taking into account potential exclusion or region zones, as well as specific targets.
+#' 
+#' Please read the package vignette for more details by running browseVignettes("supeRbaits").
 #' 
 #' @useDynLib supeRbaits
 #' @importFrom Rcpp sourceCpp

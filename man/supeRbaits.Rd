@@ -4,9 +4,13 @@
 \name{supeRbaits}
 \alias{supeRbaits}
 \alias{supeRbaits-package}
-\title{supeRbaits: A package that does things}
+\title{supeRbaits: Sample Baits From Sequences}
 \description{
-A description of the package
+Provided with a database of sequences, samples short bait sequences, 
+taking into account potential exclusion or region zones, as well as specific targets.
+}
+\details{
+Please read the package vignette for more details by running browseVignettes("supeRbaits").
 }
 \seealso{
 Useful links:

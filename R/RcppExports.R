@@ -21,11 +21,19 @@ getChromLengths <- function(path) {
     .Call('_supeRbaits_getChromLengths', PACKAGE = 'supeRbaits', path)
 }
 
+importBlastResults <- function(path) {
+    .Call('_supeRbaits_importBlastResults', PACKAGE = 'supeRbaits', path)
+}
+
 removeNLs <- function(fin_path, fout_path) {
     invisible(.Call('_supeRbaits_removeNLs', PACKAGE = 'supeRbaits', fin_path, fout_path))
 }
 
 sampleBaits <- function(chrom_info, exclusions, regions, targets, size, regions_tiling, targets_tiling, regions_prop, targets_prop) {
     .Call('_supeRbaits_sampleBaits', PACKAGE = 'supeRbaits', chrom_info, exclusions, regions, targets, size, regions_tiling, targets_tiling, regions_prop, targets_prop)
+}
+
+writeFasta <- function(baits, fasta_path) {
+    invisible(.Call('_supeRbaits_writeFasta', PACKAGE = 'supeRbaits', baits, fasta_path))
 }
 

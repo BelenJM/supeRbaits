@@ -64,6 +64,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// importBlastResults
+Rcpp::DataFrame importBlastResults(std::string path);
+RcppExport SEXP _supeRbaits_importBlastResults(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(importBlastResults(path));
+    return rcpp_result_gen;
+END_RCPP
+}
 // removeNLs
 void removeNLs(std::string fin_path, std::string fout_path);
 RcppExport SEXP _supeRbaits_removeNLs(SEXP fin_pathSEXP, SEXP fout_pathSEXP) {
@@ -94,6 +105,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// writeFasta
+void writeFasta(Rcpp::DataFrame baits, std::string fasta_path);
+RcppExport SEXP _supeRbaits_writeFasta(SEXP baitsSEXP, SEXP fasta_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type baits(baitsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type fasta_path(fasta_pathSEXP);
+    writeFasta(baits, fasta_path);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_supeRbaits_dos2unix", (DL_FUNC) &_supeRbaits_dos2unix, 2},
@@ -101,8 +123,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_supeRbaits_fixLineLengths", (DL_FUNC) &_supeRbaits_fixLineLengths, 2},
     {"_supeRbaits_getBaits", (DL_FUNC) &_supeRbaits_getBaits, 2},
     {"_supeRbaits_getChromLengths", (DL_FUNC) &_supeRbaits_getChromLengths, 1},
+    {"_supeRbaits_importBlastResults", (DL_FUNC) &_supeRbaits_importBlastResults, 1},
     {"_supeRbaits_removeNLs", (DL_FUNC) &_supeRbaits_removeNLs, 2},
     {"_supeRbaits_sampleBaits", (DL_FUNC) &_supeRbaits_sampleBaits, 9},
+    {"_supeRbaits_writeFasta", (DL_FUNC) &_supeRbaits_writeFasta, 2},
     {NULL, NULL, 0}
 };
 

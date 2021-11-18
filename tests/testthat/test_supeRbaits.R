@@ -16,17 +16,21 @@ test_targets <- read.table("targets.txt")
 
 # all random test
 test_that("random extration is working", {
-	x <- do_baits(n.per.seq = 10, size = 20, database = "sequences.txt")
+	expect_warning(x <- do_baits(n.per.seq = 10, size = 20, database = "sequences.txt"),
+		"Some sequences are not long enough to allocate the desired number of baits.")
 	expect_equal(names(x), c("baits", "excluded.baits", "input.summary"))
 	expect_equal(x$baits$CMF$bait_seq, c("GCATATCCCAAAATTTCFFF", "CATATCCCAAAATTTCFFFF", "ATATCCCAAAATTTCFFFFF"))
 })
 
 test_that("saturated results are equal to reference", {
-	x <- do_baits(n.per.seq = 200, size = 10, database = "sequences.txt")
+	expect_warning(x <- do_baits(n.per.seq = 200, size = 10, database = "sequences.txt"),
+		"Some sequences are not long enough to allocate the desired number of baits.")
 	## RUN THESE LINES ONLY TO RESET THE REFERENCE!
 	# saturated_simple_results <- x
 	# save(saturated_simple_results, file = paste0(home.wd, "/saturated_simple_results.RData"))
 	load(paste0(home.wd, "/saturated_simple_results.RData"))
+	if(!is.null(attributes(x)$database))
+		attributes(x)$database <- 'placeholder'
 	expect_equal(x, saturated_simple_results)
 })
 
@@ -35,15 +39,21 @@ test_that("extraction with exclusions is working", {
 	expect_warning(do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = paste0(home.wd, "/exclusions_bad_name.txt")),
 			"Not all of the sequences' names in the exclusions match the names listed in the database. Removing orphan exclusions.", fixed = TRUE)
 
-	expect_error(do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = paste0(home.wd, "/exclusions_bad_length.txt")),
+	expect_error(
+		expect_warning(do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = paste0(home.wd, "/exclusions_bad_length.txt")),
+			"Some sequences are not long enough to allocate the desired number of baits."),
 		"Exclusion data for sequence CM003279 is off-boundaries.", fixed = TRUE)
 
-	x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt")
+	expect_warning(x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt"),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
 	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 
 	# Try larger n
-	x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt")
+	expect_warning(x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt"),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 	expect_false(any(apply(test_exclusions, 1, function(e) x$baits$CM003279$Start_bp >= e[2] & x$baits$CM003279$Start_bp <= e[3])))
 	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 })
@@ -51,15 +61,18 @@ test_that("extraction with exclusions is working", {
 # regions tests
 test_that("extraction with regions is working", {
 	expect_warning(do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt"),
-	"Regions were included but regions.prop = 0. No region baits will be produced.", fixed = TRUE)
+		"Regions were included but regions.prop = 0. No region baits will be produced.", fixed = TRUE)
 
-	x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt", regions.prop = 1)
+	expect_warning(x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt", regions.prop = 1),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 	expect_false(any(apply(test_regions, 1, function(r) x$baits$CM003279$Start_bp > r[3] & x$baits$CM003279$Start_bp < r[2])))
 	expect_false(any(apply(test_regions, 1, function(r)   x$baits$CM003279$End_bp > r[3] & x$baits$CM003279$End_bp   < r[2])))
 
 	# Try larger n
-	x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		regions = "regions.txt", regions.prop = 1)
+	expect_warning(x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", regions = "regions.txt", regions.prop = 1),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 	# The first 32 baits should be region, the rest should be random
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("random", "region"))
@@ -70,8 +83,10 @@ test_that("extraction with regions is working", {
 
 # region + exclusions test
 test_that("extraction with exclusions and regions is working", {
-	x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		exclusions = "exclusions.txt", regions = "regions.txt", regions.prop = 1)
+	expect_warning(x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		exclusions = "exclusions.txt", regions = "regions.txt", regions.prop = 1),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 	# The first 12 baits should be region, the rest should be random
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("random", "region"))
@@ -88,8 +103,9 @@ test_that("extraction with exclusions and regions is working", {
 
 # targets test
 test_that("extraction with targets is working", {
-	x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		targets = "targets.txt", targets.prop = 1)
+	expect_warning(x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		targets = "targets.txt", targets.prop = 1),
+		"Some sequences are not long enough to allocate the desired number of baits.")
 	expect_true( # all baits should be within target range
 		all(sapply(x$baits$CM003279$Start_bp, function(x_i) {
 			any(sapply(test_targets[, 2], function(t) {
@@ -101,8 +117,10 @@ test_that("extraction with targets is working", {
 
 # targets + exclusions test
 test_that("extraction with exclusions and targets is working", {
-	x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		exclusions = "exclusions.txt", targets = "targets.txt", targets.prop = 1)
+	expect_warning(x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		exclusions = "exclusions.txt", targets = "targets.txt", targets.prop = 1),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 	expect_true( # all baits should be within target range
 		all(sapply(x$baits$CM003279$Start_bp, function(x_i) {
 			any(sapply(test_targets[, 2], function(t) {
@@ -115,8 +133,10 @@ test_that("extraction with exclusions and targets is working", {
 	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 	
 	#try larger n
-	x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		exclusions = "exclusions.txt", targets = "targets.txt", targets.prop = 1)
+	expect_warning(x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		exclusions = "exclusions.txt", targets = "targets.txt", targets.prop = 1),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("random", "target"))
 	expect_equal(as.vector(aux), c(80, 20))
@@ -138,10 +158,12 @@ test_that("extraction with exclusions and targets is working", {
 test_that("extraction with regions and targets is working", {
 	expect_error(do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
 		targets = "targets.txt", targets.prop = 1, regions = "regions.txt", regions.prop = 1),
-	"The sum of 'regions.prop' and 'targets.prop' must not be greater than one.", fixed = TRUE)
+		"The sum of 'regions.prop' and 'targets.prop' must not be greater than one.", fixed = TRUE)
 
-	x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+	expect_warning(x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("region", "target"))
 	expect_equal(as.vector(aux), c(5, 5))
@@ -160,8 +182,10 @@ test_that("extraction with regions and targets is working", {
 	)
 
 	# try with greater n
-	x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
-		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+	expect_warning(x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", 
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5),
+		"Some sequences are not long enough to allocate the desired number of baits.")
+
 
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("random", "region", "target"))
@@ -183,8 +207,9 @@ test_that("extraction with regions and targets is working", {
 
 # regions + targets + exclusions test
 test_that("extraction with exclusions, regions and targets is working", {
-	x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt", 
-		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+	expect_warning(x <- do_baits(n.per.seq = 10, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt", 
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5),
+		"Some sequences are not long enough to allocate the desired number of baits.")
 
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("region", "target"))
@@ -206,8 +231,9 @@ test_that("extraction with exclusions, regions and targets is working", {
 	expect_false(any(apply(test_exclusions, 1, function(e)   x$baits$CM003279$End_bp >= e[2] & x$baits$CM003279$End_bp   <= e[3])))
 	
 	# try with larger n
-	x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt", 
-		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5)
+	expect_warning(x <- do_baits(n.per.seq = 100, size = 20, gc = c(0.2, 0.8), database = "sequences.txt", exclusions = "exclusions.txt", 
+		targets = "targets.txt", targets.prop = 0.5, regions = "regions.txt", regions.prop = 0.5),
+		"Some sequences are not long enough to allocate the desired number of baits.")
 
 	aux <- table(x$baits$CM003279$bait_type)
 	expect_equal(names(aux), c("random", "region", "target"))
@@ -234,6 +260,13 @@ test_that("extraction with exclusions, regions and targets is working", {
 	# and finally none should be duplicated
 	expect_false(any(duplicated(x$baits$CM003279$Start_bp)))
 })
+
+# commented this test out as it requires blast to be installed. 
+# Still useful for us to manually try the function.
+# test_that('blast_baits works', {
+# 	x <- do_baits(n.per.seq = 2, size = 60, database = "long_sequences.txt")
+# 	x <- blast_baits(x)
+# })
 
 setwd(home.wd)
 rm(list = ls())

@@ -338,6 +338,8 @@ do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL,
 		output <- list(baits = good.baits, excluded.baits = bad.baits, input.summary = input.summary)
 	}
 
+	attributes(output)$database <- normalizePath(database)
+
 	return(output)
 }
 

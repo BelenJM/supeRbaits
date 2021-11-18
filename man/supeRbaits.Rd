@@ -25,7 +25,7 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Hugo Flávio \email{hdmfla@aqua.dtu.dk} (\href{https://orcid.org/0000-0002-5174-1197}{ORCID})
+  \item Hugo Flávio \email{hflavio@wlu.ca} (\href{https://orcid.org/0000-0002-5174-1197}{ORCID})
   \item Miguel Ramos \email{jmiguelsramos@gmail.com}
 }
 

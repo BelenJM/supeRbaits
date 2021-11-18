@@ -19,7 +19,7 @@ void writeFasta(Rcpp::DataFrame baits, std::string fasta_path) {
   }
 
   for (size_t i = 0; i < (size_t) df_bait_no.size(); i++) {
-    fout << "> " << df_bait_no[i] << std::endl;
+    fout << ">" << df_bait_no[i] << std::endl;
     fout << df_bait_seq[i] << std::endl;
   }
 

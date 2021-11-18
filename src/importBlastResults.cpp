@@ -35,14 +35,14 @@ Rcpp::DataFrame importBlastResults(std::string path) {
   }
 
   std::vector<size_t> bait_no;
-  std::vector<size_t> no_matches;
+  std::vector<size_t> n_matches;
   for (auto it = map.begin(); it != map.end(); it++) {
     bait_no.push_back(it->first);
-    no_matches.push_back(it->second);
+    n_matches.push_back(it->second);
   }
   
   Rcpp::DataFrame df =  Rcpp::DataFrame::create(Rcpp::_["bait_no"] = bait_no,
-						Rcpp::_["no_matches"] = no_matches);
+						Rcpp::_["n_matches"] = n_matches);
 
   return df;
 }

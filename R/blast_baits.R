@@ -50,7 +50,7 @@ blast_baits <- function(x, db = NULL, blastn_args = '') {
 	# merge them back with the do_baits output
 	output <- lapply(x$baits, function(seq) {
 		# link <- match(seq$bait_no, recipient$bait_no)
-		seq$no_matches <- NULL
+		seq$n_matches <- NULL
 		merge(x = seq, y = blast_results, by = 'bait_no', all.x = TRUE, all.y = FALSE)
 	})
 

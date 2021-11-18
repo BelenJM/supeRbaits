@@ -24,11 +24,10 @@ Rcpp::DataFrame getChromLengths(std::string path) {
 	name.clear();
       }
       if(!line.empty()) {
-	if (line[1] == ' ') {
-	  Rcpp::stop("Badly formatted FASTA file: at least one sequence name has a leading space. Fix your FASTA file and try again...");
-	}
+	size_t name_start = 1;
+	for (; line[name_start] == ' ' && name_start < line.size(); name_start++);
 	
-	for (size_t i=1; line[i] != ' ' && i < line.size(); i++) {
+	for (size_t i=name_start; line[i] != ' ' && i < line.size(); i++) {
 	  name += line[i];
 	}
       }

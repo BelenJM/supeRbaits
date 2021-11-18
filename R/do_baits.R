@@ -233,7 +233,7 @@ do_baits <- function(n, n.per.seq, size, database, lengths, exclusions = NULL,
 	getbaits.time <- system.time({
 		baits <- tryCatch(
 			callr::r(function(getBaits, db, df)
-			{ getBaits(db = db, df = df) }, 
+			{ getBaits(db_path = db, df = df) }, 
 			args = list(getBaits = getBaits,
 									db = database,
 									df = bait.points), 

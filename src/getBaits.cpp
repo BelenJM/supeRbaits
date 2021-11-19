@@ -99,7 +99,10 @@ std::unordered_map<std::string, std::pair<size_t, size_t>> preProcDB(std::ifstre
     }
     if (line[0] == '>') {
       new_entry = true;
-      for (size_t i=1; line[i] != ' ' && i < line.size(); i++)
+      size_t name_start = 1;
+      for (; line[name_start] == ' ' && name_start < line.size(); name_start++);
+      
+      for (size_t i=name_start; line[i] != ' ' && i < line.size(); i++)
 	name += line[i];
       entry = db.tellg();
     }

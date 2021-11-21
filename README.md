@@ -30,7 +30,7 @@ The user can define the percentage of the total baits to be designed in the regi
 
 Here we can find a schematic figure on how the different components within supeRbaits are used to design a set of baits:
 
-<img src="Figure1_manual.png" align="center" width="1000" />
+<img src="vignettes/Figure1_manual.png" align="center" width="1000" />
 
 ### supeRbaits' main function and its options:
 *do_baits()* is the main function of the package. This function has a set of different arguments that the user can use to create the set of baits:
@@ -53,7 +53,7 @@ Desired size of each of the baits to generate. An example: 120 base pairs.
 
 The genomic information available from the species of interest that you want to use as a reference for the designed baits. This reference database should be in FASTA format. See more information about the FASTA format here (www.ncbi.nlm.nih.gov/BLAST/fasta.shtml). For each entry, the FASTA format consists of at least two lines: one introduced by “>” and followed by a string (with the name of that chromosome, contig or piece of sequence of DNA), and the following lines containing the genomic sequence (‘ATTTCAGGGTATGG’). Hence forth, each individual entity in a database file is called a “sequence”. 
 
-<img src="fasta_example.jpg" align="center" width="400" />
+<img src="vignettes/fasta_example.jpg" align="center" width="400" />
 
 Note that we have implemented a function within the package, i.e. *standardize_lengths*, that makes sure that the sequences are properly organised in the FASTA file.
 
@@ -62,7 +62,7 @@ Note that we have implemented a function within the package, i.e. *standardize_l
 Use this option if you want to exclude certain areas from your genomic database and not generate baits from those. An example would be to exclude areas with a specific GC content, or repeated regions, depending on the type of analysis you are interested in performing.
 To use exclusions, you need to provide an input file with the first three columns of a BED type format, where the first column represents the chromosome/contig name (same names used in the database), and the second and third column represent the bp where the exclusion region starts and end. Each row contains a separate exclusion region. This file does not require column headers, and the data should be separated by tabs. E.g:
 
-<img src="regions_example.jpg" align="center" width="200" />
+<img src="vignettes/regions_example.jpg" align="center" width="200" />
 
 **5. Areas of the database that you want to specifically include (regions)**
 
@@ -109,10 +109,10 @@ Generally *supeRbaits* is recommended to not design more than 100K baits at the 
 ### The output: your set of baits
 For each sequence in the database file, *supeRbaits* provides an output with the bait number and the bait type, that will let you know if the designed sequence is a “random”, “target” or “region” bait. 
 
-<img src="output1.jpg" align="center" width="600" />
+<img src="vignettes/output1.jpg" align="center" width="600" />
 
 In addition, *supeRbaits* provides a summary of the elements of the bait, *e.g* start and end position (in base pairs; i.e. *bait_start* and *bait_stop*); the length of the bait (*bait_seq_size*); counts of each nucleotide type (*no_A*; *no_T*; *no_G*; *no_C*), unknown bases (*no_UNK*), counts of AT (*no_AT*) or GC (*no_GC*) and percentage of GC content (*pGC*).
 
-<img src="output2.jpg" align="center" width="300" />
+<img src="vignettes/output2.jpg" align="center" width="300" />
 
 These outputs can be used for further filtering in R or exported as a table and used as input for next steps in the bait design process, either using *R* or other software.

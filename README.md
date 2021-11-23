@@ -19,9 +19,9 @@ library(supeRbaits)
 ```
 
 ### supeRbaits' main concepts for bait design:
-Before starting, we recommend that users read the following manuscript where supeRbaits was originally described, which contains useful information to guide the user through the process of designing baits. The following article should be cited if *supeRbaits* is used:
+Before starting, we recommend that users read the following manuscript where supeRbaits was originally described, which contains useful information to guide the user through the process of designing baits. The following article should be cited if *supeRbaits* is used - currently a pre-print:
 
-Jiménez-Mena, B.; Flávio, H.; Henriques, R.; Manuzzi, A.; Ramos, M.; Pálsson , S.; Ólafsdóttir, G.A; Ovenden, J.; Nielsen, E.E Fishing for DNA? Designing baits for population genetics in target enrichment experiments: guidelines, considerations and the new tool supeRbaits. To be submitted to Molecular Ecology Resources.
+Jiménez-Mena, B.; Flávio, H.; Henriques, R.; Manuzzi, A.; Ramos, M.; Pálsson , S.; Ólafsdóttir, G.A; Ovenden, J.; Nielsen, E.E Fishing for DNA? Designing baits for population genetics in target enrichment experiments: guidelines, considerations and the new tool supeRbaits. _Authorea_. July 12, 2021.
 
 To work with *supeRbaits*, you must understand its underlying terminology. When designing baits, one is typically interested in using a genomic reference of some sort (*i.e.* the “database”, in *supeRbaits*’ terms); which in an ideal scenario is a reference genome. However, this genomic reference can also be an assembly, transcriptome or any other genomic resources available for the species of interest. If there is no genomic reference available for the species under consideration for bait design, one can also consider resources from a close-related species, if available.
 

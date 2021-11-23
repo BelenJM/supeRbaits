@@ -149,7 +149,4 @@ You can indicate whether you want to blast the baits against the reference that 
 
 **3. BLAST options to feed to _blastn_ function within BLAST+ (blastn_args)**
 
-You have the option to interact with blastn.
-
-
-For a step-by-step Tutorial and more details on the use of _supeRbaits_, follow the [Wiki](https://github.com/BelenJM/supeRbaits/wiki).
+You have the option to interact with blastn and modify most of the options, except -db ([-db database_name]), -query [-query input_file], -out ([-out output_file]) and -outfmt ([-outfmt format]).

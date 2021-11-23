@@ -5,8 +5,12 @@
 ## What can supeRbaits help you with?
 This package was designed to help researchers/lab managers wanting to cary out capture sequencing experiments. The R-package supeRbaits, written in R and C++ and implemented in R, can help design your own set of baits from a genome sequence of your species of interest. 
 
-### How to start:
+Here we provide a quick overview of _supeRbaits_. For more details and a step-by-step guide on how to use _supeRbaits_ with some example datasets, visit the [Wiki](https://github.com/BelenJM/supeRbaits/wiki/Installation).
+
+### Quick start:
 **Installation:**
+
+You can install _supeRbaits_ using the following commands in R:
 ```
 # install and load remotes, which allows you
 # to install packages hosted in github
@@ -17,6 +21,9 @@ library("remotes")
 install_github("BelenJM/supeRbaits")
 library(supeRbaits)
 ```
+
+For more details on the installation of _supeRbaits_, see the [Wiki-Installation](https://github.com/BelenJM/supeRbaits/wiki/Installation).
+
 
 ### supeRbaits' main concepts for bait design:
 Before starting, we recommend that users read the following manuscript where supeRbaits was originally described, which contains useful information to guide the user through the process of designing baits. The following article should be cited if *supeRbaits* is used - currently a pre-print:

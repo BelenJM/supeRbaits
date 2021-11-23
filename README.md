@@ -75,11 +75,11 @@ Each row contains a single region of interest.
 
 **6. Tiling to include in regions (regions.tiling)**
 
-Additionally, you have the opportunity to include tiling using the argument *regions.tiling*
+Include this option if you want to include tiling using the argument *regions.tiling*
 
 **7. Proportion of baits to include in regions (regions.prop)**
 
-Additionally, you have the opportunity to decide the proportion of baits from the total baits (*n*) that you want to be designed in regions, using the argument *regions.prop*
+You can decide on the proportion of baits from the total baits (*n*) that you want to design in the regions area, using the argument *regions.prop*
 
 **8. Base pairs of the database that you want to include (targets)**
 
@@ -96,7 +96,7 @@ As with the regions option (see above), you have the opportunity to include tili
 
 **10. Proportion of baits to include in targets (targets.prop)**
 
-Additionally and also as with regions, you can decide on the proportion of baits from the total baits (*n*) that you want to be designed in targets (*targets.prop*).
+As with the regions option (see above), you can decide on the proportion of baits from the total baits (*n*) that you want to be designed in targets (*targets.prop*).
 
 **11. Seed (seed)**
 

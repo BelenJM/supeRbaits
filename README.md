@@ -127,6 +127,9 @@ In addition, *supeRbaits* provides a summary of the elements of the bait, *e.g* 
 
 <img src="vignettes/output2.jpg" align="center" width="300" />
 
+
+### Further filtering: _blast_baits()_
+
 These outputs can be used for further filtering in R or exported as a table and used as input for next steps in the bait design process, either using *R* or other software. _supeRbaits_ has recently incorporated a new function that allows to blast the designed baits to the desired database/reference, either the one used to design the baits (the default) or other one specified by the user. The new function, named _blast_baits()_ has the following arguments:
 
 **1. Baits (x)**

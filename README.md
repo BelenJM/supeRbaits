@@ -68,41 +68,53 @@ To use exclusions, you need to provide an input file with the first three column
 
 This option allows you to specify regions of the genomic database that you are very interested in including within your baits. A region file is structured in a similar fashion to the exclusions, where for each gene you have one or more intervals of base pairs you are interested in. 
 
-Additionally, you have the opportunity to include tiling using the argument *regions.tiling*, and the proportion of baits from the total baits (*n*) that you want to be designed in regions, using the argument *regions.prop*.
-
 If you want to use this option (*regions*), an input file with the first three columns of a BED type format is required, i.e.
 Chromosome_name \t start_bp \t end_bp\n
 
 Each row contains a single region of interest.
 
-**6. Base pairs of the database that you want to include (targets)**
+**6. Tiling to include in regions (regions.tiling)**
+
+Additionally, you have the opportunity to include tiling using the argument *regions.tiling*
+
+**7. Proportion of baits to include in regions (regions.prop)**
+
+Additionally, you have the opportunity to decide the proportion of baits from the total baits (*n*) that you want to be designed in regions, using the argument *regions.prop*
+
+**8. Base pairs of the database that you want to include (targets)**
 
 You can include also include single targets of interest where you want some baits to be designed. Targets would typically consist on Single Nucleotide Polymorphisms (SNP) where you know their position at the genomic database, and you want to design a bait that captures specifically that base pair. 
-
-As with the regions option (see above), you have the opportunity to include tiling (*targets.tiling*), i.e. design x number of baits in each specific target, and the proportion of baits from the total baits (*n*) that you want to be designed in targets (*targets.prop*).
 
 If you want to use this option (*targets*), an input file with two columns needs to be provided, i.e.
 Chromosome_name \t location_bp\n
 
 Where the first column represents the chromosome/contig name (same names used in the Genomic database used in point 3), and the second column represents the bp number where the SNP is located. Each row contains a separate target.
 
-**7. Seed (seed)**
+**9. Tiling to include in targets (targets.tiling)**
+
+As with the regions option (see above), you have the opportunity to include tiling (*targets.tiling*), i.e. design x number of baits in each specific target.
+
+**10. Proportion of baits to include in targets (targets.prop)**
+
+Additionally and also as with regions, you can decide on the proportion of baits from the total baits (*n*) that you want to be designed in targets (*targets.prop*).
+
+**11. Seed (seed)**
 
 There is always a degree of randomness in bait design, even when you use exclusion, regions or targets. To ensure that you receive the same results twice (*e.g.* for reproducibility purposes), you can specify a seed number to fix the random mechanisms and ensure the same output on multiple runs.
 
-**8. Areas of the database that you want to restrict your baits to (restrict)**
+**12. Areas of the database that you want to restrict your baits to (restrict)**
 
 A vector of chromosome names OR position numbers to which the analysis should be restricted to. This argument allows *supeRbaits* to only design baits for specific genes, specified either by name or position on the database.
 
-**9. GC content (gc)**
+**13. GC content (gc)**
 
 Range of % of the nucleotides Guanine and Cytosine (GC) allowed for a bait. This means that baits outside the specific range will be directly discarded. In general it is recommended to keep the GC content of your baits within intermediate content (e.g. between 35 to 55%), as having a lower/higher content may make your bait not to work well during the experiment.
 
-**10. verbose**
+**14. verbose**
 
 If *TRUE*, the messages during the bait design process within *supeRbaits* will be displayed, per sequence. The default is *FALSE*.
 
-**11. force** 
+**15. force** 
 
 Generally *supeRbaits* is recommended to not design more than 100K baits at the same time (n > 100K). Designing more than 100K baits on one go is still possible, however, you need to indicate to supeRbaits this is what you want by indicating *force=TRUE*. *supeRbaits* will show a warning message stating that it will proceed to run even if the number of baits requested is very large, and that your machine may run out of memory attempting to extract all the baits.
 

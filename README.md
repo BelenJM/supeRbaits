@@ -127,4 +127,19 @@ In addition, *supeRbaits* provides a summary of the elements of the bait, *e.g* 
 
 <img src="vignettes/output2.jpg" align="center" width="300" />
 
-These outputs can be used for further filtering in R or exported as a table and used as input for next steps in the bait design process, either using *R* or other software.
+These outputs can be used for further filtering in R or exported as a table and used as input for next steps in the bait design process, either using *R* or other software. _supeRbaits_ has recently incorporated a new function that allows to blast the designed baits to the desired database/reference, either the one used to design the baits (the default) or other one specified by the user. The new function, named _blast_baits()_ has the following arguments:
+
+**1. Baits (x)**
+
+The input of this function is the output of do_baits(). 
+
+**2. Database (db)**
+
+You can indicate whether you want to blast the baits against the reference that was used to generate the baits using _do_baits()_ (default in _supeRbaits_) or another one.
+
+**3. BLAST options to feed to _blastn_ function within BLAST+ (blastn_args)**
+
+You have the option to interact with blastn.
+
+
+For a step-by-step Tutorial and more details on the use of _supeRbaits_, follow the [Wiki](https://github.com/BelenJM/supeRbaits/wiki).

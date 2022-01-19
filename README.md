@@ -5,7 +5,7 @@
 ## What can supeRbaits help you with?
 This package was designed to help researchers/lab managers wanting to cary out capture sequencing experiments. The R-package supeRbaits, written in R and C++ and implemented in R, can help design your own set of baits from a genome sequence of your species of interest. 
 
-Here we provide a quick overview of _supeRbaits_. For more details and a step-by-step guide on how to use _supeRbaits_ with some example datasets, visit the [Wiki](https://github.com/BelenJM/supeRbaits/wiki/Installation).
+Here we provide a quick overview of _supeRbaits_. For more details and a step-by-step guide on how to use _supeRbaits_ with some example datasets, visit the [Wiki](https://github.com/BelenJM/supeRbaits/wiki) and the [Tutorial](https://github.com/BelenJM/supeRbaits/wiki/Tutorial).
 
 ### Quick start:
 **Installation:**
@@ -26,7 +26,7 @@ For more details on the installation of _supeRbaits_, see the [Wiki-Installation
 
 
 ### supeRbaits' main concepts for bait design:
-Before starting, we recommend that users read the following manuscript where supeRbaits was originally described, which contains useful information to guide the user through the process of designing baits. The following article should be cited if *supeRbaits* is used - currently a pre-print:
+Before starting, we recommend that users read the following manuscript where supeRbaits was originally described, which contains useful background information behind the process of designing baits. The following article should be cited if *supeRbaits* is used - currently a pre-print:
 
 Jiménez-Mena, B.; Flávio, H.; Henriques, R.; Manuzzi, A.; Ramos, M.; Pálsson , S.; Ólafsdóttir, G.A; Ovenden, J.; Nielsen, E.E Fishing for DNA? Designing baits for population genetics in target enrichment experiments: guidelines, considerations and the new tool supeRbaits. _Authorea_. July 12, 2021.
 
@@ -125,7 +125,7 @@ If *TRUE*, the messages during the bait design process within *supeRbaits* will 
 
 Generally *supeRbaits* is recommended to not design more than 100K baits at the same time (n > 100K). Designing more than 100K baits on one go is still possible, however, you need to indicate to supeRbaits this is what you want by indicating *force=TRUE*. *supeRbaits* will show a warning message stating that it will proceed to run even if the number of baits requested is very large, and that your machine may run out of memory attempting to extract all the baits.
 
-### The output: your set of baits
+### The output of do_baits(): your set of baits
 For each sequence in the database file, *supeRbaits* provides an output with the bait number and the bait type, that will let you know if the designed sequence is a “random”, “target” or “region” bait. 
 
 <img src="vignettes/output1.jpg" align="center" width="600" />
@@ -149,4 +149,7 @@ You can indicate whether you want to blast the baits against the reference that 
 
 **3. BLAST options to feed to _blastn_ function within BLAST+ (blastn_args)**
 
-You have the option to interact with blastn and modify most of the options, except -db ([-db database_name]), -query [-query input_file], -out ([-out output_file]) and -outfmt ([-outfmt format]).
+You have the option to interact with blastn and modify most of the options, except -db ([-db database_name]), -query [-query input_file], -out ([-out output_file]) and -outfmt ([-outfmt format]). See the [Wiki](https://github.com/BelenJM/supeRbaits/wiki) for further information on the use of the function.
+
+### The output of blast_baits(): 
+The output of this function in _supeRbaits_ adds a new column to the output of _do_baits()_ (column "n_matches"). This column refers to the number of regions where each generated bait blasts to the provided reference genome. This new column will allow the user to decide which baits they want to keep based on the blast results, and this can be easily done using R. 

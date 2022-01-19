@@ -58,7 +58,7 @@ Desired size of each of the baits to generate. An example: 120 base pairs.
  
 **3. Genomic dataset to use as a reference (database)**
 
-The genomic information available from the species of interest that you want to use as a reference for the designed baits. This reference database should be in FASTA format. See more information about the FASTA format here (www.ncbi.nlm.nih.gov/BLAST/fasta.shtml). For each entry, the FASTA format consists of at least two lines: one introduced by “>” and followed by a string (with the name of that chromosome, contig or piece of sequence of DNA), and the following lines containing the genomic sequence (‘ATTTCAGGGTATGG’). Hence forth, each individual entity in a database file is called a “sequence”. 
+The genomic information available from the species of interest that you want to use as a reference for the designed baits. This reference database should be in FASTA format. See more information about the FASTA format [here](www.ncbi.nlm.nih.gov/BLAST/fasta.shtml). For each entry, the FASTA format consists of at least two lines: one introduced by “>” and followed by a string (with the name of that chromosome, contig or piece of sequence of DNA), and the following lines containing the genomic sequence (‘ATTTCAGGGTATGG’). Hence forth, each individual entity in a database file is called a “sequence”. 
 
 <img src="vignettes/fasta_example.jpg" align="center" width="400" />
 

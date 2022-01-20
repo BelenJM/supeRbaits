@@ -46,7 +46,7 @@ Here we can find a schematic figure on how the different components within supeR
  
 These arguments relate to the number of baits to be generated and the conditions.
 
-With the *n* option, you can specify the *overall* number of total baits you would like to generate in your bait set.  The baits will be distributed around the sequences proportionally to the sequences’ size. If you plan to design more than 100000, we recommend that you divide the sequences in various sets for memory reasons (otherwise, supeRbaits could complain (or more importantly, your computer may crash!).
+With the *n* option, you can specify the *overall* number of total baits you would like to generate in your bait set.  The baits will be distributed around the sequences proportionally to the sequences’ size. If you plan to design more than 100000, we recommend that you divide the sequences in various sets for memory reasons (otherwise, _supeRbaits_ could complain (or more importantly, your computer may crash!).
 
 The argument *n.per.seq* indicates the number of baits that the user wants to include in each of the sequences of the FASTA input file, i.e. chromosome or alike. When possible, this argument will generate the same number of baits to all sequences. The argument *min.per.seq* will establish the minimum number of baits to be placed per each of those sequences. The default is 1.
 

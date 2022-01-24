@@ -137,7 +137,7 @@ In addition, *supeRbaits* provides a summary of the elements of the bait, *e.g* 
 
 ### Further filtering: _blast_baits()_
 
-These outputs can be used for further filtering in R or exported as a table and used as input for next steps in the bait design process, either using *R* or other software. _supeRbaits_ has recently incorporated a new function that allows to blast the designed baits to the desired database/reference, either the one used to design the baits (the default) or other one specified by the user. In order to use _blast_baits()_, you first need to install the _blast+_ software in your laptop or system. The new function, named _blast_baits()_ has the following arguments:
+The output of _do_baits()_ can be used for further filtering in R or exported as a table and used as input for next steps in the bait design process, either using *R* or other software. _supeRbaits_ has recently incorporated a new function that allows to blast the designed baits to the desired database/reference, either the one used to design the baits (the default) or other one specified by the user. In order to use _blast_baits()_, you first need to install the _blast+_ software in your laptop or system. The new function, named _blast_baits()_ has the following arguments:
 
 **1. Baits (x)**
 
@@ -152,4 +152,4 @@ You can indicate whether you want to blast the baits against the reference that 
 You have the option to interact with blastn and modify most of the options, except -db ([-db database_name]), -query [-query input_file], -out ([-out output_file]) and -outfmt ([-outfmt format]). See the [Wiki](https://github.com/BelenJM/supeRbaits/wiki) for further information on the use of the function.
 
 ### The output of _blast_baits()_: 
-The output of this function in _supeRbaits_ adds a new column to the output of _do_baits()_ (column 'n_matches'). This column refers to the number of regions where each generated bait blasts to the provided reference genome. This new column will allow the user to decide which baits they want to keep based on the blast results, and this can be easily done using R. 
+The output of this function in _supeRbaits_ adds a new column to the output of _do_baits()_ (column 'n_matches'). This column refers to the number of regions where each generated bait blasts to the provided reference genome. This new column will allow the user to decide which baits they want to keep based on the blast results, and this can be easily done using R (see an example in the [Tutorial](https://github.com/BelenJM/supeRbaits/wiki/Tutorial#blasting-your-baits). 

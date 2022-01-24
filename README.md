@@ -30,9 +30,9 @@ Before starting, we recommend that users read the following manuscript where sup
 
 Jiménez-Mena, B.; Flávio, H.; Henriques, R.; Manuzzi, A.; Ramos, M.; Pálsson , S.; Ólafsdóttir, G.A; Ovenden, J.; Nielsen, E.E Fishing for DNA? Designing baits for population genetics in target enrichment experiments: guidelines, considerations and the new tool supeRbaits. _Authorea_. July 12, 2021.
 
-To work with *supeRbaits*, you must understand its underlying terminology. When designing baits, one is typically interested in using a genomic reference of some sort (*i.e.* the “database”, in *supeRbaits*’ terms); which in an ideal scenario is a reference genome. However, this genomic reference can also be an assembly, transcriptome or any other genomic resources available for the species of interest. If there is no genomic reference available for the species under consideration for bait design, one can also consider resources from a close-related species, if available.
+To work with *supeRbaits*, you must understand its underlying terminology. When designing baits, one is typically interested in using a genomic reference of some sort (*i.e.* the 'database', in *supeRbaits*’ terms); which in an ideal scenario is a reference genome. However, this genomic reference can also be an assembly, transcriptome or any other genomic resources available for the species of interest. If there is no genomic reference available for the species under consideration for bait design, one can also consider resources from a close-related species, if available.
 
-Once we have located a genomic reference, we want to start designing our baits. Ideally, one would have some knowledge about areas of the genome that should be avoided (i.e. the “exclusions”), and others that may be of interest (i.e. the “regions” and/or “targets”). Besides placing baits where we have some prior information, we could also place baits randomly across the database. If we do not have any prior knowledge about our species’ genome, we can still design baits using entirely the random approach.
+Once we have located a genomic reference, we want to start designing our baits. Ideally, one would have some knowledge about areas of the genome that should be avoided (i.e. the 'exclusions'), and others that may be of interest (i.e. the 'regions' and/or 'targets'). Besides placing baits where we have some prior information, we could also place baits randomly across the database. If we do not have any prior knowledge about our species’ genome, we can still design baits using entirely the random approach.
 The user can define the percentage of the total baits to be designed in the regions and targets of interest, as well as how much tiling to include in each target/region. If the percentage of each type of regions and targets of interest does not amount to 100%, *supeRbaits* will fill the remaining baits with randomly-placed baits along the genome (always avoiding the exclusion zones). Depending on the baits’ purpose, one could choose to divide the bait panel into different (smaller) set of baits, and focus on the design of baits in different types of targets of interests.
 
 Here we can find a schematic figure on how the different components within supeRbaits are used to design a set of baits:
@@ -58,7 +58,7 @@ Desired size of each of the baits to generate. An example: 120 base pairs.
  
 **3. Genomic dataset to use as a reference (database)**
 
-The genomic information available from the species of interest that you want to use as a reference for the designed baits. This reference database should be in FASTA format. See more information about the FASTA format [here](www.ncbi.nlm.nih.gov/BLAST/fasta.shtml). For each entry, the FASTA format consists of at least two lines: one introduced by “>” and followed by a string (with the name of that chromosome, contig or piece of sequence of DNA), and the following lines containing the genomic sequence (‘ATTTCAGGGTATGG’). Hence forth, each individual entity in a database file is called a “sequence”. 
+The genomic information available from the species of interest that you want to use as a reference for the designed baits. This reference database should be in FASTA format. See more information about the FASTA format [here](www.ncbi.nlm.nih.gov/BLAST/fasta.shtml). For each entry, the FASTA format consists of at least two lines: one introduced by “>” and followed by a string (with the name of that chromosome, contig or piece of sequence of DNA), and the following lines containing the genomic sequence ('ATTTCAGGGTATGG'). Hence forth, each individual entity in a database file is called a 'sequence'. 
 
 <img src="vignettes/fasta_example.jpg" align="center" width="400" />
 
@@ -126,7 +126,7 @@ If *TRUE*, the messages during the bait design process within *supeRbaits* will 
 Generally *supeRbaits* is recommended to not design more than 100K baits at the same time (n > 100K). Designing more than 100K baits on one go is still possible, however, you need to indicate to supeRbaits this is what you want by indicating *force=TRUE*. *supeRbaits* will show a warning message stating that it will proceed to run even if the number of baits requested is very large, and that your machine may run out of memory attempting to extract all the baits.
 
 ### The output of do_baits(): your set of baits
-For each sequence in the database file, *supeRbaits* provides an output with the bait number and the bait type, that will let you know if the designed sequence is a “random”, “target” or “region” bait. 
+For each sequence in the database file, *supeRbaits* provides an output with the bait number and the bait type, that will let you know if the designed sequence is a 'random', 'target' or 'region' bait. 
 
 <img src="vignettes/output1.jpg" align="center" width="600" />
 
@@ -152,4 +152,4 @@ You can indicate whether you want to blast the baits against the reference that 
 You have the option to interact with blastn and modify most of the options, except -db ([-db database_name]), -query [-query input_file], -out ([-out output_file]) and -outfmt ([-outfmt format]). See the [Wiki](https://github.com/BelenJM/supeRbaits/wiki) for further information on the use of the function.
 
 ### The output of _blast_baits()_: 
-The output of this function in _supeRbaits_ adds a new column to the output of _do_baits()_ (column "n_matches"). This column refers to the number of regions where each generated bait blasts to the provided reference genome. This new column will allow the user to decide which baits they want to keep based on the blast results, and this can be easily done using R. 
+The output of this function in _supeRbaits_ adds a new column to the output of _do_baits()_ (column 'n_matches'). This column refers to the number of regions where each generated bait blasts to the provided reference genome. This new column will allow the user to decide which baits they want to keep based on the blast results, and this can be easily done using R. 

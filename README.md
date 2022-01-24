@@ -125,7 +125,7 @@ If *TRUE*, the messages during the bait design process within *supeRbaits* will 
 
 Generally *supeRbaits* is recommended to not design more than 100K baits at the same time (n > 100K). Designing more than 100K baits on one go is still possible, however, you need to indicate to supeRbaits this is what you want by indicating *force=TRUE*. *supeRbaits* will show a warning message stating that it will proceed to run even if the number of baits requested is very large, and that your machine may run out of memory attempting to extract all the baits.
 
-### The output of do_baits(): your set of baits
+### The output of _do_baits()_: your set of baits
 For each sequence in the database file, *supeRbaits* provides an output with the bait number and the bait type, that will let you know if the designed sequence is a 'random', 'target' or 'region' bait. 
 
 <img src="vignettes/output1.jpg" align="center" width="600" />
@@ -137,7 +137,7 @@ In addition, *supeRbaits* provides a summary of the elements of the bait, *e.g* 
 
 ### Further filtering: _blast_baits()_
 
-The output of _do_baits()_ can be used for further filtering in R or exported as a table and used as input for next steps in the bait design process, either using *R* or other software. _supeRbaits_ has recently incorporated a new function that allows to blast the designed baits to the desired database/reference, either the one used to design the baits (the default) or other one specified by the user. In order to use _blast_baits()_, you first need to install the _blast+_ software in your laptop or system. The new function, named _blast_baits()_ has the following arguments:
+The output of _do_baits()_ can be used for further filtering in *R* or exported as a table and used as input for next steps in the bait design process, either using *R* or other software. _supeRbaits_ has recently incorporated a new function that allows to blast the designed baits to the desired database/reference, either the one used to design the baits (the default) or other one specified by the user. In order to use _blast_baits()_, you first need to install the _blast+_ software in your laptop or system. The new function, named _blast_baits()_ has the following arguments:
 
 **1. Baits (x)**
 
